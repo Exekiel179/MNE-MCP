@@ -24,8 +24,8 @@ MNE 的分析是**有状态、强可视化**的，不同于一次性的统计批
 - 你加载一份 `Raw` 记录后，要连续做 滤波 → 重参考 → ICA → 分段 → 叠加 → 时频，每一步都会改动很大的内存对象。
   MNE-MCP 维护**一个常驻会话**，记录无需在步骤之间反复加载。
 - 几乎每个决定都靠“看图”（功率谱、电极图、ICA 成分、ERP）。每个画图工具都会保存一张 AI 能读取并解读的 **PNG**。
-- MNE 是庞大的纯 Python API。MNE-MCP 提供 **32 个结构化工具**覆盖常见流程，外加一个
-  **`mne_run_code`** 万能逃生口，在同一个活动会话里触达整个 MNE API。
+- MNE 是庞大的纯 Python API。MNE-MCP 用 **32 个结构化工具**覆盖常见流程，并额外提供一个通用的
+  **`mne_run_code`** 工具：可在同一个会话中直接执行任意 MNE/Python 代码，覆盖 MNE 的全部功能。
 - 默认参数（工频、导联、滤波带、剔除阈值、ICA 设置、分段窗、目录、超时）可通过交互式
   `mne-mcp configure` 向导**由用户配置**。
 
@@ -58,6 +58,9 @@ mne-mcp configure-claude
 ```
 
 完整步骤见 [docs/INSTALL.md](docs/INSTALL.md)；首次使用引导见 [QUICK_START.md](QUICK_START.md)。
+
+> 也可以让 Claude 代劳：把 `skills/mne-mcp-setup` 复制到 `~/.claude/skills/`、重启后对它说“帮我安装并配置
+> mne-mcp”，它会自动建环境、安装、注册并装好技能（装完仍需重启一次客户端才能调用 `mne_*` 工具）。
 
 ---
 
@@ -194,7 +197,7 @@ AI 将会：
 ### 导出 (1)
 `mne_save`
 
-源定位、连接性、解码、BIDS、自定义统计等结构化工具未覆盖的内容，都可在同一个活动会话里通过
+源定位、连接性、解码、BIDS、自定义统计等结构化工具未覆盖的内容，都可在同一个会话中通过
 **`mne_run_code`** 完成。完整参数见 [TOOLS_REFERENCE.zh-CN.md](TOOLS_REFERENCE.zh-CN.md)。
 
 ---
