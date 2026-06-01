@@ -1,5 +1,7 @@
 # MNE-MCP Tools Reference
 
+**English** | [简体中文](TOOLS_REFERENCE.zh-CN.md)
+
 32 tools over a **persistent session**: loaded objects (`raw`, `epochs`, `evoked`, `ica`, …) live in
 memory across calls. Plotting tools save a PNG and return its path; read the PNG to interpret it.
 Tool results also include the equivalent MNE code in a ```python``` block.

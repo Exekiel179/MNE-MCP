@@ -4,6 +4,8 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/protocol-MCP-green.svg)](https://modelcontextprotocol.io)
 
+**English** | [简体中文](README.zh-CN.md)
+
 A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that gives AI assistants
 direct, conversational access to **[MNE-Python](https://mne.tools/)** for analyzing human
 neurophysiology data — **EEG, MEG, sEEG, ECoG, and fNIRS**.
