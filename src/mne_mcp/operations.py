@@ -15,6 +15,8 @@ Operations raise on failure; the server layer formats the error for the user.
 
 from __future__ import annotations
 
+import ast
+import os
 from pathlib import Path
 
 from mne_mcp import figures
@@ -38,6 +40,20 @@ _RAW_EXTENSIONS = {
     ".nwb", ".snirf",
 }
 
+# Directories never worth scanning for user data (envs, VCS, caches, package data).
+_SKIP_DIRS = {
+    ".venv", "venv", "env", ".git", "node_modules", "__pycache__", "site-packages",
+    ".idea", ".vscode", ".pytest_cache", "build", "dist", ".eggs", ".mypy_cache",
+    ".ipynb_checkpoints",
+}
+
+
+def _is_raw_file(p: Path) -> bool:
+    return (
+        p.suffix.lower() in _RAW_EXTENSIONS
+        or "".join(p.suffixes[-2:]).lower() in _RAW_EXTENSIONS
+    )
+
 
 def _result(markdown: str, figs=None, code: str = "") -> dict:
     return {"markdown": markdown, "figures": list(figs or []), "code": code}
@@ -60,20 +76,28 @@ def list_files(directory: str | None = None, pattern: str | None = None) -> dict
 
     hits: list[Path] = []
     if pattern:
-        hits = sorted(base.glob(pattern))
+        hits = sorted(p for p in base.glob(pattern) if p.is_file())
     else:
-        for p in sorted(base.rglob("*")):
-            if p.is_file() and (
-                p.suffix.lower() in _RAW_EXTENSIONS
-                or "".join(p.suffixes[-2:]).lower() in _RAW_EXTENSIONS
-            ):
-                hits.append(p)
+        for root, dirnames, filenames in os.walk(base):
+            # Prune env/VCS/cache/package dirs in place so we never descend into them.
+            dirnames[:] = [
+                d for d in dirnames if d not in _SKIP_DIRS and not d.startswith(".")
+            ]
+            for fn in filenames:
+                p = Path(root) / fn
+                if _is_raw_file(p):
+                    hits.append(p)
+        hits.sort()
 
     if not hits:
         return _result(f"_No neurophysiology data files found in_ `{base}`")
 
-    lines = [f"Found {len(hits)} file(s) under `{base}`:", ""]
-    for p in hits[:200]:
+    shown = hits[:200]
+    header = f"Found {len(hits)} file(s) under `{base}`"
+    if len(hits) > len(shown):
+        header += f" (showing first {len(shown)})"
+    lines = [header + ":", ""]
+    for p in shown:
         try:
             size_mb = p.stat().st_size / 1e6
             lines.append(f"- `{p}` ({size_mb:.1f} MB)")
@@ -442,7 +466,12 @@ def make_epochs(
             else:
                 eid[pair.strip()] = int(pair.strip())
 
-    bl = (None, 0) if baseline == "default" else (None if baseline is None else eval(baseline))
+    if baseline == "default":
+        bl = (None, 0)
+    elif baseline is None or str(baseline).strip().lower() == "none":
+        bl = None
+    else:
+        bl = ast.literal_eval(baseline)  # safe: only literals, e.g. "(None, 0.1)"
     if reject_eeg is None:
         cfg_reject = get_reject_eeg()
         reject = {"eeg": cfg_reject} if cfg_reject else None

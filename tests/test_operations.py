@@ -60,3 +60,20 @@ def test_wrong_kind_rejected(fresh_session):
     fresh_session.set("arr", np.zeros((3, 3)))
     with pytest.raises(ValueError):
         ops.plot_raw("arr")
+
+
+def test_list_files_prunes_noise_dirs(tmp_path):
+    (tmp_path / "good_raw.fif").write_bytes(b"x")
+    venv = tmp_path / ".venv" / "lib" / "site-packages"
+    venv.mkdir(parents=True)
+    (venv / "bundled_raw.fif").write_bytes(b"y")
+    out = ops.list_files(str(tmp_path))["markdown"]
+    assert "good_raw.fif" in out
+    assert "bundled_raw.fif" not in out  # .venv is pruned
+
+
+def test_make_epochs_baseline_none(fresh_session):
+    s = fresh_session
+    s.set("events", np.array([[i * 300 + 100, 0, 1] for i in range(8)]))
+    ops.make_epochs("raw", "events", event_id="c:1", tmin=-0.1, tmax=0.3, baseline="none")
+    assert s.has("epochs")

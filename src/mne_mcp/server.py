@@ -45,6 +45,13 @@ async def server_lifespan(server: FastMCP):
 
 mcp = FastMCP("MNE", lifespan=server_lifespan)
 
+# Matplotlib's pyplot figure registry and the single shared Session are global,
+# mutable state. Serialize all execution so overlapping tool calls can't cross-
+# capture figures or race on session objects. (MNE steps are CPU-bound and the
+# session is shared anyway, so there is nothing to gain from running them in
+# parallel.)
+_EXEC_LOCK = asyncio.Lock()
+
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -86,9 +93,10 @@ async def _exec(fn, ctx, *args, **kwargs) -> str:
     if err:
         return f"Error: {err}"
     try:
-        result = await asyncio.wait_for(
-            asyncio.to_thread(fn, *args, **kwargs), timeout=get_timeout()
-        )
+        async with _EXEC_LOCK:
+            result = await asyncio.wait_for(
+                asyncio.to_thread(fn, *args, **kwargs), timeout=get_timeout()
+            )
     except asyncio.TimeoutError:
         return (
             f"Error: operation timed out after {get_timeout()}s. "
@@ -215,9 +223,10 @@ async def mne_run_code(code: str, ctx: Context = None) -> str:
         return f"Error: {err}"
     session = get_session()
     try:
-        result = await asyncio.wait_for(
-            asyncio.to_thread(session.run_code, code), timeout=get_timeout()
-        )
+        async with _EXEC_LOCK:
+            result = await asyncio.wait_for(
+                asyncio.to_thread(session.run_code, code), timeout=get_timeout()
+            )
     except asyncio.TimeoutError:
         return f"Error: code timed out after {get_timeout()}s. Increase MNE_MCP_TIMEOUT."
 

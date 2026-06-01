@@ -73,18 +73,21 @@ class Session:
 
     def data_names(self) -> list[str]:
         """Names of user data objects currently held (excludes preloaded modules)."""
+        import types
+
+        skip_types = (
+            types.ModuleType,
+            types.FunctionType,
+            types.BuiltinFunctionType,
+            type,
+        )
         out = []
         for key, val in self.namespace.items():
             if key in _PRELOADED or key.startswith("_"):
                 continue
-            import types
-
-            if isinstance(val, types.ModuleType):
+            if isinstance(val, skip_types):
+                # modules / user-defined functions / classes are not data objects
                 continue
-            if callable(val) and not hasattr(val, "info") and object_kind(val) == type(val).__name__:
-                # plain functions/classes the user defined — skip from the data list
-                if isinstance(val, type) or isinstance(val, types.FunctionType):
-                    continue
             out.append(key)
         return out
 
