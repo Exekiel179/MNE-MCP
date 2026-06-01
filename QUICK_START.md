@@ -8,22 +8,24 @@
 cd F:\MCP\MNE-MCP
 pip install -e ".[ica]"        # 安装 MNE + numpy/scipy/matplotlib + scikit-learn(ICA)
 mne-mcp status                 # 确认环境
-mne-mcp configure-claude       # 自动写入 Claude Code 配置 (会先备份)
+mne-mcp setup                  # 注册到 Claude Code/Codex/opencode 并装技能 (会先备份)
 ```
 
 > 已用 `uv` 在 `.venv` 中装好依赖：用 `.venv\Scripts\python.exe -m mne_mcp.cli status` 也可。
+> 想更省事可直接跑一键脚本：`pwsh -File scripts\install.ps1`（Windows）/ `bash scripts/install.sh`。
 
-重启 Claude Code 后，`mne` MCP 服务即可用。
+重启客户端后，`mne` MCP 服务即可用。
 
-## 2. 安装 Skills（推荐 / recommended）
+## 2. 技能（已随 setup 自动安装）
+
+`mne-mcp setup` 已把 `mne-analyst`、`mne-mcp-guard` 两个技能装好（让 Claude 掌握标准流程、参数约定，
+并自动把结果归档到 `mne_result/`）。如需手动安装：
 
 ```cmd
 set SKILLS_DIR=%USERPROFILE%\.claude\skills
 xcopy /E /I skills\mne-analyst    "%SKILLS_DIR%\mne-analyst"
 xcopy /E /I skills\mne-mcp-guard  "%SKILLS_DIR%\mne-mcp-guard"
 ```
-
-Skills 让 Claude 知道标准流程、参数约定，并自动把结果归档到 `mne_result/`。
 
 ## 2.5 配置默认参数（可选）/ Configure defaults
 

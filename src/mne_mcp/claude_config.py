@@ -1,10 +1,12 @@
 """
-Helpers for generating and updating Claude Code MCP configuration.
+Helpers for registering the MNE MCP server with MCP clients (Claude Code,
+OpenAI Codex CLI, opencode) and installing the companion skills.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sys
 from datetime import datetime
@@ -23,23 +25,30 @@ def get_entrypoint_config() -> tuple[str, list[str]]:
     return sys.executable, ["-m", "mne_mcp.cli", "serve", "--transport", "stdio"]
 
 
-def build_mcp_server_config() -> dict:
-    """Build the Claude Code `mcpServers.mne` config block."""
-    executable_command, executable_args = get_entrypoint_config()
+def server_env() -> dict:
+    """Environment variables passed to the server, shared across all clients."""
+    return {
+        "MNE_MCP_TIMEOUT": str(get_timeout()),
+        "MNE_MCP_RESULTS_DIR": str(get_results_dir()),
+    }
 
+
+def build_mcp_server_config() -> dict:
+    """Build the Claude Code `mcpServers.mne` config block (stdio)."""
+    executable_command, executable_args = get_entrypoint_config()
     return {
         "type": "stdio",
         "command": executable_command,
         "args": executable_args,
-        "env": {
-            "MNE_MCP_TIMEOUT": str(get_timeout()),
-            "MNE_MCP_RESULTS_DIR": str(get_results_dir()),
-        },
+        "env": server_env(),
     }
 
 
 def get_default_settings_path(local: bool = False) -> Path:
     """Return the default Claude Code settings file path."""
+    override = os.environ.get("MNE_MCP_CLAUDE_CONFIG")
+    if override:
+        return Path(override)
     if local:
         return Path.home() / ".claude" / "settings.local.json"
     return Path.home() / ".claude.json"
@@ -112,3 +121,175 @@ def configure_claude_settings(
         "backup_path": str(backup_path) if backup_path else None,
         "entry": new_entry,
     }
+
+
+# ─── OpenAI Codex CLI (~/.codex/config.toml) ─────────────────────────────────────
+
+def get_codex_config_path() -> Path:
+    override = os.environ.get("MNE_MCP_CODEX_CONFIG")
+    if override:
+        return Path(override)
+    return Path.home() / ".codex" / "config.toml"
+
+
+def _toml_basic_string(s: str) -> str:
+    return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def _codex_block() -> str:
+    command, args = get_entrypoint_config()
+    args_toml = "[" + ", ".join(_toml_basic_string(a) for a in args) + "]"
+    env_toml = "{ " + ", ".join(
+        f"{k} = {_toml_basic_string(v)}" for k, v in server_env().items()
+    ) + " }"
+    return "\n".join([
+        f"[mcp_servers.{SERVER_KEY}]",
+        f"command = {_toml_basic_string(command)}",
+        f"args = {args_toml}",
+        f"env = {env_toml}",
+        "enabled = true",
+    ])
+
+
+def _merge_codex_block(text: str, block: str) -> tuple[str, bool]:
+    """Insert/replace the `[mcp_servers.mne]` table. Returns (new_text, had_existing)."""
+    lines = text.splitlines()
+    header = f"[mcp_servers.{SERVER_KEY}]"
+    start = next((i for i, ln in enumerate(lines) if ln.strip() == header), None)
+    if start is None:
+        base = text.rstrip("\n")
+        new = (base + "\n\n" + block + "\n") if base else (block + "\n")
+        return new, False
+    # The block uses an inline env table, so it ends at the next table header.
+    end = len(lines)
+    for j in range(start + 1, len(lines)):
+        if lines[j].lstrip().startswith("["):
+            end = j
+            break
+    merged = lines[:start] + block.splitlines() + lines[end:]
+    return "\n".join(merged).rstrip("\n") + "\n", True
+
+
+def configure_codex(path: Path | None = None) -> dict:
+    """Register the MNE server in the Codex CLI config (TOML)."""
+    path = path or get_codex_config_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    existed = path.exists()
+    text = path.read_text(encoding="utf-8") if existed else ""
+    backup = _backup_settings(path) if existed else None
+    new_text, had = _merge_codex_block(text, _codex_block())
+    path.write_text(new_text, encoding="utf-8")
+    status = "updated" if had else ("added" if existed else "created")
+    return {"client": "codex", "status": status, "path": str(path),
+            "backup": str(backup) if backup else None}
+
+
+# ─── opencode (~/.config/opencode/opencode.json) ────────────────────────────────
+
+def get_opencode_config_path() -> Path:
+    override = os.environ.get("MNE_MCP_OPENCODE_CONFIG")
+    if override:
+        return Path(override)
+    return Path.home() / ".config" / "opencode" / "opencode.json"
+
+
+def build_opencode_entry() -> dict:
+    command, args = get_entrypoint_config()
+    return {
+        "type": "local",
+        "command": [command, *args],
+        "enabled": True,
+        "environment": server_env(),
+    }
+
+
+def configure_opencode(path: Path | None = None) -> dict:
+    """Register the MNE server in opencode's JSON config."""
+    path = path or get_opencode_config_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    existed = path.exists()
+    data: dict = {}
+    if existed:
+        content = path.read_text(encoding="utf-8").strip()
+        if content:
+            data = json.loads(content)
+            if not isinstance(data, dict):
+                raise ValueError(f"Expected a JSON object in {path}")
+    data.setdefault("$schema", "https://opencode.ai/config.json")
+    mcp = data.setdefault("mcp", {})
+    if not isinstance(mcp, dict):
+        raise ValueError(f"`mcp` must be a JSON object in {path}")
+    previous = mcp.get(SERVER_KEY)
+    entry = build_opencode_entry()
+    backup = _backup_settings(path) if existed else None
+    mcp[SERVER_KEY] = entry
+    path.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    if previous is None:
+        status = "created" if not existed else "added"
+    elif previous == entry:
+        status = "unchanged"
+    else:
+        status = "updated"
+    return {"client": "opencode", "status": status, "path": str(path),
+            "backup": str(backup) if backup else None}
+
+
+# ─── Companion skills ────────────────────────────────────────────────────────────
+
+SKILL_NAMES = ("mne-analyst", "mne-mcp-guard")
+
+
+def get_skills_source_dir() -> Path | None:
+    """Locate the repo's skills/ dir (present in a source checkout / editable install)."""
+    candidate = Path(__file__).resolve().parents[2] / "skills"
+    return candidate if candidate.exists() else None
+
+
+def install_skills(dest: Path | None = None) -> dict:
+    """Copy the analyst + guard skills into the Claude Code skills directory."""
+    dest = dest or (Path.home() / ".claude" / "skills")
+    src = get_skills_source_dir()
+    if src is None:
+        return {"installed": [], "dest": str(dest),
+                "error": "skills source not found (run from a source checkout)"}
+    dest.mkdir(parents=True, exist_ok=True)
+    installed = []
+    for name in SKILL_NAMES:
+        s = src / name
+        if not s.exists():
+            continue
+        d = dest / name
+        if d.exists():
+            shutil.rmtree(d)
+        shutil.copytree(s, d)
+        installed.append(name)
+    return {"installed": installed, "dest": str(dest), "error": None}
+
+
+# ─── One-click orchestrator ──────────────────────────────────────────────────────
+
+_CLIENT_FUNCS = {
+    "claude": lambda: _claude_summary(),
+    "codex": configure_codex,
+    "opencode": configure_opencode,
+}
+
+
+def _claude_summary() -> dict:
+    r = configure_claude_settings()
+    return {"client": "claude", "status": r["status"], "path": r["settings_path"],
+            "backup": r["backup_path"]}
+
+
+def configure_clients(clients, with_skills: bool = True) -> dict:
+    """Register the server in each named client and (optionally) install skills."""
+    results = []
+    for c in clients:
+        func = _CLIENT_FUNCS.get(c)
+        if func is None:
+            raise ValueError(f"Unknown client: {c}. Valid: {sorted(_CLIENT_FUNCS)}")
+        results.append(func())
+    skills = install_skills() if with_skills else None
+    return {"clients": results, "skills": skills}

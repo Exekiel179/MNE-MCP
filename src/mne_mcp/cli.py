@@ -53,10 +53,26 @@ def main():
         help="Set values non-interactively, e.g. --set line_freq=60 default_montage=biosemi64",
     )
 
+    # setup (one-click multi-client registration + skills)
+    setup_parser = subparsers.add_parser(
+        "setup",
+        help="One-click: register the MCP server in Claude Code / Codex / opencode and install skills",
+    )
+    setup_parser.add_argument(
+        "--clients",
+        default="claude,codex,opencode",
+        help="Comma list of clients to configure (default: claude,codex,opencode)",
+    )
+    setup_parser.add_argument(
+        "--no-skills",
+        action="store_true",
+        help="Do not install the mne-analyst / mne-mcp-guard skills",
+    )
+
     # configure-claude
     configure_parser = subparsers.add_parser(
         "configure-claude",
-        help="Detect MNE and automatically update Claude Code settings",
+        help="Register the MCP server in Claude Code only (subset of `setup`)",
     )
     configure_parser.add_argument(
         "--settings-file",
@@ -128,6 +144,36 @@ def main():
             wizard.set_values(args.set)
             sys.exit(0)
         wizard.run_wizard()
+        sys.exit(0)
+
+    elif args.command == "setup":
+        from mne_mcp.claude_config import configure_clients
+
+        clients = [c.strip().lower() for c in args.clients.split(",") if c.strip()]
+        try:
+            result = configure_clients(clients, with_skills=not args.no_skills)
+        except ValueError as e:
+            print(f"Error: {e}")
+            sys.exit(2)
+
+        print("=== MNE-MCP setup ===")
+        for r in result["clients"]:
+            line = f"[{r['client']:<8}] {r['status']:<9} -> {r['path']}"
+            if r.get("backup"):
+                line += f"   (backup: {r['backup']})"
+            print(line)
+        sk = result["skills"]
+        if sk is not None:
+            if sk.get("error"):
+                print(f"[skills  ] {sk['error']}")
+            else:
+                print(f"[skills  ] installed {sk['installed']} -> {sk['dest']}")
+        print()
+        print(
+            "Restart your client(s) to load the 'mne' server"
+            + ("" if args.no_skills else " and skills")
+            + "."
+        )
         sys.exit(0)
 
     elif args.command == "configure-claude":

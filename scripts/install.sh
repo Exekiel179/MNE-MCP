@@ -7,13 +7,14 @@
 #
 # Usage:
 #   bash scripts/install.sh
-#   MIRROR=1 bash scripts/install.sh        # faster PyPI mirror (CN)
-#   SKIP_CLAUDE=1 bash scripts/install.sh   # install only, don't touch ~/.claude.json
-#   SKIP_SKILLS=1 bash scripts/install.sh
+#   MIRROR=1 bash scripts/install.sh                 # faster PyPI mirror (CN)
+#   CLIENTS=claude,codex bash scripts/install.sh     # only configure these clients
+#   SKIP_CONFIGURE=1 bash scripts/install.sh         # install only; don't register clients / skills
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 PYTHON="${PYTHON:-python3}"
+CLIENTS="${CLIENTS:-claude,codex,opencode}"
 VENV="$REPO/.venv"
 VENVPY="$VENV/bin/python"
 MIRROR_ARGS=()
@@ -48,25 +49,12 @@ info "Verifying installation"
 "$VENVPY" -m mne_mcp.cli status
 "$VENVPY" -c "import mne" && ok "MNE-Python import OK"
 
-# 4) Register in Claude Code
-if [ "${SKIP_CLAUDE:-0}" != "1" ]; then
-    info "Registering the 'mne' MCP server in Claude Code (a backup of ~/.claude.json is written first)"
-    "$VENVPY" -m mne_mcp.cli configure-claude
+# 4) Register the server in the chosen clients + install skills (one step)
+if [ "${SKIP_CONFIGURE:-0}" != "1" ]; then
+    info "Registering 'mne' in clients ($CLIENTS) and installing skills"
+    "$VENVPY" -m mne_mcp.cli setup --clients "$CLIENTS"
 else
-    info "Skipped Claude Code registration (SKIP_CLAUDE=1)"
-fi
-
-# 5) Install companion skills
-if [ "${SKIP_SKILLS:-0}" != "1" ]; then
-    SKILLS_DIR="$HOME/.claude/skills"
-    mkdir -p "$SKILLS_DIR"
-    for s in mne-analyst mne-mcp-guard; do
-        rm -rf "${SKILLS_DIR:?}/$s"
-        cp -r "$REPO/skills/$s" "$SKILLS_DIR/$s"
-        ok "Installed skill: $s"
-    done
-else
-    info "Skipped skills install (SKIP_SKILLS=1)"
+    info "Skipped client configuration (SKIP_CONFIGURE=1)"
 fi
 
 echo

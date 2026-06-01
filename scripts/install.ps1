@@ -14,10 +14,10 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Python = "python",   # interpreter used only when creating the venv
-    [switch]$Mirror,              # use a faster PyPI mirror
-    [switch]$SkipClaude,          # do not register the MCP server in Claude Code
-    [switch]$SkipSkills           # do not copy the companion skills
+    [string]$Python = "python",                      # interpreter used only when creating the venv
+    [string]$Clients = "claude,codex,opencode",      # which MCP clients to configure
+    [switch]$Mirror,                                 # use a faster PyPI mirror
+    [switch]$SkipConfigure                           # install only; don't register clients / install skills
 )
 
 $ErrorActionPreference = "Stop"
@@ -59,24 +59,12 @@ $mneOk = (& $venvPy -c "import mne,sys;sys.stdout.write('ok')") 2>$null
 if ($mneOk -ne "ok") { throw "MNE-Python failed to import after install." }
 Ok "MNE-Python import OK"
 
-# 4) Register in Claude Code
-if (-not $SkipClaude) {
-    Info "Registering the 'mne' MCP server in Claude Code (a backup of ~/.claude.json is written first)"
-    & $venvPy -m mne_mcp.cli configure-claude
+# 4) Register the server in the chosen clients + install skills (one step)
+if (-not $SkipConfigure) {
+    Info "Registering 'mne' in clients ($Clients) and installing skills"
+    & $venvPy -m mne_mcp.cli setup --clients $Clients
 } else {
-    Info "Skipped Claude Code registration (-SkipClaude)"
-}
-
-# 5) Install companion skills
-if (-not $SkipSkills) {
-    $skillsDir = Join-Path $env:USERPROFILE ".claude\skills"
-    New-Item -ItemType Directory -Force -Path $skillsDir | Out-Null
-    foreach ($s in "mne-analyst", "mne-mcp-guard") {
-        Copy-Item -Recurse -Force (Join-Path $repo "skills\$s") (Join-Path $skillsDir $s)
-        Ok "Installed skill: $s"
-    }
-} else {
-    Info "Skipped skills install (-SkipSkills)"
+    Info "Skipped client configuration (-SkipConfigure)"
 }
 
 Write-Host ""

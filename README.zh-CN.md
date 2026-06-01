@@ -51,10 +51,10 @@ cd MNE-MCP
 # 1. 安装（会带上 mne、numpy、scipy、matplotlib，以及 ICA 用的 scikit-learn）
 pip install -e ".[ica]"
 
-# 2. 自动配置 Claude Code
-mne-mcp configure-claude
+# 2. 一键注册到 Claude Code / Codex / opencode 并安装技能
+mne-mcp setup
 
-# 3. 重启 Claude Code
+# 3. 重启你的客户端
 ```
 
 或用**一键脚本**（克隆后在仓库目录运行，自动完成上面三步 + 装技能）：
@@ -68,8 +68,9 @@ bash scripts/install.sh            # macOS / Linux
 
 完整步骤见 [docs/INSTALL.md](docs/INSTALL.md)；首次使用引导见 [QUICK_START.md](QUICK_START.md)。
 
-> 也可以让 Claude 代劳：把 `skills/mne-mcp-setup` 复制到 `~/.claude/skills/`、重启后对它说“帮我安装并配置
-> mne-mcp”，它会调用上面的脚本完成。无论哪种方式，装完都需**重启一次客户端**，`mne_*` 工具才会加载。
+> `mne-mcp setup` 一条命令就会把 `mne` 服务器注册到 **Claude Code、Codex、opencode**（你用到的那些）
+> 并安装技能；可用 `--clients claude,codex` 缩小范围。无论哪种方式，装完都需**重启一次客户端**，
+> `mne_*` 工具才会加载（MCP 在客户端启动时加载）。
 
 ---
 
@@ -78,33 +79,40 @@ bash scripts/install.sh            # macOS / Linux
 ### 自动配置（推荐）
 
 ```bash
-mne-mcp configure-claude
+mne-mcp setup                          # Claude Code + Codex + opencode，并装技能
+mne-mcp setup --clients claude,codex   # 只配置指定客户端
+mne-mcp configure-claude               # 仅 Claude Code（setup 的子集）
 ```
 
-它会检测环境，把 `mcpServers.mne` 合并进 Claude Code 用户配置（`~/.claude.json`），并先写一份带时间戳的备份。
+`setup` 会把 `mne` 服务器写入各客户端配置并安装技能，改动前对已存在的文件先做带时间戳的备份：
+
+| 客户端 | 配置文件 | 键 |
+|---|---|---|
+| Claude Code | `~/.claude.json` | `mcpServers.mne` |
+| OpenAI Codex CLI | `~/.codex/config.toml` | `[mcp_servers.mne]` |
+| opencode | `~/.config/opencode/opencode.json` | `mcp.mne` |
 
 ### 手动配置
 
-在 Claude Code 的 MCP 设置中加入：
+`command` 需指向**装了本包的那个 Python**（或已在 PATH 上的 `mne-mcp`）。
 
+**Claude Code** — `~/.claude.json`：
 ```json
-{
-  "mcpServers": {
-    "mne": {
-      "type": "stdio",
-      "command": "mne-mcp",
-      "args": ["serve", "--transport", "stdio"],
-      "env": {
-        "MNE_MCP_TIMEOUT": "300",
-        "MNE_MCP_RESULTS_DIR": "C:\\Users\\you\\AppData\\Local\\Temp\\mne-mcp\\results"
-      }
-    }
-  }
-}
+{ "mcpServers": { "mne": { "type": "stdio", "command": "mne-mcp", "args": ["serve", "--transport", "stdio"] } } }
 ```
 
-> `command` 需指向**装了本包的那个 Python**。若 `mne-mcp` 不在系统 PATH 上，请用 venv 内 Python 的绝对路径
-> 加 `-m mne_mcp.cli serve --transport stdio`（详见 INSTALL）。
+**Codex CLI** — `~/.codex/config.toml`：
+```toml
+[mcp_servers.mne]
+command = "mne-mcp"
+args = ["serve", "--transport", "stdio"]
+enabled = true
+```
+
+**opencode** — `~/.config/opencode/opencode.json`：
+```json
+{ "mcp": { "mne": { "type": "local", "command": ["mne-mcp", "serve", "--transport", "stdio"], "enabled": true } } }
+```
 
 ### 环境变量（可选 `.env`）
 
@@ -131,13 +139,15 @@ mne-mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120
 
 ### 安装技能
 
+`mne-mcp setup` 会自动安装技能。如需手动：
+
 ```cmd
 set SKILLS_DIR=%USERPROFILE%\.claude\skills
 xcopy /E /I skills\mne-analyst    "%SKILLS_DIR%\mne-analyst"
 xcopy /E /I skills\mne-mcp-guard  "%SKILLS_DIR%\mne-mcp-guard"
 ```
 
-安装后重启 Claude Code。
+安装后重启客户端。（技能是 Claude Code 的特性；Codex / opencode 直接用 MCP 服务器。）
 
 ---
 
@@ -224,7 +234,8 @@ pytest
 mne-mcp status            # 检查环境
 mne-mcp setup-info        # 打印配置片段
 mne-mcp configure         # 设置分析默认值
-mne-mcp configure-claude  # 自动更新 Claude Code 设置
+mne-mcp setup             # 注册到 Claude Code / Codex / opencode + 装技能
+mne-mcp configure-claude  # 仅 Claude Code
 ```
 
 ---

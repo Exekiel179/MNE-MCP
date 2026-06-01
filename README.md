@@ -56,10 +56,10 @@ cd MNE-MCP
 # 1. Install (pulls in mne, numpy, scipy, matplotlib, scikit-learn for ICA)
 pip install -e ".[ica]"
 
-# 2. Auto-configure Claude Code
-mne-mcp configure-claude
+# 2. Register in your MCP client(s) — Claude Code, Codex, opencode — and install skills
+mne-mcp setup
 
-# 3. Restart Claude Code
+# 3. Restart your client
 ```
 
 Or run the **one-shot installer** (creates the venv, installs, verifies, registers, installs skills):
@@ -74,10 +74,10 @@ bash scripts/install.sh            # macOS / Linux
 See [QUICK_START.md](QUICK_START.md) for a guided first session, or [docs/INSTALL.md](docs/INSTALL.md)
 for the full guide.
 
-> **Prefer to let Claude do it?** The repo ships an `mne-mcp-setup` skill. Copy it into
-> `~/.claude/skills/`, restart, and tell Claude "install and configure mne-mcp" — it runs the
-> installer for you. Either way, the `mne_*` tools require **one client restart** after install,
-> since MCP servers load at startup.
+> **One command does everything:** `mne-mcp setup` registers the `mne` server in **Claude Code,
+> Codex, and opencode** (whichever you use) *and* installs the companion skills. Narrow it with
+> `--clients claude,codex`. The `mne_*` tools require **one client restart** afterwards (MCP servers
+> load at startup).
 
 ---
 
@@ -86,30 +86,40 @@ for the full guide.
 ### Auto-configure (recommended)
 
 ```bash
-mne-mcp configure-claude
+mne-mcp setup                          # Claude Code + Codex + opencode, plus skills
+mne-mcp setup --clients claude,codex   # only specific clients
+mne-mcp configure-claude               # Claude Code only (subset of setup)
 ```
 
-This detects your environment, merges `mcpServers.mne` into Claude Code's user config
-(`~/.claude.json`), and writes a timestamped backup first.
+`setup` registers the `mne` server in each client and installs the skills, writing a timestamped
+backup of any file it touches:
+
+| Client | Config file | Key |
+|---|---|---|
+| Claude Code | `~/.claude.json` | `mcpServers.mne` |
+| OpenAI Codex CLI | `~/.codex/config.toml` | `[mcp_servers.mne]` |
+| opencode | `~/.config/opencode/opencode.json` | `mcp.mne` |
 
 ### Manual setup
 
-Add to Claude Code MCP settings:
+Point `command` at the Python where you installed the package (or `mne-mcp` if it is on PATH).
 
+**Claude Code** — `~/.claude.json`:
 ```json
-{
-  "mcpServers": {
-    "mne": {
-      "type": "stdio",
-      "command": "mne-mcp",
-      "args": ["serve", "--transport", "stdio"],
-      "env": {
-        "MNE_MCP_TIMEOUT": "300",
-        "MNE_MCP_RESULTS_DIR": "C:\\Users\\you\\AppData\\Local\\Temp\\mne-mcp\\results"
-      }
-    }
-  }
-}
+{ "mcpServers": { "mne": { "type": "stdio", "command": "mne-mcp", "args": ["serve", "--transport", "stdio"] } } }
+```
+
+**Codex CLI** — `~/.codex/config.toml`:
+```toml
+[mcp_servers.mne]
+command = "mne-mcp"
+args = ["serve", "--transport", "stdio"]
+enabled = true
+```
+
+**opencode** — `~/.config/opencode/opencode.json`:
+```json
+{ "mcp": { "mne": { "type": "local", "command": ["mne-mcp", "serve", "--transport", "stdio"], "enabled": true } } }
 ```
 
 ### Environment variables (optional `.env`)
@@ -139,13 +149,16 @@ runtime: **environment variable > config file > built-in**. View the active conf
 
 ### Install the Skills
 
+`mne-mcp setup` installs these automatically. To do it by hand:
+
 ```cmd
 set SKILLS_DIR=%USERPROFILE%\.claude\skills
 xcopy /E /I skills\mne-analyst    "%SKILLS_DIR%\mne-analyst"
 xcopy /E /I skills\mne-mcp-guard  "%SKILLS_DIR%\mne-mcp-guard"
 ```
 
-Restart Claude Code after installation.
+Restart your client after installation. (Skills are a Claude Code feature; Codex / opencode use the
+MCP server directly.)
 
 ---
 
@@ -232,8 +245,8 @@ pytest
 
 # CLI commands
 mne-mcp status            # Check environment
-mne-mcp setup-info        # Print config snippet
-mne-mcp configure-claude  # Auto-update Claude Code settings
+mne-mcp setup             # Register in Claude Code / Codex / opencode + install skills
+mne-mcp configure-claude  # Claude Code only
 ```
 
 ---

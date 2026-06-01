@@ -44,41 +44,25 @@ mne-mcp status
 
 ---
 
-## 3. 接入 Claude Code
+## 3. 接入客户端（Claude Code / Codex / opencode）
 
-### 3.1 注册 MCP 服务器（推荐自动）
+### 3.1 一键注册 + 装技能（推荐）
 
 ```bash
-mne-mcp configure-claude
+mne-mcp setup                          # Claude Code + Codex + opencode + 技能
+mne-mcp setup --clients claude,codex   # 只配置指定客户端
 ```
 
-这会自动把 `mcpServers.mne` 合并进 Claude Code 的用户配置（`~/.claude.json`），并先生成带时间戳的备份。
+`setup` 会把 `mne` 写入各客户端配置（Claude Code 的 `~/.claude.json`、Codex 的 `~/.codex/config.toml`、
+opencode 的 `~/.config/opencode/opencode.json`），改动前对已存在文件先备份，并自动安装技能。
 
-也可手动添加：
+手动配置见 [INSTALL.md](INSTALL.md#34-接入客户端claude-code--codex--opencode)（含三种客户端的配置片段）。
 
-```json
-{
-  "mcpServers": {
-    "mne": {
-      "type": "stdio",
-      "command": "mne-mcp",
-      "args": ["serve", "--transport", "stdio"]
-    }
-  }
-}
-```
+### 3.2 技能（随 setup 自动安装）
 
-### 3.2 安装技能（强烈推荐）
+技能是 Claude Code 特性，让它掌握标准流程、参数约定，并自动把结果归档到 `mne_result/`；`setup` 已自动安装。
 
-技能让 Claude 知道标准流程、参数约定，并自动把结果归档到 `mne_result/`。
-
-```cmd
-set SKILLS_DIR=%USERPROFILE%\.claude\skills
-xcopy /E /I skills\mne-analyst    "%SKILLS_DIR%\mne-analyst"
-xcopy /E /I skills\mne-mcp-guard  "%SKILLS_DIR%\mne-mcp-guard"
-```
-
-**完成后重启 Claude Code**，`mne` 服务器与技能即可生效。
+**完成后重启客户端**，`mne` 服务器与技能即可生效。
 
 ---
 
