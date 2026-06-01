@@ -62,13 +62,22 @@ mne-mcp configure-claude
 # 3. Restart Claude Code
 ```
 
-That's it. See [QUICK_START.md](QUICK_START.md) for a guided first session, or
-[docs/INSTALL.md](docs/INSTALL.md) for the full guide.
+Or run the **one-shot installer** (creates the venv, installs, verifies, registers, installs skills):
+
+```powershell
+pwsh -File scripts\install.ps1     # Windows
+```
+```bash
+bash scripts/install.sh            # macOS / Linux
+```
+
+See [QUICK_START.md](QUICK_START.md) for a guided first session, or [docs/INSTALL.md](docs/INSTALL.md)
+for the full guide.
 
 > **Prefer to let Claude do it?** The repo ships an `mne-mcp-setup` skill. Copy it into
-> `~/.claude/skills/`, restart, and tell Claude "install and configure mne-mcp" — it runs the steps
-> for you (note: the `mne_*` tools still require one client restart after install, since MCP servers
-> load at startup).
+> `~/.claude/skills/`, restart, and tell Claude "install and configure mne-mcp" — it runs the
+> installer for you. Either way, the `mne_*` tools require **one client restart** after install,
+> since MCP servers load at startup.
 
 ---
 

@@ -50,10 +50,23 @@ python --version
 
 ## 3. 安装步骤
 
-> **想让 Claude 帮你装？** 仓库自带 `skills/mne-mcp-setup` 技能。把它复制到 `~/.claude/skills/` 并重启
-> Claude Code 后，对它说“帮我安装并配置 mne-mcp”，它会按下面的步骤逐条执行（建环境、安装、注册、装技能、
-> 验证）。注意：MCP 服务器在客户端**启动时**加载，所以装完仍需**重启一次**才能调用 `mne_*` 工具——这一步
-> 无法在同一个会话里跳过。下面是手动步骤。
+> **最快：一键脚本。** 克隆仓库后，在仓库目录运行一条命令即可完成全部安装（建环境、装依赖、验证、注册
+> Claude Code、装技能）：
+>
+> ```powershell
+> pwsh -File scripts\install.ps1        # Windows
+> ```
+> ```bash
+> bash scripts/install.sh               # macOS / Linux
+> ```
+> 国内加速：PowerShell 加 `-Mirror`，bash 用 `MIRROR=1 bash scripts/install.sh`。脚本**幂等**，可重复运行；
+> 加 `-SkipClaude` / `SKIP_CLAUDE=1` 可只装不改 `~/.claude.json`。
+>
+> **或让 Claude 代劳**：把 `skills/mne-mcp-setup` 复制到 `~/.claude/skills/`、重启后对它说“帮我安装并配置
+> mne-mcp”，它会调用上面的脚本完成。
+>
+> 两种方式装完都需**重启一次** Claude Code，`mne_*` 工具才会加载（MCP 在客户端启动时加载，无法在同一会话内
+> 省略这一步）。下面是逐步手动安装。
 
 ### 3.1 获取代码
 

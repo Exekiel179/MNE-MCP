@@ -1,104 +1,95 @@
 ---
 name: mne-mcp-setup
 description: >
-  Install, configure, and verify the MNE-MCP server end to end. Use when the user wants to set up /
+  Install, configure, and verify MNE-MCP end to end in one go. Use when the user wants to set up /
   install / configure MNE-MCP, get MNE-Python working inside Claude Code or opencode, register the
-  `mne` MCP server, install the mne-analyst / mne-mcp-guard skills, or troubleshoot a broken MNE-MCP
-  setup. Triggered by phrases like 安装 mne-mcp, 配置 mne-mcp, 一键安装, set up mne mcp, install mne-mcp,
-  接入 Claude Code, 注册 mne 服务器, 脑电 MCP 装不上.
+  `mne` MCP server, install the mne-analyst / mne-mcp-guard skills, or fix a broken MNE-MCP setup.
+  Triggers: 安装 mne-mcp, 配置 mne-mcp, 一键安装, 装一下脑电 mcp, set up mne mcp, install mne-mcp,
+  接入 Claude Code, 注册 mne 服务器, mne mcp 装不上 / 连不上.
 ---
 
 # MNE-MCP Setup
 
-This skill drives the full install + configuration of MNE-MCP by running shell commands. Follow the
-steps in order, **run each command and read its output before continuing**, and adapt the commands to
-the user's OS (Windows PowerShell vs macOS/Linux bash).
+Set up MNE-MCP with a **single install script**, then hand off. Do the work for the user: run the
+command, read its output, fix anything that fails, and report clearly.
 
-> **Important limitation — read first.** An MCP server is loaded by Claude Code/opencode **at
-> startup**. So this skill can fully *install and configure* MNE-MCP, but the `mne_*` tools will
-> **not become callable until the client is restarted**. You cannot install and then call the MCP
-> tools in the same session. End by telling the user to restart, then how to test.
+> **The one limit you must state up front.** An MCP server is loaded by the client **at startup**.
+> This skill installs and configures everything in one shot, but the `mne_*` tools only become
+> callable **after the user restarts Claude Code / opencode**. You cannot install and then call the
+> MCP tools in the same session — always end with "restart, then test". (This is how MCP works, not a
+> limitation of the script.)
 
-## Step 0 — Locate the project & Python
+## Step 1 — Locate the repo
 
-1. Ask the user where the MNE-MCP repo is (or `git clone https://github.com/Exekiel179/MNE-MCP.git`
-   if they don't have it). Treat that folder as `<REPO>`.
-2. Verify Python ≥ 3.10: `python --version` (or `python3 --version`). If older/missing, stop and tell
-   the user to install Python 3.10+.
-3. Prefer `uv` if available (`uv --version`); otherwise use `python -m venv`.
+Ask where the MNE-MCP folder is, or clone it:
+```bash
+git clone https://github.com/Exekiel179/MNE-MCP.git
+```
+Call that folder `<REPO>`.
 
-## Step 1 — Create an isolated environment + install
+## Step 2 — Run the one-shot installer
 
-Windows (PowerShell):
+It is idempotent (safe to re-run) and does the whole job: create `.venv`, install MNE-MCP + the ICA
+extra, verify, register the `mne` server in Claude Code (backing up `~/.claude.json` first), and copy
+the `mne-analyst` + `mne-mcp-guard` skills.
+
+**Windows (PowerShell):**
 ```powershell
-cd <REPO>
+pwsh -File <REPO>\scripts\install.ps1
+```
+**macOS / Linux:**
+```bash
+bash <REPO>/scripts/install.sh
+```
+
+Useful flags / env: `-Mirror` / `MIRROR=1` (faster PyPI mirror in CN); `-SkipClaude` / `SKIP_CLAUDE=1`
+(install only, don't touch `~/.claude.json`); `-SkipSkills` / `SKIP_SKILLS=1`. Pass a specific
+interpreter with `-Python C:\path\python.exe` / `PYTHON=python3.12`.
+
+**Read the output.** Success ends with "Done." and a yellow "restart" line, and the status block shows
+`MNE-Python : OK`. If it errors, jump to [Troubleshooting](#troubleshooting).
+
+## Step 3 — (Optional) set defaults
+
+If the user has preferences, set them now (no restart needed for these):
+```bash
+<REPO>/.venv/Scripts/python.exe -m mne_mcp.cli configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120
+```
+(macOS/Linux: `<REPO>/.venv/bin/python -m mne_mcp.cli configure`)
+
+## Step 4 — Restart and verify
+
+1. Tell the user to **restart Claude Code (or opencode)** — required for the new server + skills to load.
+2. After restart, confirm by asking them to type `检查一下 MNE 环境` (should call `mne_check_status`).
+3. First real run, e.g.: `加载 sub-01_raw.fif，画功率谱`.
+
+## If the script can't be used (manual fallback)
+
+Run, from `<REPO>`, the same steps the script automates:
+```bash
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[ica]"
+.venv/Scripts/python -m pip install -e ".[ica]"        # macOS/Linux: .venv/bin/python
+.venv/Scripts/python -m mne_mcp.cli status              # verify -> MNE-Python OK
+.venv/Scripts/python -m mne_mcp.cli configure-claude    # register (uses THIS interpreter)
+# copy skills/mne-analyst and skills/mne-mcp-guard into ~/.claude/skills
 ```
-macOS / Linux:
-```bash
-cd <REPO>
-python3 -m venv .venv
-./.venv/bin/python -m pip install -e ".[ica]"
-```
-With uv (faster): `uv venv .venv --python 3.12 && uv pip install --python .venv/<bin>/python -e ".[ica]"`.
+Key rule: run `configure-claude` with the **venv's** interpreter so the registered launch command pins
+to the right Python.
 
-If install is slow in China, append `-i https://pypi.tuna.tsinghua.edu.cn/simple`.
+## Troubleshooting
 
-## Step 2 — Verify the install
-
-Run the **venv's** `mne-mcp` (not a global one):
-- Windows: `.\.venv\Scripts\mne-mcp.exe status`
-- macOS/Linux: `./.venv/bin/mne-mcp status`
-
-Confirm the output shows `MNE-Python : OK v...`. If `scikit-learn` is missing, re-run the install with
-the `[ica]` extra.
-
-## Step 3 — Register the MCP server in Claude Code
-
-Run `configure-claude` **with the venv's interpreter** so the registered launch command pins to the
-right Python:
-- Windows: `.\.venv\Scripts\mne-mcp.exe configure-claude`
-- macOS/Linux: `./.venv/bin/mne-mcp configure-claude`
-
-This merges `mcpServers.mne` into `~/.claude.json` and writes a timestamped backup first. Tell the user
-a backup was made (`~/.claude.json.backup.*`) so the change is reversible. For **opencode**, instead add
-the same stdio server (command = the venv python, args = `-m mne_mcp.cli serve --transport stdio`) to
-its MCP config.
-
-## Step 4 — Install the companion skills
-
-Windows (cmd):
-```cmd
-set SKILLS_DIR=%USERPROFILE%\.claude\skills
-xcopy /E /I <REPO>\skills\mne-analyst    "%SKILLS_DIR%\mne-analyst"
-xcopy /E /I <REPO>\skills\mne-mcp-guard  "%SKILLS_DIR%\mne-mcp-guard"
-```
-macOS / Linux:
-```bash
-mkdir -p ~/.claude/skills
-cp -r <REPO>/skills/mne-analyst   ~/.claude/skills/
-cp -r <REPO>/skills/mne-mcp-guard ~/.claude/skills/
-```
-
-## Step 5 — (Optional) set analysis defaults
-
-If the user has preferences (e.g. 60 Hz mains, a specific montage), run the wizard non-interactively:
-`mne-mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120`
-
-## Step 6 — Restart and hand off
-
-1. Tell the user to **restart Claude Code** (or opencode) — this is required for the new MCP server and
-   skills to load.
-2. After restart, they can verify and start working by typing:
-   - `检查一下 MNE 环境`  → should call `mne_check_status`
-   - `加载 <file>_raw.fif，画功率谱`  → first real analysis
-3. If, after restart, the `mne` tools don't appear: confirm the registered `command` in `~/.claude.json`
-   points to the venv's Python, and that `mne-mcp status` works from that interpreter.
+| Symptom | Fix |
+|---|---|
+| `python` not found / version < 3.10 | Install Python 3.10+, or pass `-Python` / `PYTHON=` pointing to a 3.10+ interpreter |
+| PowerShell won't run the script | `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, or `pwsh -ExecutionPolicy Bypass -File ...` |
+| pip install slow / fails (CN) | Re-run with `-Mirror` / `MIRROR=1` |
+| After restart, `mne` tools missing | Check the `command` in `~/.claude.json` points to `<REPO>\.venv\...\python` and that `... -m mne_mcp.cli status` works |
+| ICA says scikit-learn missing | Re-run the installer (it includes the `[ica]` extra) |
 
 ## Notes
 
-- This skill **cannot** call `mne_*` tools in the same session it installs them (MCP loads at startup).
-- It modifies `~/.claude.json` and `~/.claude/skills` — both are reversible (backup + folder deletion).
-- If the user would rather **not run a separate MCP server at all**, MNE can also be driven purely
-  through code via the Bash tool; mention this alternative only if they ask.
+- Reversible: `configure-claude` backs up `~/.claude.json`; skills are plain folders under `~/.claude/skills`.
+- This skill cannot call `mne_*` tools in the same session it installs them (MCP loads at startup).
+- If the user would rather not run a separate MCP server, MNE can also be driven purely via the Bash
+  tool (no server, no restart) — mention this only if they ask; it trades away the persistent session
+  and the structured tool surface.

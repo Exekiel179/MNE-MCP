@@ -57,10 +57,19 @@ mne-mcp configure-claude
 # 3. 重启 Claude Code
 ```
 
+或用**一键脚本**（克隆后在仓库目录运行，自动完成上面三步 + 装技能）：
+
+```powershell
+pwsh -File scripts\install.ps1     # Windows
+```
+```bash
+bash scripts/install.sh            # macOS / Linux
+```
+
 完整步骤见 [docs/INSTALL.md](docs/INSTALL.md)；首次使用引导见 [QUICK_START.md](QUICK_START.md)。
 
 > 也可以让 Claude 代劳：把 `skills/mne-mcp-setup` 复制到 `~/.claude/skills/`、重启后对它说“帮我安装并配置
-> mne-mcp”，它会自动建环境、安装、注册并装好技能（装完仍需重启一次客户端才能调用 `mne_*` 工具）。
+> mne-mcp”，它会调用上面的脚本完成。无论哪种方式，装完都需**重启一次客户端**，`mne_*` 工具才会加载。
 
 ---
 
