@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mne-mcp"
+dynamic = ["version"]
+description = "A Model Context Protocol server for MNE-Python neurophysiology analysis (EEG / MEG / sEEG / ECoG / fNIRS)"
+readme = "README.md"
+authors = [
+    { name = "MNE MCP Contributors" }
+]
+license = {text = "MIT"}
+requires-python = ">=3.10"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "mcp>=1.2.0",
+    "fastmcp>=2.14.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "mne>=1.6.0",
+    "numpy>=1.23.0",
+    "scipy>=1.9.0",
+    "matplotlib>=3.6.0",
+    "pandas>=2.0.0",
+    "tabulate>=0.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Exekiel179/MNE-MCP"
+Repository = "https://github.com/Exekiel179/MNE-MCP"
+Issues = "https://github.com/Exekiel179/MNE-MCP/issues"
+
+[project.optional-dependencies]
+ica = ["scikit-learn>=1.1.0"]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.23.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+]
+
+[project.scripts]
+mne-mcp = "mne_mcp.cli:main"
+
+[tool.hatch.version]
+path = "src/mne_mcp/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mne_mcp"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

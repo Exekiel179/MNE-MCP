@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local config / secrets (ship .env.example, never .env)
+.env
+
+# Analysis outputs
+mne_result/
+*.spv
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
