@@ -601,3 +601,224 @@ def save_object(name: str, path: str, overwrite: bool = True) -> dict:
         f"Saved `{name}` ({object_kind(obj)}) to `{p}`.",
         code=f"{name}.save({p.as_posix()!r}, overwrite={overwrite})",
     )
+
+
+# ── Decoding (MVPA) ─────────────────────────────────────────────────────────────
+
+def decode_time(
+    epochs_name: str = "epochs",
+    cond_a: str | None = None,
+    cond_b: str | None = None,
+    scoring: str = "roc_auc",
+    cv: int = 5,
+    name: str = "decoding",
+) -> dict:
+    import numpy as np
+    from mne.decoding import SlidingEstimator, cross_val_multiscore
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    s = get_session()
+    epochs = s.get(epochs_name)
+    _require_kind(epochs, epochs_name, ("Epochs",))
+    sub = epochs[[cond_a, cond_b]] if (cond_a and cond_b) else epochs
+    X = sub.get_data(copy=False)
+    y = sub.events[:, 2]
+    classes = np.unique(y)
+    if len(classes) != 2:
+        raise ValueError(
+            f"Time-resolved decoding needs exactly 2 classes; got {len(classes)} "
+            f"({classes}). Pass cond_a and cond_b to pick two conditions."
+        )
+    clf = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))
+    estimator = SlidingEstimator(clf, scoring=scoring, n_jobs=1, verbose="ERROR")
+    scores = cross_val_multiscore(estimator, X, y, cv=cv, n_jobs=1).mean(axis=0)
+    s.set(name, scores)
+
+    before = figures.open_figure_numbers()
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    ax.plot(sub.times, scores, lw=2)
+    ax.axhline(0.5, color="k", linestyle="--", label="chance")
+    ax.set(xlabel="Time (s)", ylabel=scoring, title=f"Decoding {cond_a} vs {cond_b}")
+    ax.legend()
+    figs = figures.capture_new_figures(before, get_results_dir(), prefix="decode")
+
+    peak = int(np.argmax(scores))
+    md = (
+        f"Time-resolved decoding ({cond_a} vs {cond_b}, {scoring}) on `{epochs_name}`: "
+        f"mean={scores.mean():.3f}, peak={scores[peak]:.3f} at {sub.times[peak]:.3f}s "
+        f"({len(y)} trials, {cv}-fold CV)."
+    )
+    code = (
+        "from mne.decoding import SlidingEstimator, cross_val_multiscore\n"
+        "from sklearn.pipeline import make_pipeline\n"
+        "from sklearn.preprocessing import StandardScaler\n"
+        "from sklearn.linear_model import LogisticRegression\n"
+        f"sub = {epochs_name}[[{cond_a!r}, {cond_b!r}]]\n"
+        "clf = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))\n"
+        f"sl = SlidingEstimator(clf, scoring={scoring!r})\n"
+        f"{name} = cross_val_multiscore(sl, sub.get_data(), sub.events[:, 2], cv={cv}).mean(0)"
+    )
+    return _result(md, figs=figs, code=code)
+
+
+# ── Connectivity ────────────────────────────────────────────────────────────────
+
+def connectivity(
+    epochs_name: str = "epochs",
+    method: str = "coh",
+    fmin: float = 8.0,
+    fmax: float = 13.0,
+    con_name: str = "con",
+) -> dict:
+    import numpy as np
+    from mne_connectivity import spectral_connectivity_epochs
+
+    s = get_session()
+    epochs = s.get(epochs_name)
+    _require_kind(epochs, epochs_name, ("Epochs",))
+    con = spectral_connectivity_epochs(
+        epochs, method=method, mode="multitaper", sfreq=epochs.info["sfreq"],
+        fmin=fmin, fmax=fmax, faverage=True, verbose="ERROR",
+    )
+    s.set(con_name, con)
+    mat = np.asarray(con.get_data(output="dense"))[:, :, 0]
+    full = mat + mat.T
+    np.fill_diagonal(full, 0.0)
+
+    before = figures.open_figure_numbers()
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(full, cmap="viridis")
+    fig.colorbar(im, ax=ax, label=method)
+    ax.set(title=f"{method} connectivity {fmin}-{fmax} Hz", xlabel="channel", ylabel="channel")
+    figs = figures.capture_new_figures(before, get_results_dir(), prefix="conn")
+
+    names = epochs.ch_names
+    il = np.tril_indices_from(full, k=-1)
+    vals = full[il]
+    order = np.argsort(vals)[::-1][:5]
+    top = "; ".join(f"{names[il[0][o]]}–{names[il[1][o]]}={vals[o]:.2f}" for o in order)
+    md = (
+        f"Spectral connectivity ({method}, {fmin}-{fmax} Hz) for `{epochs_name}` → `{con_name}`. "
+        f"Mean={vals.mean():.3f}. Strongest pairs: {top}"
+    )
+    code = (
+        "from mne_connectivity import spectral_connectivity_epochs\n"
+        f"{con_name} = spectral_connectivity_epochs({epochs_name}, method={method!r}, "
+        f"fmin={fmin}, fmax={fmax}, faverage=True)"
+    )
+    return _result(md, figs=figs, code=code)
+
+
+# ── Source localization ─────────────────────────────────────────────────────────
+
+def compute_noise_cov(name: str = "epochs", tmax: float = 0.0, cov_name: str = "noise_cov") -> dict:
+    import mne
+
+    s = get_session()
+    epochs = s.get(name)
+    _require_kind(epochs, name, ("Epochs",))
+    cov = mne.compute_covariance(epochs, tmax=tmax, method="empirical", verbose="ERROR")
+    s.set(cov_name, cov)
+    return _result(
+        f"Noise covariance from `{name}` baseline (tmax={tmax}) → `{cov_name}` "
+        f"({cov['data'].shape[0]} channels).",
+        code=f"{cov_name} = mne.compute_covariance({name}, tmax={tmax}, method='empirical')",
+    )
+
+
+def fsaverage_forward(name: str = "evoked", fwd_name: str = "fwd") -> dict:
+    import os
+
+    import mne
+
+    s = get_session()
+    inst = s.get(name)
+    fs_dir = mne.datasets.fetch_fsaverage(verbose="ERROR")
+    src = os.path.join(fs_dir, "bem", "fsaverage-ico-5-src.fif")
+    bem = os.path.join(fs_dir, "bem", "fsaverage-5120-5120-5120-bem-sol.fif")
+    fwd = mne.make_forward_solution(
+        inst.info, trans="fsaverage", src=src, bem=bem, eeg=True, meg=False, verbose="ERROR"
+    )
+    s.set(fwd_name, fwd)
+    return _result(
+        f"Built fsaverage (template head) forward model for `{name}` → `{fwd_name}` "
+        f"({fwd['nsource']} sources, EEG). Suitable for group/template EEG source estimation.",
+        code=(
+            "fs = mne.datasets.fetch_fsaverage()\n"
+            f"{fwd_name} = mne.make_forward_solution({name}.info, trans='fsaverage', "
+            "src=fs+'/bem/fsaverage-ico-5-src.fif', "
+            "bem=fs+'/bem/fsaverage-5120-5120-5120-bem-sol.fif', eeg=True, meg=False)"
+        ),
+    )
+
+
+def apply_inverse_op(
+    evoked_name: str = "evoked",
+    fwd_name: str = "fwd",
+    cov_name: str = "noise_cov",
+    method: str = "dSPM",
+    snr: float = 3.0,
+    stc_name: str = "stc",
+) -> dict:
+    from mne.minimum_norm import apply_inverse, make_inverse_operator
+
+    s = get_session()
+    evoked = s.get(evoked_name)
+    fwd = s.get(fwd_name)
+    cov = s.get(cov_name)
+    inv = make_inverse_operator(evoked.info, fwd, cov, verbose="ERROR")
+    lambda2 = 1.0 / float(snr) ** 2
+    stc = apply_inverse(evoked, inv, lambda2, method=method, verbose="ERROR")
+    s.set(stc_name, stc)
+    s.set(stc_name + "_inv", inv)
+    vtx, t_peak = stc.get_peak()
+    md = (
+        f"Source estimate ({method}, SNR={snr}) for `{evoked_name}` → `{stc_name}`. "
+        f"Peak activation at t={t_peak:.3f}s (vertex {vtx}). "
+        f"Use `mne_plot_source_estimate` to render the cortical map."
+    )
+    code = (
+        "from mne.minimum_norm import make_inverse_operator, apply_inverse\n"
+        f"inv = make_inverse_operator({evoked_name}.info, {fwd_name}, {cov_name})\n"
+        f"{stc_name} = apply_inverse({evoked_name}, inv, lambda2=1/{snr}**2, method={method!r})"
+    )
+    return _result(md, code=code)
+
+
+def plot_source_estimate(stc_name: str = "stc", hemi: str = "both", time: float | None = None) -> dict:
+    import os
+
+    import mne
+
+    os.environ.setdefault("PYVISTA_OFF_SCREEN", "true")
+    os.environ.setdefault("MNE_3D_OPTION_MULTI_SAMPLES", "1")
+    s = get_session()
+    stc = s.get(stc_name)
+    fs_dir = mne.datasets.fetch_fsaverage(verbose="ERROR")
+    subjects_dir = os.path.dirname(fs_dir)
+    t = time if time is not None else stc.get_peak()[1]
+    try:
+        brain = stc.plot(
+            subjects_dir=subjects_dir, hemi=hemi, initial_time=t,
+            size=(700, 600), background="white", time_viewer=False, verbose="ERROR",
+        )
+        out = Path(get_results_dir()) / f"stc_{stc_name}.png"
+        brain.save_image(str(out))
+        brain.close()
+    except Exception as e:  # 3D rendering is not always possible headless
+        raise RuntimeError(
+            f"Could not render the source estimate ({type(e).__name__}: {e}). "
+            "Headless 3D rendering needs a working PyVista/VTK off-screen backend. "
+            "The source estimate itself is computed and stored; inspect it numerically via mne_run_code."
+        ) from e
+    return _result(
+        f"Cortical source map for `{stc_name}` at t={t:.3f}s.",
+        figs=[str(out)],
+        code=f"{stc_name}.plot(subjects_dir=..., hemi={hemi!r}, initial_time={t})",
+    )

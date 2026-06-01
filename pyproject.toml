@@ -41,6 +41,20 @@ Issues = "https://github.com/Exekiel179/MNE-MCP/issues"
 
 [project.optional-dependencies]
 ica = ["scikit-learn>=1.1.0"]
+# Everything needed for the advanced analysis tools (source localization,
+# connectivity, decoding, BIDS, autoreject, extra readers, 3D rendering).
+full = [
+    "scikit-learn>=1.1.0",
+    "mne-connectivity>=0.5",
+    "mne-bids>=0.13",
+    "autoreject>=0.4",
+    "nibabel>=5.0",
+    "pymatreader>=0.0.30",
+    "edfio>=0.4",
+    "h5io>=0.2",
+    "pyvista>=0.43",
+    "python-picard>=0.7",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.23.0",

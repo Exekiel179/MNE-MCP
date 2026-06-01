@@ -63,7 +63,19 @@ All tools operate on the **persistent session**. Names default sensibly (`raw`, 
 | `mne_tfr_morlet` | Morlet TF power + plot. | `epochs_name`, `fmin`, `fmax`, `n_freqs`, `tfr_name` |
 | `mne_save` | Save object (`*_raw.fif` / `*-epo.fif` / `*-ave.fif`). | `name`, `path`, `overwrite` |
 
+## Advanced analysis (needs the `[full]` extra)
+| Tool | Purpose | Key args |
+|---|---|---|
+| `mne_decode` | Time-resolved decoding (MVPA) of two conditions. | `epochs_name`, `cond_a`, `cond_b`, `scoring`, `cv` |
+| `mne_connectivity` | Channel×channel spectral connectivity in a band. | `epochs_name`, `method`, `fmin`, `fmax`, `con_name` |
+| `mne_compute_noise_cov` | Noise covariance from epochs baseline. | `name`, `tmax`, `cov_name` |
+| `mne_make_forward` | fsaverage template EEG forward model (downloads once). | `name`, `fwd_name` |
+| `mne_apply_inverse` | Source estimate (dSPM/MNE/sLORETA/eLORETA). | `evoked_name`, `fwd_name`, `cov_name`, `method`, `snr` |
+| `mne_plot_source_estimate` | Render stc as a cortical map PNG (PyVista). | `stc_name`, `hemi`, `time` |
+
+Source-loc order: `mne_compute_noise_cov` → `mne_make_forward` → `mne_apply_inverse` → `mne_plot_source_estimate`.
+
 ## When to use `mne_run_code` instead
-Source localization, connectivity (`mne-connectivity`), decoding (`mne.decoding`), permutation
-statistics (`mne.stats`), BIDS (`mne-bids`), `mne.Report`, condition contrasts, custom montages,
-reading uncommon formats, and any parameter not exposed by a structured tool.
+Beamformers (LCMV/DICS), BIDS (`mne-bids`), permutation statistics (`mne.stats`), `mne.Report`,
+autoreject, condition contrasts, custom montages, reading uncommon formats, and any parameter not
+exposed by a structured tool.

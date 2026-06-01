@@ -38,7 +38,7 @@ MNE 的分析是**有状态、强可视化**的，这决定了 MNE-MCP 与“无
 
 1. **常驻内存会话** — 数据只加载一次，之后滤波 → 标坏导 → ICA → 分段 → 叠加…… 全部在同一份内存对象上连续操作，不必反复读取数 GB 的文件。
 2. **自动出图 + AI 读图** — 每个画图工具都把结果存成 PNG 并返回路径，AI 会**读取并解读**（识别工频峰、眼电成分、N1/P2/P300 等）。
-3. **结构化工具 + 通用补充工具** — 常见流程有 32 个专用工具；它们覆盖不到的（源定位、连接性、解码、统计、BIDS……）可用 `mne_run_code` 在同一个会话中直接写代码完成。
+3. **结构化工具 + 通用补充工具** — 38 个专用工具覆盖常见流程**与高级分析**（源定位、连接性、解码）；其余（BIDS、统计、beamformer……）可用 `mne_run_code` 在同一个会话中直接写代码完成。
 4. **可配置默认值** — 工频、默认导联、滤波带、剔除阈值等可用 `mne-mcp configure` 一次设好，省略参数时自动套用。
 
 ---
@@ -49,7 +49,7 @@ MNE 的分析是**有状态、强可视化**的，这决定了 MNE-MCP 与“无
    你（自然语言）
         │
         ▼
-  ┌─────────────┐   调用 32 个工具 / run_code   ┌──────────────────────────┐
+  ┌─────────────┐   调用 38 个工具 / run_code   ┌──────────────────────────┐
   │ Claude Code │ ───────────────────────────▶ │  MNE-MCP 服务器 (FastMCP) │
   │ / opencode  │ ◀─────────────────────────── │  · 持久 Session(内存对象) │
   └─────────────┘   返回 Markdown + 图路径      │  · 调用 MNE-Python        │
@@ -65,7 +65,7 @@ MNE 的分析是**有状态、强可视化**的，这决定了 MNE-MCP 与“无
 
 ---
 
-## 5. 能力总览（32 个工具，8 类）
+## 5. 能力总览（38 个工具，9 类）
 
 | 类别 | 工具 |
 |---|---|
@@ -76,7 +76,10 @@ MNE 的分析是**有状态、强可视化**的，这决定了 MNE-MCP 与“无
 | ICA (4) | `mne_fit_ica` `mne_plot_ica_components` `mne_plot_ica_sources` `mne_apply_ica` |
 | 事件/分段/ERP (7) | `mne_find_events` `mne_events_from_annotations` `mne_make_epochs` `mne_plot_epochs_image` `mne_average_evoked` `mne_plot_evoked` `mne_plot_topomap` |
 | 时频 (1) | `mne_tfr_morlet` |
+| 高级分析 (6) | `mne_decode` `mne_connectivity` `mne_compute_noise_cov` `mne_make_forward` `mne_apply_inverse` `mne_plot_source_estimate` |
 | 导出 (1) | `mne_save` |
+
+> 高级分析（解码/连接性/源定位）需安装 `[full]` 额外依赖：`pip install -e ".[full]"`。
 
 支持读取的格式：FIF、EDF、BDF、BrainVision(.vhdr)、EEGLAB(.set)、CNT、EGI/.mff、CTF(.ds)、SNIRF 等。
 
@@ -129,7 +132,7 @@ MNE 的分析是**有状态、强可视化**的，这决定了 MNE-MCP 与“无
 ```
 MNE-MCP/
 ├─ src/mne_mcp/
-│  ├─ server.py        # 32 个 MCP 工具定义（薄封装）
+│  ├─ server.py        # 38 个 MCP 工具定义（薄封装）
 │  ├─ operations.py    # 真正的 MNE 操作实现
 │  ├─ kernel.py        # 持久会话 + run_code 执行 + 图像捕获
 │  ├─ figures.py       # matplotlib 无界面捕获为 PNG
@@ -149,7 +152,7 @@ MNE-MCP/
 
 - 31 个单元测试（配置、Claude 配置合并、内核、操作、配置向导）。
 - 1 套端到端冒烟流程（合成 EEG，21 项校验：加载→预处理→ICA→分段→叠加→时频→导出）。
-- 通过真实 MCP 客户端验证 32 个工具的调用与持久会话。
+- 通过真实 MCP 客户端验证 38 个工具的调用与持久会话。
 
 ---
 

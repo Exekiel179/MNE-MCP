@@ -24,8 +24,9 @@ MNE 的分析是**有状态、强可视化**的，不同于一次性的统计批
 - 你加载一份 `Raw` 记录后，要连续做 滤波 → 重参考 → ICA → 分段 → 叠加 → 时频，每一步都会改动很大的内存对象。
   MNE-MCP 维护**一个常驻会话**，记录无需在步骤之间反复加载。
 - 几乎每个决定都靠“看图”（功率谱、电极图、ICA 成分、ERP）。每个画图工具都会保存一张 AI 能读取并解读的 **PNG**。
-- MNE 是庞大的纯 Python API。MNE-MCP 用 **32 个结构化工具**覆盖常见流程，并额外提供一个通用的
-  **`mne_run_code`** 工具：可在同一个会话中直接执行任意 MNE/Python 代码，覆盖 MNE 的全部功能。
+- MNE 是庞大的纯 Python API。MNE-MCP 用 **38 个结构化工具**覆盖常见流程**和高级分析**（源定位、连接性、
+  解码），并额外提供一个通用的 **`mne_run_code`** 工具：可在同一个会话中直接执行任意 MNE/Python 代码，
+  覆盖 MNE 的全部功能。
 - 默认参数（工频、导联、滤波带、剔除阈值、ICA 设置、分段窗、目录、超时）可通过交互式
   `mne-mcp configure` 向导**由用户配置**。
 
@@ -187,7 +188,7 @@ AI 将会：
 
 ---
 
-## 可用工具（32 个）
+## 可用工具（38 个）
 
 ### 状态与会话 (7)
 `mne_check_status` · `mne_session_info` · `mne_describe` · `mne_get_info` ·
@@ -213,11 +214,16 @@ AI 将会：
 ### 时频 (1)
 `mne_tfr_morlet`
 
+### 高级分析 (6)
+`mne_decode`（解码/MVPA）· `mne_connectivity`（连接性）· `mne_compute_noise_cov` ·
+`mne_make_forward`（源模型）· `mne_apply_inverse`（源定位）· `mne_plot_source_estimate`
+
 ### 导出 (1)
 `mne_save`
 
-源定位、连接性、解码、BIDS、自定义统计等结构化工具未覆盖的内容，都可在同一个会话中通过
-**`mne_run_code`** 完成。完整参数见 [TOOLS_REFERENCE.zh-CN.md](TOOLS_REFERENCE.zh-CN.md)。
+仍未覆盖的（BIDS、自定义统计、beamformer、autoreject 等）都可在同一个会话中通过 **`mne_run_code`** 完成。
+完整参数见 [TOOLS_REFERENCE.zh-CN.md](TOOLS_REFERENCE.zh-CN.md)。高级工具需要 `[full]` 额外依赖
+（`pip install -e ".[full]"`）。
 
 ---
 

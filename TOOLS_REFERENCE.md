@@ -2,7 +2,7 @@
 
 **English** | [简体中文](TOOLS_REFERENCE.zh-CN.md)
 
-32 tools over a **persistent session**: loaded objects (`raw`, `epochs`, `evoked`, `ica`, …) live in
+38 tools over a **persistent session**: loaded objects (`raw`, `epochs`, `evoked`, `ica`, …) live in
 memory across calls. Plotting tools save a PNG and return its path; read the PNG to interpret it.
 Tool results also include the equivalent MNE code in a ```python``` block.
 
@@ -110,6 +110,30 @@ Naming: Raw → `*_raw.fif`, Epochs → `*-epo.fif`, Evoked → `*-ave.fif`.
 
 ---
 
+## Advanced analysis (needs the `[full]` extra)
+
+### `mne_decode(epochs_name="epochs", cond_a, cond_b, scoring="roc_auc", cv=5, name="decoding")`
+Time-resolved decoding (MVPA): a classifier per time point discriminating two conditions, cross-validated.
+Returns mean/peak score + a scores-vs-time plot. Needs scikit-learn.
+
+### `mne_connectivity(epochs_name="epochs", method="coh", fmin=8, fmax=13, con_name="con")`
+Channel×channel spectral connectivity in a band (`coh`/`plv`/`wpli`/`pli`/`imcoh`…). Returns a heatmap +
+strongest pairs. Needs mne-connectivity.
+
+### `mne_compute_noise_cov(name="epochs", tmax=0.0, cov_name="noise_cov")`
+Noise covariance from the epochs baseline — prerequisite for the inverse operator.
+
+### `mne_make_forward(name="evoked", fwd_name="fwd")`
+Template-head (fsaverage) EEG forward model for the object's montage. Downloads fsaverage once. Needs nibabel.
+
+### `mne_apply_inverse(evoked_name="evoked", fwd_name="fwd", cov_name="noise_cov", method="dSPM", snr=3.0, stc_name="stc")`
+Estimate cortical sources (`dSPM`/`MNE`/`sLORETA`/`eLORETA`); stores the stc, reports peak time.
+
+### `mne_plot_source_estimate(stc_name="stc", hemi="both", time=None)`
+Render the source estimate as a cortical map PNG (needs PyVista off-screen rendering).
+
+---
+
 ## Not covered here?
-Source localization, connectivity, decoding, statistics, BIDS, Report, condition contrasts, niche
-formats → **`mne_run_code`**. See `skills/mne-analyst/references/mne-pipelines.md` for recipes.
+BIDS, custom statistics, beamformers (LCMV/DICS), autoreject, condition contrasts, niche formats →
+**`mne_run_code`**. See `skills/mne-analyst/references/mne-pipelines.md` for recipes.

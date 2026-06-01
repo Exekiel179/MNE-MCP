@@ -28,8 +28,9 @@ MNE analysis is **stateful and visual** — unlike a one-shot statistics batch j
   session** so recordings never get re-loaded between steps.
 - Every decision is driven by **looking** (PSD, sensor maps, ICA components, ERPs). Every plotting
   tool saves a **PNG** the assistant can read and interpret.
-- MNE is a huge pure-Python API. MNE-MCP gives you **32 structured tools** for the common pipeline
-  plus an **`mne_run_code`** escape hatch that reaches the entire MNE API in the same live session.
+- MNE is a huge pure-Python API. MNE-MCP gives you **38 structured tools** spanning the common
+  pipeline *and* advanced analysis (source localization, connectivity, decoding), plus an
+  **`mne_run_code`** escape hatch that reaches the entire MNE API in the same live session.
 - Defaults (line frequency, montage, filter band, rejection threshold, ICA settings, epoch window,
   dirs, timeout) are **user-configurable** via an interactive `mne-mcp configure` wizard.
 
@@ -199,7 +200,7 @@ fully reproducible.
 
 ---
 
-## Available Tools (32)
+## Available Tools (38)
 
 ### Status & Session (7)
 `mne_check_status` · `mne_session_info` · `mne_describe` · `mne_get_info` ·
@@ -225,12 +226,16 @@ fully reproducible.
 ### Time-frequency (1)
 `mne_tfr_morlet`
 
+### Advanced analysis (6)
+`mne_decode` (MVPA) · `mne_connectivity` · `mne_compute_noise_cov` · `mne_make_forward` ·
+`mne_apply_inverse` · `mne_plot_source_estimate`
+
 ### Export (1)
 `mne_save`
 
-Anything not covered by a structured tool — source localization, connectivity, decoding,
-BIDS, custom statistics — is reachable through **`mne_run_code`** in the same live session.
-See [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) for full parameter details.
+Anything still not covered — BIDS, custom statistics, beamformers, autoreject — is reachable through
+**`mne_run_code`** in the same live session. See [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) for full
+parameter details. Advanced tools need the `[full]` extra (`pip install -e ".[full]"`).
 
 ---
 

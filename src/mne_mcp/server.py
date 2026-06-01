@@ -72,6 +72,19 @@ def _require_sklearn() -> str | None:
     return None
 
 
+def _require_module(modname: str, pip_name: str = None) -> str | None:
+    import importlib
+
+    try:
+        importlib.import_module(modname)
+        return None
+    except Exception:
+        return (
+            f"This tool requires `{modname}`. Install it with "
+            f"`pip install {pip_name or modname}` (or `pip install -e \".[full]\"`)."
+        )
+
+
 def _format(result: dict) -> str:
     parts = []
     md = result.get("markdown")
@@ -539,3 +552,111 @@ async def mne_tfr_morlet(
 )
 async def mne_save(name: str, path: str, overwrite: bool = True, ctx: Context = None) -> str:
     return await _exec(ops.save_object, ctx, name, path, overwrite)
+
+
+# ─── Group 9: Advanced analysis (decoding / connectivity / source) ───────────────
+
+@mcp.tool(
+    name="mne_decode",
+    description=(
+        "Time-resolved decoding (MVPA): train a classifier at each time point to discriminate two "
+        "conditions, with cross-validation. cond_a/cond_b are event_id names (e.g. 'target','standard'). "
+        "Returns mean/peak score over time + a scores-vs-time plot. Requires scikit-learn."
+    ),
+)
+async def mne_decode(
+    epochs_name: str = "epochs",
+    cond_a: str = None,
+    cond_b: str = None,
+    scoring: str = "roc_auc",
+    cv: int = 5,
+    name: str = "decoding",
+    ctx: Context = None,
+) -> str:
+    err = _require_sklearn()
+    if err:
+        return f"Error: {err}"
+    return await _exec(ops.decode_time, ctx, epochs_name, cond_a, cond_b, scoring, cv, name)
+
+
+@mcp.tool(
+    name="mne_connectivity",
+    description=(
+        "Spectral connectivity between channels over Epochs in a frequency band. method: 'coh', 'plv', "
+        "'wpli', 'pli', 'imcoh', etc. Returns a channel×channel connectivity heatmap + strongest pairs. "
+        "Requires mne-connectivity."
+    ),
+)
+async def mne_connectivity(
+    epochs_name: str = "epochs",
+    method: str = "coh",
+    fmin: float = 8.0,
+    fmax: float = 13.0,
+    con_name: str = "con",
+    ctx: Context = None,
+) -> str:
+    err = _require_module("mne_connectivity", "mne-connectivity")
+    if err:
+        return f"Error: {err}"
+    return await _exec(ops.connectivity, ctx, epochs_name, method, fmin, fmax, con_name)
+
+
+@mcp.tool(
+    name="mne_compute_noise_cov",
+    description=(
+        "Compute a noise covariance matrix from the Epochs baseline (data up to tmax seconds, default 0). "
+        "Needed before building an inverse operator for source localization."
+    ),
+)
+async def mne_compute_noise_cov(name: str = "epochs", tmax: float = 0.0, cov_name: str = "noise_cov", ctx: Context = None) -> str:
+    return await _exec(ops.compute_noise_cov, ctx, name, tmax, cov_name)
+
+
+@mcp.tool(
+    name="mne_make_forward",
+    description=(
+        "Build a template-head (fsaverage) EEG forward model for the named object's montage. Downloads "
+        "the fsaverage template once (~ tens of MB). Use for EEG source localization without an individual "
+        "MRI. Stored under fwd_name."
+    ),
+)
+async def mne_make_forward(name: str = "evoked", fwd_name: str = "fwd", ctx: Context = None) -> str:
+    err = _require_module("nibabel")
+    if err:
+        return f"Error: {err}"
+    return await _exec(ops.fsaverage_forward, ctx, name, fwd_name)
+
+
+@mcp.tool(
+    name="mne_apply_inverse",
+    description=(
+        "Estimate cortical sources from an Evoked using a forward model and noise covariance. "
+        "method: 'dSPM' (default), 'MNE', 'sLORETA', 'eLORETA'. Stores the source estimate (stc) and "
+        "reports the peak activation time. Pair with mne_make_forward + mne_compute_noise_cov."
+    ),
+)
+async def mne_apply_inverse(
+    evoked_name: str = "evoked",
+    fwd_name: str = "fwd",
+    cov_name: str = "noise_cov",
+    method: str = "dSPM",
+    snr: float = 3.0,
+    stc_name: str = "stc",
+    ctx: Context = None,
+) -> str:
+    return await _exec(ops.apply_inverse_op, ctx, evoked_name, fwd_name, cov_name, method, snr, stc_name)
+
+
+@mcp.tool(
+    name="mne_plot_source_estimate",
+    description=(
+        "Render a source estimate (stc) as a cortical activation map (PNG) at its peak time or a given "
+        "time. hemi: 'both' / 'lh' / 'rh'. Requires PyVista with off-screen rendering; if 3D rendering "
+        "is unavailable the estimate is still computed and can be inspected via mne_run_code."
+    ),
+)
+async def mne_plot_source_estimate(stc_name: str = "stc", hemi: str = "both", time: float = None, ctx: Context = None) -> str:
+    err = _require_module("pyvista")
+    if err:
+        return f"Error: {err}"
+    return await _exec(ops.plot_source_estimate, ctx, stc_name, hemi, time)
