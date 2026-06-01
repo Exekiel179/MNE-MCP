@@ -225,6 +225,14 @@ mne-mcp configure-claude  # Auto-update Claude Code settings
 
 MIT — see [LICENSE](LICENSE)
 
+## Documentation
+
+- **项目介绍 / Introduction**: [docs/INTRODUCTION.md](docs/INTRODUCTION.md) · [.docx](docs/INTRODUCTION.docx)
+- **安装说明 / Install guide**: [docs/INSTALL.md](docs/INSTALL.md) · [.docx](docs/INSTALL.docx)
+- **使用介绍 / Usage guide**: [docs/USAGE.md](docs/USAGE.md) · [.docx](docs/USAGE.docx)
+- **Quick start**: [QUICK_START.md](QUICK_START.md)
+- **Tool reference**: [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md)
+
 ## Links
 
 - **MNE-Python**: https://mne.tools/
