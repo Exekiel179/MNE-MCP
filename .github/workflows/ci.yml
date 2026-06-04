@@ -33,7 +33,7 @@ jobs:
       - name: Compile check
         run: python -m compileall src/mne_mcp
       - name: Unit tests (with coverage)
-        run: pytest -q --cov=mne_mcp --cov-report=term-missing --cov-fail-under=55
+        run: pytest -q --cov=mne_mcp --cov-report=term-missing --cov-fail-under=65
 
   numpy-compat:
     name: numpy compat · ${{ matrix.numpy }}

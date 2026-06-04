@@ -6,8 +6,8 @@ All notable changes to MNE-MCP are documented here. The format loosely follows
 ## [Unreleased]
 
 ### Added
-- Test **coverage** in CI (pytest-cov); added CLI and server-layer tests that lift coverage to
-  ~61%, with a 55% regression floor.
+- Test **coverage** in CI (pytest-cov); added CLI, server-layer, and broad operation-layer tests
+  that lift coverage to ~71%, with a 65% regression floor.
 - **`py.typed`** marker (PEP 561) — the package ships inline type hints.
 - **`CONTRIBUTING.md`**, GitHub issue/PR templates, and a **`release.yml`** workflow that publishes
   to PyPI via Trusted Publishing on a version tag.
