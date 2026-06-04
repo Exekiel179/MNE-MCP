@@ -1,5 +1,6 @@
 # MNE-MCP
 
+[![CI](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml/badge.svg)](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/protocol-MCP-green.svg)](https://modelcontextprotocol.io)
@@ -12,8 +13,9 @@
 用自然语言描述你的分析需求——MNE-MCP 会加载记录、执行 MNE 流程（滤波、ICA、分段、ERP/ERF 叠加、
 时频、以及通过代码完成的源定位等）、保存图像并解读结果。
 
-> 可在 **Claude Code** 与 **opencode**（任意支持 MCP 的客户端）中使用。配套两个 Agent **技能**
-> （`mne-analyst`、`mne-mcp-guard`），让流程更可靠、结果自动归档。
+> 可在 **Claude Code** 与 **opencode**（任意支持 MCP 的客户端）中使用。配套一组 Agent **技能**
+> ——`mne-analyst`、`mne-mcp-guard`，以及一套"先怀疑、后审查"的**分析技能套件**
+> （`mne-methodology-critic` + 各分析大类的专用技能），让流程更可靠、结果自动归档。
 
 ---
 
@@ -140,13 +142,18 @@ mne-mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120
 
 ### 安装技能
 
-`mne-mcp setup` 会自动安装技能。如需手动：
+`mne-mcp setup` 会自动安装全部技能。如需手动，把 `skills/` 下每个文件夹拷到技能目录——套件包括
+`mne-analyst`、`mne-mcp-guard`、`mne-methodology-critic`，以及各分析大类技能（`mne-preprocess`、
+`mne-artifacts`、`mne-erp`、`mne-spectral`、`mne-timefreq`、`mne-connectivity`、`mne-source`、
+`mne-decoding`、`mne-stats`、`mne-advanced`），以及写作技能（`mne-writeup`）：
 
 ```cmd
 set SKILLS_DIR=%USERPROFILE%\.claude\skills
-xcopy /E /I skills\mne-analyst    "%SKILLS_DIR%\mne-analyst"
-xcopy /E /I skills\mne-mcp-guard  "%SKILLS_DIR%\mne-mcp-guard"
+for %S in (mne-analyst mne-mcp-guard mne-methodology-critic mne-preprocess mne-artifacts mne-erp mne-spectral mne-timefreq mne-connectivity mne-source mne-decoding mne-stats mne-advanced mne-writeup) do xcopy /E /I skills\%S "%SKILLS_DIR%\%S"
 ```
+
+> `mne-mcp setup` 还会把 `mne-methodology-critic` **子代理（subagent）**安装到 `~/.claude/agents/`
+> （各技能的 Phase 3 会在隔离上下文中调用它）。手动安装时把 `agents\mne-methodology-critic.md` 拷过去即可。
 
 安装后重启客户端。（技能是 Claude Code 的特性；Codex / opencode 直接用 MCP 服务器。）
 

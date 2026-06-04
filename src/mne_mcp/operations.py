@@ -35,15 +35,42 @@ from mne_mcp.summaries import describe, object_kind
 
 # Extensions MNE can read as raw recordings (not exhaustive, but the common set).
 _RAW_EXTENSIONS = {
-    ".fif", ".fif.gz", ".edf", ".bdf", ".gdf", ".vhdr", ".set", ".cnt",
-    ".egi", ".mff", ".nxe", ".eeg", ".data", ".sqd", ".con", ".ds",
-    ".nwb", ".snirf",
+    ".fif",
+    ".fif.gz",
+    ".edf",
+    ".bdf",
+    ".gdf",
+    ".vhdr",
+    ".set",
+    ".cnt",
+    ".egi",
+    ".mff",
+    ".nxe",
+    ".eeg",
+    ".data",
+    ".sqd",
+    ".con",
+    ".ds",
+    ".nwb",
+    ".snirf",
 }
 
 # Directories never worth scanning for user data (envs, VCS, caches, package data).
 _SKIP_DIRS = {
-    ".venv", "venv", "env", ".git", "node_modules", "__pycache__", "site-packages",
-    ".idea", ".vscode", ".pytest_cache", "build", "dist", ".eggs", ".mypy_cache",
+    ".venv",
+    "venv",
+    "env",
+    ".git",
+    "node_modules",
+    "__pycache__",
+    "site-packages",
+    ".idea",
+    ".vscode",
+    ".pytest_cache",
+    "build",
+    "dist",
+    ".eggs",
+    ".mypy_cache",
     ".ipynb_checkpoints",
 }
 
@@ -68,6 +95,7 @@ def _require_kind(obj, name: str, allowed: tuple[str, ...]) -> None:
 
 
 # ── IO & inspection ──────────────────────────────────────────────────────────
+
 
 def list_files(directory: str | None = None, pattern: str | None = None) -> dict:
     base = Path(directory) if directory else get_data_dir()
@@ -135,7 +163,7 @@ def load_raw(path: str, name: str = "raw", preload: bool = True) -> dict:
     s = get_session()
     s.set(name, raw)
     md = f"Loaded `{p.name}` into session as `{name}`.\n\n" + describe(raw)
-    code = f'{name} = mne.io.read_raw({p.as_posix()!r}, preload={preload})'
+    code = f"{name} = mne.io.read_raw({p.as_posix()!r}, preload={preload})"
     return _result(md, code=code)
 
 
@@ -161,6 +189,7 @@ def get_info(name: str) -> dict:
 
 
 # ── Preprocessing ──────────────────────────────────────────────────────────────
+
 
 def filter_data(
     name: str,
@@ -210,7 +239,9 @@ def crop(name: str, tmin: float = 0.0, tmax: float | None = None) -> dict:
     )
 
 
-def set_montage(name: str, montage: str | None = None, on_missing: str = "warn") -> dict:
+def set_montage(
+    name: str, montage: str | None = None, on_missing: str = "warn"
+) -> dict:
     import mne
 
     s = get_session()
@@ -220,7 +251,9 @@ def set_montage(name: str, montage: str | None = None, on_missing: str = "warn")
         m = mne.channels.make_standard_montage(montage)
     except ValueError as e:
         available = ", ".join(mne.channels.get_builtin_montages())
-        raise ValueError(f"Unknown montage '{montage}'. Built-in montages: {available}") from e
+        raise ValueError(
+            f"Unknown montage '{montage}'. Built-in montages: {available}"
+        ) from e
     obj.set_montage(m, on_missing=on_missing, verbose="ERROR")
     return _result(
         f"Applied montage `{montage}` to `{name}`.\n\n" + describe(obj),
@@ -276,7 +309,23 @@ def interpolate_bads(name: str, reset_bads: bool = True) -> dict:
 
 # ── Visualization ──────────────────────────────────────────────────────────────
 
-def plot_psd(name: str, fmin: float = 0.0, fmax: float | None = None, picks: str | None = None) -> dict:
+
+def _parse_picks(picks):
+    """Turn a comma-separated picks string into a list of channel names.
+
+    A bare string (e.g. ``'eeg'`` or a single channel name) is passed through unchanged
+    so MNE can still interpret it as a channel type or single name.
+    """
+    if picks is None:
+        return None
+    if isinstance(picks, str) and "," in picks:
+        return [p.strip() for p in picks.split(",") if p.strip()]
+    return picks
+
+
+def plot_psd(
+    name: str, fmin: float = 0.0, fmax: float | None = None, picks: str | None = None
+) -> dict:
     s = get_session()
     obj = s.get(name)
     before = figures.open_figure_numbers()
@@ -284,7 +333,7 @@ def plot_psd(name: str, fmin: float = 0.0, fmax: float | None = None, picks: str
     if fmax is not None:
         kwargs["fmax"] = fmax
     if picks is not None:
-        kwargs["picks"] = picks
+        kwargs["picks"] = _parse_picks(picks)
     psd = obj.compute_psd(**kwargs, verbose="ERROR")
     psd.plot(show=False)
     figs = figures.capture_new_figures(before, get_results_dir(), prefix="psd")
@@ -295,7 +344,9 @@ def plot_psd(name: str, fmin: float = 0.0, fmax: float | None = None, picks: str
     )
 
 
-def plot_raw(name: str, start: float = 0.0, duration: float = 20.0, n_channels: int = 20) -> dict:
+def plot_raw(
+    name: str, start: float = 0.0, duration: float = 20.0, n_channels: int = 20
+) -> dict:
     s = get_session()
     obj = s.get(name)
     _require_kind(obj, name, ("Raw",))
@@ -324,6 +375,7 @@ def plot_sensors(name: str, kind: str = "topomap", show_names: bool = True) -> d
 
 # ── ICA ──────────────────────────────────────────────────────────────────────
 
+
 def fit_ica(
     name: str,
     n_components: float | int | None = None,
@@ -340,7 +392,10 @@ def fit_ica(
     if n_components is None:
         n_components = get_ica_n_components()
     ica = mne.preprocessing.ICA(
-        n_components=n_components, method=method, random_state=random_state, verbose="ERROR"
+        n_components=n_components,
+        method=method,
+        random_state=random_state,
+        verbose="ERROR",
     )
     ica.fit(inst, verbose="ERROR")
     s.set(ica_name, ica)
@@ -400,7 +455,10 @@ def apply_ica(ica_name: str, inst_name: str, exclude: str | None = None) -> dict
 
 # ── Events / Epochs / ERP ──────────────────────────────────────────────────────
 
-def find_events(raw_name: str = "raw", stim_channel: str | None = None, events_name: str = "events") -> dict:
+
+def find_events(
+    raw_name: str = "raw", stim_channel: str | None = None, events_name: str = "events"
+) -> dict:
     import mne
 
     s = get_session()
@@ -413,7 +471,10 @@ def find_events(raw_name: str = "raw", stim_channel: str | None = None, events_n
     ids, counts = np.unique(events[:, 2], return_counts=True)
     rows = "\n".join(f"- id `{int(i)}`: {int(c)} events" for i, c in zip(ids, counts))
     md = f"Found {len(events)} events in `{raw_name}` → stored as `{events_name}`.\n\n{rows}"
-    return _result(md, code=f"{events_name} = mne.find_events({raw_name}, stim_channel={stim_channel!r})")
+    return _result(
+        md,
+        code=f"{events_name} = mne.find_events({raw_name}, stim_channel={stim_channel!r})",
+    )
 
 
 def events_from_annotations(raw_name: str = "raw", events_name: str = "events") -> dict:
@@ -479,8 +540,15 @@ def make_epochs(
         reject = {"eeg": reject_eeg}
 
     epochs = mne.Epochs(
-        raw, events, event_id=eid, tmin=tmin, tmax=tmax,
-        baseline=bl, reject=reject, preload=True, verbose="ERROR",
+        raw,
+        events,
+        event_id=eid,
+        tmin=tmin,
+        tmax=tmax,
+        baseline=bl,
+        reject=reject,
+        preload=True,
+        verbose="ERROR",
     )
     s.set(epochs_name, epochs)
     md = f"Created epochs `{epochs_name}` from `{raw_name}`.\n\n" + describe(epochs)
@@ -496,7 +564,7 @@ def plot_epochs_image(name: str = "epochs", picks: str | None = None) -> dict:
     epochs = s.get(name)
     _require_kind(epochs, name, ("Epochs",))
     before = figures.open_figure_numbers()
-    epochs.plot_image(picks=picks, show=False)
+    epochs.plot_image(picks=_parse_picks(picks), show=False)
     figs = figures.capture_new_figures(before, get_results_dir(), prefix="epo_img")
     return _result(
         f"Epochs image (ERP image) for `{name}`.",
@@ -505,7 +573,11 @@ def plot_epochs_image(name: str = "epochs", picks: str | None = None) -> dict:
     )
 
 
-def average_evoked(epochs_name: str = "epochs", condition: str | None = None, evoked_name: str = "evoked") -> dict:
+def average_evoked(
+    epochs_name: str = "epochs",
+    condition: str | None = None,
+    evoked_name: str = "evoked",
+) -> dict:
     s = get_session()
     epochs = s.get(epochs_name)
     _require_kind(epochs, epochs_name, ("Epochs",))
@@ -515,7 +587,9 @@ def average_evoked(epochs_name: str = "epochs", condition: str | None = None, ev
         evoked.comment = condition
     s.set(evoked_name, evoked)
     sel = f"[{condition!r}]" if condition else ""
-    md = f"Averaged `{epochs_name}`{sel} → evoked `{evoked_name}`.\n\n" + describe(evoked)
+    md = f"Averaged `{epochs_name}`{sel} → evoked `{evoked_name}`.\n\n" + describe(
+        evoked
+    )
     code = f"{evoked_name} = {epochs_name}{sel}.average()"
     return _result(md, code=code)
 
@@ -558,6 +632,7 @@ def plot_topomap(name: str = "evoked", times: str = "auto") -> dict:
 
 # ── Time-frequency ─────────────────────────────────────────────────────────────
 
+
 def tfr_morlet(
     epochs_name: str = "epochs",
     fmin: float = 4.0,
@@ -573,8 +648,12 @@ def tfr_morlet(
     freqs = np.linspace(fmin, fmax, int(n_freqs))
     n_cycles = freqs / 2.0
     power = epochs.compute_tfr(
-        method="morlet", freqs=freqs, n_cycles=n_cycles,
-        return_itc=False, average=True, verbose="ERROR",
+        method="morlet",
+        freqs=freqs,
+        n_cycles=n_cycles,
+        return_itc=False,
+        average=True,
+        verbose="ERROR",
     )
     s.set(tfr_name, power)
     before = figures.open_figure_numbers()
@@ -591,6 +670,7 @@ def tfr_morlet(
 
 # ── Export ─────────────────────────────────────────────────────────────────────
 
+
 def save_object(name: str, path: str, overwrite: bool = True) -> dict:
     s = get_session()
     obj = s.get(name)
@@ -604,6 +684,7 @@ def save_object(name: str, path: str, overwrite: bool = True) -> dict:
 
 
 # ── Decoding (MVPA) ─────────────────────────────────────────────────────────────
+
 
 def decode_time(
     epochs_name: str = "epochs",
@@ -667,6 +748,7 @@ def decode_time(
 
 # ── Connectivity ────────────────────────────────────────────────────────────────
 
+
 def connectivity(
     epochs_name: str = "epochs",
     method: str = "coh",
@@ -681,8 +763,14 @@ def connectivity(
     epochs = s.get(epochs_name)
     _require_kind(epochs, epochs_name, ("Epochs",))
     con = spectral_connectivity_epochs(
-        epochs, method=method, mode="multitaper", sfreq=epochs.info["sfreq"],
-        fmin=fmin, fmax=fmax, faverage=True, verbose="ERROR",
+        epochs,
+        method=method,
+        mode="multitaper",
+        sfreq=epochs.info["sfreq"],
+        fmin=fmin,
+        fmax=fmax,
+        faverage=True,
+        verbose="ERROR",
     )
     s.set(con_name, con)
     mat = np.asarray(con.get_data(output="dense"))[:, :, 0]
@@ -695,7 +783,11 @@ def connectivity(
     fig, ax = plt.subplots()
     im = ax.imshow(full, cmap="viridis")
     fig.colorbar(im, ax=ax, label=method)
-    ax.set(title=f"{method} connectivity {fmin}-{fmax} Hz", xlabel="channel", ylabel="channel")
+    ax.set(
+        title=f"{method} connectivity {fmin}-{fmax} Hz",
+        xlabel="channel",
+        ylabel="channel",
+    )
     figs = figures.capture_new_figures(before, get_results_dir(), prefix="conn")
 
     names = epochs.ch_names
@@ -717,7 +809,10 @@ def connectivity(
 
 # ── Source localization ─────────────────────────────────────────────────────────
 
-def compute_noise_cov(name: str = "epochs", tmax: float = 0.0, cov_name: str = "noise_cov") -> dict:
+
+def compute_noise_cov(
+    name: str = "epochs", tmax: float = 0.0, cov_name: str = "noise_cov"
+) -> dict:
     import mne
 
     s = get_session()
@@ -743,7 +838,13 @@ def fsaverage_forward(name: str = "evoked", fwd_name: str = "fwd") -> dict:
     src = os.path.join(fs_dir, "bem", "fsaverage-ico-5-src.fif")
     bem = os.path.join(fs_dir, "bem", "fsaverage-5120-5120-5120-bem-sol.fif")
     fwd = mne.make_forward_solution(
-        inst.info, trans="fsaverage", src=src, bem=bem, eeg=True, meg=False, verbose="ERROR"
+        inst.info,
+        trans="fsaverage",
+        src=src,
+        bem=bem,
+        eeg=True,
+        meg=False,
+        verbose="ERROR",
     )
     s.set(fwd_name, fwd)
     return _result(
@@ -791,7 +892,9 @@ def apply_inverse_op(
     return _result(md, code=code)
 
 
-def plot_source_estimate(stc_name: str = "stc", hemi: str = "both", time: float | None = None) -> dict:
+def plot_source_estimate(
+    stc_name: str = "stc", hemi: str = "both", time: float | None = None
+) -> dict:
     import os
 
     import mne
@@ -805,8 +908,13 @@ def plot_source_estimate(stc_name: str = "stc", hemi: str = "both", time: float 
     t = time if time is not None else stc.get_peak()[1]
     try:
         brain = stc.plot(
-            subjects_dir=subjects_dir, hemi=hemi, initial_time=t,
-            size=(700, 600), background="white", time_viewer=False, verbose="ERROR",
+            subjects_dir=subjects_dir,
+            hemi=hemi,
+            initial_time=t,
+            size=(700, 600),
+            background="white",
+            time_viewer=False,
+            verbose="ERROR",
         )
         out = Path(get_results_dir()) / f"stc_{stc_name}.png"
         brain.save_image(str(out))

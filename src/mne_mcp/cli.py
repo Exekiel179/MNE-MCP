@@ -16,7 +16,9 @@ from mne_mcp.claude_config import (
 
 
 def main():
-    parser = argparse.ArgumentParser(description="MNE-Python Model Context Protocol server")
+    parser = argparse.ArgumentParser(
+        description="MNE-Python Model Context Protocol server"
+    )
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
     # serve
@@ -44,8 +46,12 @@ def main():
         "configure",
         help="Interactively set default analysis parameters (line freq, montage, filter band, …)",
     )
-    cfg_parser.add_argument("--show", action="store_true", help="Print current defaults and exit")
-    cfg_parser.add_argument("--reset", action="store_true", help="Reset defaults to built-in values")
+    cfg_parser.add_argument(
+        "--show", action="store_true", help="Print current defaults and exit"
+    )
+    cfg_parser.add_argument(
+        "--reset", action="store_true", help="Reset defaults to built-in values"
+    )
     cfg_parser.add_argument(
         "--set",
         nargs="+",
@@ -66,7 +72,7 @@ def main():
     setup_parser.add_argument(
         "--no-skills",
         action="store_true",
-        help="Do not install the mne-analyst / mne-mcp-guard skills",
+        help="Do not install the bundled MNE skills (analyst, guard, methodology critic + analysis suite)",
     )
 
     # configure-claude
@@ -102,8 +108,12 @@ def main():
         caps = detect_capabilities()
         cfg = get_runtime_config()
         print("=== MNE MCP Capability Status ===")
-        print(f"MNE-Python   : {'OK v' + caps['mne_version'] if caps['mne'] else 'NOT FOUND  (pip install mne)'}")
-        print(f"scikit-learn : {'OK v' + caps['sklearn_version'] if caps['sklearn'] else 'NOT FOUND  (pip install scikit-learn) — needed for ICA'}")
+        print(
+            f"MNE-Python   : {'OK v' + caps['mne_version'] if caps['mne'] else 'NOT FOUND  (pip install mne)'}"
+        )
+        print(
+            f"scikit-learn : {'OK v' + caps['sklearn_version'] if caps['sklearn'] else 'NOT FOUND  (pip install scikit-learn) — needed for ICA'}"
+        )
         print(f"numpy        : {caps['numpy_version'] or 'NOT FOUND'}")
         print(f"scipy        : {caps['scipy_version'] or 'NOT FOUND'}")
         print(f"matplotlib   : {caps['matplotlib_version'] or 'NOT FOUND'}")
@@ -133,7 +143,9 @@ def main():
         from mne_mcp import wizard
 
         if args.reset:
-            path = __import__("mne_mcp.config", fromlist=["reset_config"]).reset_config()
+            path = __import__(
+                "mne_mcp.config", fromlist=["reset_config"]
+            ).reset_config()
             print(f"Reset defaults to built-in values (removed {path}).")
             wizard.show_config()
             sys.exit(0)
@@ -168,10 +180,16 @@ def main():
                 print(f"[skills  ] {sk['error']}")
             else:
                 print(f"[skills  ] installed {sk['installed']} -> {sk['dest']}")
+        ag = result.get("agents")
+        if ag is not None:
+            if ag.get("error"):
+                print(f"[agents  ] {ag['error']}")
+            else:
+                print(f"[agents  ] installed {ag['installed']} -> {ag['dest']}")
         print()
         print(
             "Restart your client(s) to load the 'mne' server"
-            + ("" if args.no_skills else " and skills")
+            + ("" if args.no_skills else " and skills/agents")
             + "."
         )
         sys.exit(0)

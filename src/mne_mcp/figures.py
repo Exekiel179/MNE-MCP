@@ -40,7 +40,9 @@ def _next_index(results_dir, prefix: str) -> int:
     return max_idx + 1
 
 
-def capture_new_figures(before: set[int], results_dir, prefix: str = "fig") -> list[str]:
+def capture_new_figures(
+    before: set[int], results_dir, prefix: str = "fig"
+) -> list[str]:
     """
     Save every figure opened since ``before`` was sampled, then close them.
 

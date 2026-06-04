@@ -1,9 +1,9 @@
 """Fast operation-layer tests on synthetic EEG (no downloads, no ICA)."""
 
+import mne
 import numpy as np
 import pytest
 
-import mne
 from mne_mcp import operations as ops
 from mne_mcp.kernel import get_session
 
@@ -75,23 +75,29 @@ def test_list_files_prunes_noise_dirs(tmp_path):
 def test_make_epochs_baseline_none(fresh_session):
     s = fresh_session
     s.set("events", np.array([[i * 300 + 100, 0, 1] for i in range(8)]))
-    ops.make_epochs("raw", "events", event_id="c:1", tmin=-0.1, tmax=0.3, baseline="none")
+    ops.make_epochs(
+        "raw", "events", event_id="c:1", tmin=-0.1, tmax=0.3, baseline="none"
+    )
     assert s.has("epochs")
 
 
 def test_advanced_decode_connectivity_cov(fresh_session):
     s = fresh_session
     s.set("events", np.array([[i * 250 + 100, 0, (i % 2) + 1] for i in range(16)]))
-    ops.make_epochs("raw", "events", event_id="a:1,b:2", tmin=-0.1, tmax=0.4, epochs_name="epochs")
+    ops.make_epochs(
+        "raw", "events", event_id="a:1,b:2", tmin=-0.1, tmax=0.4, epochs_name="epochs"
+    )
 
     r = ops.decode_time("epochs", "a", "b", cv=3)
     assert len(r["figures"]) == 1 and s.has("decoding")
 
-    r = ops.connectivity("epochs", method="coh", fmin=8, fmax=20)
-    assert len(r["figures"]) == 1 and s.has("con")
-
     r = ops.compute_noise_cov("epochs")
     assert s.has("noise_cov")
+
+    # connectivity needs the optional mne-connectivity package (the [full] extra)
+    pytest.importorskip("mne_connectivity")
+    r = ops.connectivity("epochs", method="coh", fmin=8, fmax=20)
+    assert len(r["figures"]) == 1 and s.has("con")
 
 
 def test_decode_requires_two_classes(fresh_session):

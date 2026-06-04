@@ -36,4 +36,4 @@ def test_configure_preserves_other_servers(tmp_path):
     claude_config.configure_claude_settings(settings)
     data = json.loads(settings.read_text(encoding="utf-8"))
     assert "spss" in data["mcpServers"]  # untouched
-    assert "mne" in data["mcpServers"]   # added
+    assert "mne" in data["mcpServers"]  # added

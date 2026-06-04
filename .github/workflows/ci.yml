@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit:
+    name: unit · ${{ matrix.os }} · py${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[ica,dev]"
+      - name: Compile check
+        run: python -m compileall src/mne_mcp
+      - name: Unit tests
+        run: pytest -q
+
+  numpy-compat:
+    name: numpy compat · ${{ matrix.numpy }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Verify the package works on both the 1.x and 2.x NumPy lines. The 2.x leg is the
+        # regression guard for the alias bug (np.trapz/np.in1d removal) found on real data.
+        numpy: ["numpy>=1.26,<2", "numpy>=2.1"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[ica,dev]"
+      - name: Pin NumPy line
+        run: pip install "${{ matrix.numpy }}"
+      - run: python -c "import numpy; print('NumPy', numpy.__version__)"
+      - name: Regression + unit tests
+        run: pytest -q
+
+  real-data-smoke:
+    name: real eegbci smoke · ubuntu · py3.12
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache MNE datasets
+        uses: actions/cache@v4
+        with:
+          path: ~/mne_data
+          key: mne-eegbci-S001-r1r2
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[ica]"
+      - name: Real-data end-to-end (eyes-open vs eyes-closed alpha)
+        run: python tests/smoke_eegbci.py
+
+  lint:
+    name: lint (black + isort, check-only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install black isort
+      - run: black --check src tests
+      - run: isort --check-only --profile black src tests
