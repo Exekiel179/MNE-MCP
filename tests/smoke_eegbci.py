@@ -43,7 +43,31 @@ def check(label, cond, extra=""):
 
 
 # 1. Fetch eyes-open (run 1) + eyes-closed (run 2) baselines for S001.
-paths = eegbci.load_data(subjects=1, runs=[1, 2], update_path=True)
+#    A network outage on the CI runner must not be a hard failure: skip cleanly so this
+#    test guards the *pipeline* (when data is reachable), not physionet's uptime.
+try:
+    paths = eegbci.load_data(subjects=1, runs=[1, 2], update_path=True)
+except Exception as e:  # noqa: BLE001 - catch any download/network error
+    msg = f"{type(e).__name__}: {e}".lower()
+    net = (
+        "timed out",
+        "timeout",
+        "connection",
+        "max retries",
+        "temporarily",
+        "resolve",
+        "network",
+        "ssl",
+        "url",
+        "http",
+    )
+    if any(k in msg for k in net):
+        print(
+            f"SKIP: could not reach physionet.org ({type(e).__name__}); "
+            "skipping real-data smoke (network unavailable)."
+        )
+        sys.exit(0)
+    raise
 check(
     "download eegbci S001 runs 1,2",
     len(paths) == 2 and all(os.path.exists(p) for p in paths),

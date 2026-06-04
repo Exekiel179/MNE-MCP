@@ -91,11 +91,13 @@ def test_advanced_decode_connectivity_cov(fresh_session):
     r = ops.decode_time("epochs", "a", "b", cv=3)
     assert len(r["figures"]) == 1 and s.has("decoding")
 
-    r = ops.connectivity("epochs", method="coh", fmin=8, fmax=20)
-    assert len(r["figures"]) == 1 and s.has("con")
-
     r = ops.compute_noise_cov("epochs")
     assert s.has("noise_cov")
+
+    # connectivity needs the optional mne-connectivity package (the [full] extra)
+    pytest.importorskip("mne_connectivity")
+    r = ops.connectivity("epochs", method="coh", fmin=8, fmax=20)
+    assert len(r["figures"]) == 1 and s.has("con")
 
 
 def test_decode_requires_two_classes(fresh_session):

@@ -1,7 +1,11 @@
 """Tests for multi-client MCP registration (Claude Code / Codex / opencode)."""
 
 import json
-import tomllib
+
+try:
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:  # pragma: no cover - Python 3.10
+    import tomli as tomllib
 
 import pytest
 
