@@ -33,7 +33,11 @@ FIELDS = [
     ("filter_h_freq", "Default low-pass edge (Hz, 'none' to disable)", "floatn"),
     ("reject_eeg_uv", "Default EEG rejection (peak-to-peak µV, 'none'=off)", "floatn"),
     ("ica_method", "Default ICA method (fastica/infomax/picard)", "str"),
-    ("ica_n_components", "Default ICA n_components (int, 0.xx frac, or 'none')", "numn"),
+    (
+        "ica_n_components",
+        "Default ICA n_components (int, 0.xx frac, or 'none')",
+        "numn",
+    ),
     ("epoch_tmin", "Default epoch start (s)", "float"),
     ("epoch_tmax", "Default epoch end (s)", "float"),
     ("results_dir", "Results/figures directory ('none'=temp)", "strn"),
@@ -98,7 +102,9 @@ def set_values(pairs: list[str]) -> None:
         key, raw = pair.split("=", 1)
         key = key.strip()
         if key not in DEFAULT_CONFIG:
-            raise ValueError(f"Unknown config key: {key}. Valid: {sorted(DEFAULT_CONFIG)}")
+            raise ValueError(
+                f"Unknown config key: {key}. Valid: {sorted(DEFAULT_CONFIG)}"
+            )
         value = coerce(key, raw)
         validate(key, value)
         updates[key] = value

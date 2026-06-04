@@ -19,6 +19,13 @@ env/
 # Analysis outputs
 mne_result/
 *.spv
+demo_study/
+
+# MS Office lock files
+~$*
+
+# Reference material (input docs, not part of the package)
+SPSS-MCP*.docx
 
 # OS / editor
 .DS_Store

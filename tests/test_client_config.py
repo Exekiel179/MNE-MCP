@@ -36,8 +36,12 @@ def test_codex_preserves_other_and_is_idempotent(tmp_path):
 def test_opencode_creates_and_preserves(tmp_path):
     p = tmp_path / "opencode.json"
     p.write_text(
-        json.dumps({"$schema": "https://opencode.ai/config.json",
-                    "mcp": {"other": {"type": "local", "command": ["y"]}}}),
+        json.dumps(
+            {
+                "$schema": "https://opencode.ai/config.json",
+                "mcp": {"other": {"type": "local", "command": ["y"]}},
+            }
+        ),
         encoding="utf-8",
     )
     res = cc.configure_opencode(p)

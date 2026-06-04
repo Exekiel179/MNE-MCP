@@ -1,0 +1,35 @@
+# Changelog
+
+All notable changes to MNE-MCP are documented here. The format loosely follows
+[Keep a Changelog](https://keepachangelog.com/); versions are pre-1.0 and may move quickly.
+
+## [0.2.0] — 2026-06-05
+
+### Added
+- **Continuous integration** (`.github/workflows/ci.yml`): unit tests on Linux/macOS/Windows ×
+  Python 3.10/3.12; a **NumPy 1.x / 2.x compatibility matrix**; a **real-data eegbci smoke test**;
+  and a black/isort lint job.
+- **Real-data smoke test** (`tests/smoke_eegbci.py`): downloads PhysioNet eegbci S001 eyes-open vs
+  eyes-closed baselines and asserts the **Berger effect** (occipital alpha higher eyes-closed) end
+  to end through the operation layer — covering the real EDF-reading path the synthetic smoke test
+  never exercised.
+- **Regression tests** (`tests/test_regressions.py`) for the two bugs fixed below.
+- **Analysis skill suite** (`skills/`): `mne-methodology-critic` (shared methodology reviewer, also
+  shipped as a subagent in `agents/`), per-category skills (`mne-preprocess`, `mne-artifacts`,
+  `mne-erp`, `mne-spectral`, `mne-timefreq`, `mne-connectivity`, `mne-source`, `mne-decoding`,
+  `mne-stats`, `mne-advanced`), and `mne-writeup`; all installed by `mne-mcp setup`.
+
+### Fixed
+- **NumPy 2.x compatibility** (`mne_mcp/_compat.py`, applied at package import): restore aliases
+  removed in NumPy ≥ 2.0 (`np.trapz`→`trapezoid`, `np.in1d`→`isin`, `np.row_stack`→`vstack`, …)
+  that a transitive dependency still calls while reading EDF. Previously this raised
+  `AttributeError` and **blocked all recording loads under NumPy 2.x**.
+- **`picks` comma lists**: `plot_psd` / `plot_epochs_image` now accept `"O1,Oz,O2"` (split via
+  `operations._parse_picks`) instead of treating the whole string as one nonexistent channel.
+- Docs: corrected the unit-test count in `docs/INTRODUCTION.md` (31 → 39).
+
+## [0.1.0]
+
+- Initial release: 38-tool MCP server for MNE-Python (EEG/MEG/sEEG/ECoG/fNIRS), persistent
+  in-memory session, `mne_run_code` escape hatch, one-command multi-client setup, and the
+  `mne-analyst` + `mne-mcp-guard` skills.

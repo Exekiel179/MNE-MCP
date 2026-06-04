@@ -4,6 +4,7 @@ Run with the project venv:
     .venv/Scripts/python.exe tests/smoke_pipeline.py
 Exercises the real operations + persistent kernel + figure capture, no downloads.
 """
+
 import os
 import sys
 import tempfile
@@ -78,7 +79,11 @@ check("apply_ica exclude=0", "exclude = [0]" in r["code"])
 res = s.run_code(
     "events = np.array([[int(i*400+100), 0, 1] for i in range(25)])\nevents.shape"
 )
-check("run_code creates events", s.has("events") and res["error"] is None, extra=str(res.get("error")))
+check(
+    "run_code creates events",
+    s.has("events") and res["error"] is None,
+    extra=str(res.get("error")),
+)
 
 r = ops.make_epochs("raw", "events", event_id="cond:1", tmin=-0.2, tmax=0.5)
 check("make_epochs", s.has("epochs") and "Epochs" in r["markdown"])
@@ -96,19 +101,26 @@ r = ops.plot_topomap("evoked", times="0.1,0.2,0.3")
 check("plot_topomap -> figure", len(r["figures"]) >= 1)
 
 # TFR needs longer epochs than a typical ERP window — build a wider one.
-ops.make_epochs("raw", "events", event_id="cond:1", tmin=-0.5, tmax=1.5, epochs_name="epochs_tfr")
+ops.make_epochs(
+    "raw", "events", event_id="cond:1", tmin=-0.5, tmax=1.5, epochs_name="epochs_tfr"
+)
 r = ops.tfr_morlet("epochs_tfr", fmin=8, fmax=40, n_freqs=8, tfr_name="power")
 check("tfr_morlet -> figure", len(r["figures"]) >= 1 and s.has("power"))
 
 # run_code: stdout + result + figure capture together
-res = s.run_code("print('hello from kernel')\nx = 2 + 2\nplt.figure(); plt.plot([1,2,3]); x")
+res = s.run_code(
+    "print('hello from kernel')\nx = 2 + 2\nplt.figure(); plt.plot([1,2,3]); x"
+)
 check("run_code stdout", "hello from kernel" in res["stdout"])
 check("run_code result value", res["result_repr"] == "4")
 check("run_code figure capture", len(res["figures"]) == 1)
 
 # session summary + describe
 summ = s.summary()
-check("session summary lists raw/epochs/evoked", all(n in summ for n in ["raw", "epochs", "evoked", "ica"]))
+check(
+    "session summary lists raw/epochs/evoked",
+    all(n in summ for n in ["raw", "epochs", "evoked", "ica"]),
+)
 
 # save round-trip
 out = os.path.join(tempfile.gettempdir(), "smoke_out-ave.fif")

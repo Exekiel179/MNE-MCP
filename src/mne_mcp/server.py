@@ -24,8 +24,8 @@ from mne_mcp.config import (
 )
 from mne_mcp.kernel import get_session
 
-
 # ─── Lifespan ─────────────────────────────────────────────────────────────────
+
 
 @asynccontextmanager
 async def server_lifespan(server: FastMCP):
@@ -55,6 +55,7 @@ _EXEC_LOCK = asyncio.Lock()
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
+
 def _require_mne() -> str | None:
     caps = detect_capabilities()
     if not caps.get("mne"):
@@ -81,7 +82,7 @@ def _require_module(modname: str, pip_name: str = None) -> str | None:
     except Exception:
         return (
             f"This tool requires `{modname}`. Install it with "
-            f"`pip install {pip_name or modname}` (or `pip install -e \".[full]\"`)."
+            f'`pip install {pip_name or modname}` (or `pip install -e ".[full]"`).'
         )
 
 
@@ -131,6 +132,7 @@ async def _exec(fn, ctx, *args, **kwargs) -> str:
 
 # ─── Group 1: Status & Session ─────────────────────────────────────────────────
 
+
 @mcp.tool(
     name="mne_check_status",
     description=(
@@ -168,12 +170,21 @@ async def mne_check_status(ctx: Context = None) -> str:
 )
 async def mne_get_config(ctx: Context = None) -> str:
     cfg = load_config()
-    lines = ["## Configured defaults", "", f"_File: `{get_config_path()}`_", "", "| Key | Value | Built-in |", "|---|---|---|"]
+    lines = [
+        "## Configured defaults",
+        "",
+        f"_File: `{get_config_path()}`_",
+        "",
+        "| Key | Value | Built-in |",
+        "|---|---|---|",
+    ]
     for key in DEFAULT_CONFIG:
         mark = "" if cfg[key] == DEFAULT_CONFIG[key] else " *(custom)*"
         lines.append(f"| `{key}` | `{cfg[key]}`{mark} | `{DEFAULT_CONFIG[key]}` |")
-    lines.append("\nChange these with `mne-mcp configure` (interactive) or "
-                 "`mne-mcp configure --set key=value`.")
+    lines.append(
+        "\nChange these with `mne-mcp configure` (interactive) or "
+        "`mne-mcp configure --set key=value`."
+    )
     return "\n".join(lines)
 
 
@@ -241,7 +252,9 @@ async def mne_run_code(code: str, ctx: Context = None) -> str:
                 asyncio.to_thread(session.run_code, code), timeout=get_timeout()
             )
     except asyncio.TimeoutError:
-        return f"Error: code timed out after {get_timeout()}s. Increase MNE_MCP_TIMEOUT."
+        return (
+            f"Error: code timed out after {get_timeout()}s. Increase MNE_MCP_TIMEOUT."
+        )
 
     parts = []
     if result.get("stdout"):
@@ -261,6 +274,7 @@ async def mne_run_code(code: str, ctx: Context = None) -> str:
 
 # ─── Group 2: IO ────────────────────────────────────────────────────────────────
 
+
 @mcp.tool(
     name="mne_list_files",
     description=(
@@ -269,7 +283,9 @@ async def mne_run_code(code: str, ctx: Context = None) -> str:
         "Optionally pass a glob pattern."
     ),
 )
-async def mne_list_files(directory: str = None, pattern: str = None, ctx: Context = None) -> str:
+async def mne_list_files(
+    directory: str = None, pattern: str = None, ctx: Context = None
+) -> str:
     return await _exec(ops.list_files, ctx, directory, pattern)
 
 
@@ -281,11 +297,14 @@ async def mne_list_files(directory: str = None, pattern: str = None, ctx: Contex
         "(default `raw`). Set preload=False for very large files."
     ),
 )
-async def mne_load_raw(path: str, name: str = "raw", preload: bool = True, ctx: Context = None) -> str:
+async def mne_load_raw(
+    path: str, name: str = "raw", preload: bool = True, ctx: Context = None
+) -> str:
     return await _exec(ops.load_raw, ctx, path, name, preload)
 
 
 # ─── Group 3: Preprocessing ─────────────────────────────────────────────────────
+
 
 @mcp.tool(
     name="mne_filter",
@@ -310,7 +329,9 @@ async def mne_filter(
     name="mne_resample",
     description="Resample a Raw/Epochs object to a new sampling frequency (Hz), in place.",
 )
-async def mne_resample(name: str = "raw", sfreq: float = 250.0, ctx: Context = None) -> str:
+async def mne_resample(
+    name: str = "raw", sfreq: float = 250.0, ctx: Context = None
+) -> str:
     return await _exec(ops.resample, ctx, name, sfreq)
 
 
@@ -318,7 +339,9 @@ async def mne_resample(name: str = "raw", sfreq: float = 250.0, ctx: Context = N
     name="mne_crop",
     description="Crop a Raw/Epochs/Evoked object to the time window [tmin, tmax] seconds, in place.",
 )
-async def mne_crop(name: str = "raw", tmin: float = 0.0, tmax: float = None, ctx: Context = None) -> str:
+async def mne_crop(
+    name: str = "raw", tmin: float = 0.0, tmax: float = None, ctx: Context = None
+) -> str:
     return await _exec(ops.crop, ctx, name, tmin, tmax)
 
 
@@ -331,7 +354,9 @@ async def mne_crop(name: str = "raw", tmin: float = 0.0, tmax: float = None, ctx
         "default (set via `mne-mcp configure`)."
     ),
 )
-async def mne_set_montage(name: str = "raw", montage: str = None, ctx: Context = None) -> str:
+async def mne_set_montage(
+    name: str = "raw", montage: str = None, ctx: Context = None
+) -> str:
     return await _exec(ops.set_montage, ctx, name, montage)
 
 
@@ -342,7 +367,9 @@ async def mne_set_montage(name: str = "raw", montage: str = None, ctx: Context =
         "comma-separated list of channel names (e.g. 'TP9,TP10')."
     ),
 )
-async def mne_set_reference(name: str = "raw", ref_channels: str = "average", ctx: Context = None) -> str:
+async def mne_set_reference(
+    name: str = "raw", ref_channels: str = "average", ctx: Context = None
+) -> str:
     return await _exec(ops.set_reference, ctx, name, ref_channels)
 
 
@@ -353,7 +380,9 @@ async def mne_set_reference(name: str = "raw", ref_channels: str = "average", ct
         "to existing bads; set replace=true to overwrite."
     ),
 )
-async def mne_mark_bad_channels(name: str = "raw", bads: str = "", replace: bool = False, ctx: Context = None) -> str:
+async def mne_mark_bad_channels(
+    name: str = "raw", bads: str = "", replace: bool = False, ctx: Context = None
+) -> str:
     return await _exec(ops.mark_bad_channels, ctx, name, bads, replace)
 
 
@@ -361,17 +390,26 @@ async def mne_mark_bad_channels(name: str = "raw", bads: str = "", replace: bool
     name="mne_interpolate_bads",
     description="Interpolate currently-marked bad channels using spherical splines (requires a montage).",
 )
-async def mne_interpolate_bads(name: str = "raw", reset_bads: bool = True, ctx: Context = None) -> str:
+async def mne_interpolate_bads(
+    name: str = "raw", reset_bads: bool = True, ctx: Context = None
+) -> str:
     return await _exec(ops.interpolate_bads, ctx, name, reset_bads)
 
 
 # ─── Group 4: Visualization ─────────────────────────────────────────────────────
 
+
 @mcp.tool(
     name="mne_plot_psd",
     description="Plot the power spectral density of a Raw/Epochs/Evoked object. Returns a PNG path.",
 )
-async def mne_plot_psd(name: str = "raw", fmin: float = 0.0, fmax: float = None, picks: str = None, ctx: Context = None) -> str:
+async def mne_plot_psd(
+    name: str = "raw",
+    fmin: float = 0.0,
+    fmax: float = None,
+    picks: str = None,
+    ctx: Context = None,
+) -> str:
     return await _exec(ops.plot_psd, ctx, name, fmin, fmax, picks)
 
 
@@ -379,7 +417,13 @@ async def mne_plot_psd(name: str = "raw", fmin: float = 0.0, fmax: float = None,
     name="mne_plot_raw",
     description="Plot raw signal traces (a window of channels over time). Returns a PNG path.",
 )
-async def mne_plot_raw(name: str = "raw", start: float = 0.0, duration: float = 20.0, n_channels: int = 20, ctx: Context = None) -> str:
+async def mne_plot_raw(
+    name: str = "raw",
+    start: float = 0.0,
+    duration: float = 20.0,
+    n_channels: int = 20,
+    ctx: Context = None,
+) -> str:
     return await _exec(ops.plot_raw, ctx, name, start, duration, n_channels)
 
 
@@ -387,11 +431,17 @@ async def mne_plot_raw(name: str = "raw", start: float = 0.0, duration: float = 
     name="mne_plot_sensors",
     description="Plot the sensor/electrode layout (kind='topomap' 2D or '3d'). Returns a PNG path.",
 )
-async def mne_plot_sensors(name: str = "raw", kind: str = "topomap", show_names: bool = True, ctx: Context = None) -> str:
+async def mne_plot_sensors(
+    name: str = "raw",
+    kind: str = "topomap",
+    show_names: bool = True,
+    ctx: Context = None,
+) -> str:
     return await _exec(ops.plot_sensors, ctx, name, kind, show_names)
 
 
 # ─── Group 5: ICA ───────────────────────────────────────────────────────────────
+
 
 @mcp.tool(
     name="mne_fit_ica",
@@ -413,7 +463,9 @@ async def mne_fit_ica(
     err = _require_sklearn()
     if err:
         return f"Error: {err}"
-    return await _exec(ops.fit_ica, ctx, name, n_components, method, ica_name, random_state)
+    return await _exec(
+        ops.fit_ica, ctx, name, n_components, method, ica_name, random_state
+    )
 
 
 @mcp.tool(
@@ -428,7 +480,9 @@ async def mne_plot_ica_components(ica_name: str = "ica", ctx: Context = None) ->
     name="mne_plot_ica_sources",
     description="Plot ICA component time courses for an instrument (raw/epochs). Returns a PNG path.",
 )
-async def mne_plot_ica_sources(ica_name: str = "ica", inst_name: str = "raw", ctx: Context = None) -> str:
+async def mne_plot_ica_sources(
+    ica_name: str = "ica", inst_name: str = "raw", ctx: Context = None
+) -> str:
     return await _exec(ops.plot_ica_sources, ctx, ica_name, inst_name)
 
 
@@ -439,17 +493,28 @@ async def mne_plot_ica_sources(ica_name: str = "ica", inst_name: str = "raw", ct
         "indices to drop (e.g. '0,3'); if omitted, uses the ICA object's current exclude list."
     ),
 )
-async def mne_apply_ica(ica_name: str = "ica", inst_name: str = "raw", exclude: str = None, ctx: Context = None) -> str:
+async def mne_apply_ica(
+    ica_name: str = "ica",
+    inst_name: str = "raw",
+    exclude: str = None,
+    ctx: Context = None,
+) -> str:
     return await _exec(ops.apply_ica, ctx, ica_name, inst_name, exclude)
 
 
 # ─── Group 6: Events / Epochs / ERP ─────────────────────────────────────────────
 
+
 @mcp.tool(
     name="mne_find_events",
     description="Find stimulus/trigger events on a stim channel of a Raw object. Stores them under events_name.",
 )
-async def mne_find_events(raw_name: str = "raw", stim_channel: str = None, events_name: str = "events", ctx: Context = None) -> str:
+async def mne_find_events(
+    raw_name: str = "raw",
+    stim_channel: str = None,
+    events_name: str = "events",
+    ctx: Context = None,
+) -> str:
     return await _exec(ops.find_events, ctx, raw_name, stim_channel, events_name)
 
 
@@ -457,7 +522,9 @@ async def mne_find_events(raw_name: str = "raw", stim_channel: str = None, event
     name="mne_events_from_annotations",
     description="Convert a Raw object's annotations into an events array + event_id map (for EDF/BrainVision/EEGLAB data).",
 )
-async def mne_events_from_annotations(raw_name: str = "raw", events_name: str = "events", ctx: Context = None) -> str:
+async def mne_events_from_annotations(
+    raw_name: str = "raw", events_name: str = "events", ctx: Context = None
+) -> str:
     return await _exec(ops.events_from_annotations, ctx, raw_name, events_name)
 
 
@@ -482,7 +549,16 @@ async def mne_make_epochs(
     ctx: Context = None,
 ) -> str:
     return await _exec(
-        ops.make_epochs, ctx, raw_name, events_name, event_id, tmin, tmax, baseline, reject_eeg, epochs_name
+        ops.make_epochs,
+        ctx,
+        raw_name,
+        events_name,
+        event_id,
+        tmin,
+        tmax,
+        baseline,
+        reject_eeg,
+        epochs_name,
     )
 
 
@@ -490,7 +566,9 @@ async def mne_make_epochs(
     name="mne_plot_epochs_image",
     description="Plot an ERP image (epochs × time heatmap) for an Epochs object. Returns PNG path(s).",
 )
-async def mne_plot_epochs_image(name: str = "epochs", picks: str = None, ctx: Context = None) -> str:
+async def mne_plot_epochs_image(
+    name: str = "epochs", picks: str = None, ctx: Context = None
+) -> str:
     return await _exec(ops.plot_epochs_image, ctx, name, picks)
 
 
@@ -501,7 +579,12 @@ async def mne_plot_epochs_image(name: str = "epochs", picks: str = None, ctx: Co
         "average just that condition (else averages all). Stored under evoked_name."
     ),
 )
-async def mne_average_evoked(epochs_name: str = "epochs", condition: str = None, evoked_name: str = "evoked", ctx: Context = None) -> str:
+async def mne_average_evoked(
+    epochs_name: str = "epochs",
+    condition: str = None,
+    evoked_name: str = "evoked",
+    ctx: Context = None,
+) -> str:
     return await _exec(ops.average_evoked, ctx, epochs_name, condition, evoked_name)
 
 
@@ -509,7 +592,9 @@ async def mne_average_evoked(epochs_name: str = "epochs", condition: str = None,
     name="mne_plot_evoked",
     description="Plot an Evoked response. style: 'joint' (butterfly + topomaps, default), 'topo', or 'butterfly'. Returns PNG path.",
 )
-async def mne_plot_evoked(name: str = "evoked", style: str = "joint", ctx: Context = None) -> str:
+async def mne_plot_evoked(
+    name: str = "evoked", style: str = "joint", ctx: Context = None
+) -> str:
     return await _exec(ops.plot_evoked, ctx, name, style)
 
 
@@ -517,11 +602,14 @@ async def mne_plot_evoked(name: str = "evoked", style: str = "joint", ctx: Conte
     name="mne_plot_topomap",
     description="Plot scalp topographies of an Evoked at given times. times='auto', 'peaks', or comma-separated seconds (e.g. '0.1,0.2,0.3'). Returns PNG path.",
 )
-async def mne_plot_topomap(name: str = "evoked", times: str = "auto", ctx: Context = None) -> str:
+async def mne_plot_topomap(
+    name: str = "evoked", times: str = "auto", ctx: Context = None
+) -> str:
     return await _exec(ops.plot_topomap, ctx, name, times)
 
 
 # ─── Group 7: Time-frequency ─────────────────────────────────────────────────────
+
 
 @mcp.tool(
     name="mne_tfr_morlet",
@@ -543,6 +631,7 @@ async def mne_tfr_morlet(
 
 # ─── Group 8: Export ─────────────────────────────────────────────────────────────
 
+
 @mcp.tool(
     name="mne_save",
     description=(
@@ -550,11 +639,14 @@ async def mne_tfr_morlet(
         "Evoked → '*-ave.fif'. Other formats follow the object's .save() support."
     ),
 )
-async def mne_save(name: str, path: str, overwrite: bool = True, ctx: Context = None) -> str:
+async def mne_save(
+    name: str, path: str, overwrite: bool = True, ctx: Context = None
+) -> str:
     return await _exec(ops.save_object, ctx, name, path, overwrite)
 
 
 # ─── Group 9: Advanced analysis (decoding / connectivity / source) ───────────────
+
 
 @mcp.tool(
     name="mne_decode",
@@ -576,7 +668,9 @@ async def mne_decode(
     err = _require_sklearn()
     if err:
         return f"Error: {err}"
-    return await _exec(ops.decode_time, ctx, epochs_name, cond_a, cond_b, scoring, cv, name)
+    return await _exec(
+        ops.decode_time, ctx, epochs_name, cond_a, cond_b, scoring, cv, name
+    )
 
 
 @mcp.tool(
@@ -608,7 +702,12 @@ async def mne_connectivity(
         "Needed before building an inverse operator for source localization."
     ),
 )
-async def mne_compute_noise_cov(name: str = "epochs", tmax: float = 0.0, cov_name: str = "noise_cov", ctx: Context = None) -> str:
+async def mne_compute_noise_cov(
+    name: str = "epochs",
+    tmax: float = 0.0,
+    cov_name: str = "noise_cov",
+    ctx: Context = None,
+) -> str:
     return await _exec(ops.compute_noise_cov, ctx, name, tmax, cov_name)
 
 
@@ -620,7 +719,9 @@ async def mne_compute_noise_cov(name: str = "epochs", tmax: float = 0.0, cov_nam
         "MRI. Stored under fwd_name."
     ),
 )
-async def mne_make_forward(name: str = "evoked", fwd_name: str = "fwd", ctx: Context = None) -> str:
+async def mne_make_forward(
+    name: str = "evoked", fwd_name: str = "fwd", ctx: Context = None
+) -> str:
     err = _require_module("nibabel")
     if err:
         return f"Error: {err}"
@@ -644,7 +745,16 @@ async def mne_apply_inverse(
     stc_name: str = "stc",
     ctx: Context = None,
 ) -> str:
-    return await _exec(ops.apply_inverse_op, ctx, evoked_name, fwd_name, cov_name, method, snr, stc_name)
+    return await _exec(
+        ops.apply_inverse_op,
+        ctx,
+        evoked_name,
+        fwd_name,
+        cov_name,
+        method,
+        snr,
+        stc_name,
+    )
 
 
 @mcp.tool(
@@ -655,7 +765,9 @@ async def mne_apply_inverse(
         "is unavailable the estimate is still computed and can be inspected via mne_run_code."
     ),
 )
-async def mne_plot_source_estimate(stc_name: str = "stc", hemi: str = "both", time: float = None, ctx: Context = None) -> str:
+async def mne_plot_source_estimate(
+    stc_name: str = "stc", hemi: str = "both", time: float = None, ctx: Context = None
+) -> str:
     err = _require_module("pyvista")
     if err:
         return f"Error: {err}"

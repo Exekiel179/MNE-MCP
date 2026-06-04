@@ -128,7 +128,9 @@ def _describe_evoked(evoked) -> str:
     except Exception:
         pass
     try:
-        lines.append(f"- Time window: {evoked.times[0]:.3f} to {evoked.times[-1]:.3f} s")
+        lines.append(
+            f"- Time window: {evoked.times[0]:.3f} to {evoked.times[-1]:.3f} s"
+        )
     except Exception:
         pass
     lines += _info_block(evoked.info)

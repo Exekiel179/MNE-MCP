@@ -27,18 +27,18 @@ load_dotenv()
 # Precedence for the runtime values: environment variable > config file > built-in.
 
 DEFAULT_CONFIG: dict = {
-    "line_freq": 50,            # mains line-noise frequency (50 CN/EU, 60 US)
+    "line_freq": 50,  # mains line-noise frequency (50 CN/EU, 60 US)
     "default_montage": "standard_1020",
-    "filter_l_freq": 0.1,       # default high-pass edge (Hz)
-    "filter_h_freq": 40.0,      # default low-pass edge (Hz)
-    "reject_eeg_uv": None,      # default peak-to-peak EEG rejection in microvolts
-    "ica_method": "fastica",    # fastica | infomax | picard
-    "ica_n_components": None,   # int, float (variance frac), or null
-    "epoch_tmin": -0.2,         # default epoch start (s)
-    "epoch_tmax": 0.5,          # default epoch end (s)
-    "results_dir": None,        # null → temp dir
-    "data_dir": None,           # null → current dir
-    "timeout": 300,             # per-operation timeout (s)
+    "filter_l_freq": 0.1,  # default high-pass edge (Hz)
+    "filter_h_freq": 40.0,  # default low-pass edge (Hz)
+    "reject_eeg_uv": None,  # default peak-to-peak EEG rejection in microvolts
+    "ica_method": "fastica",  # fastica | infomax | picard
+    "ica_n_components": None,  # int, float (variance frac), or null
+    "epoch_tmin": -0.2,  # default epoch start (s)
+    "epoch_tmax": 0.5,  # default epoch end (s)
+    "results_dir": None,  # null → temp dir
+    "data_dir": None,  # null → current dir
+    "timeout": 300,  # per-operation timeout (s)
 }
 
 # Keys that are validated as one of a fixed set.
@@ -104,6 +104,7 @@ def _get_positive_int_env(name: str, default: int) -> int:
 
 
 # ─── Resolved default accessors (used by the operation layer) ────────────────────
+
 
 def get_default_montage() -> str:
     return get_config_value("default_montage") or "standard_1020"
