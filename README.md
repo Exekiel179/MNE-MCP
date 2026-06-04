@@ -1,5 +1,6 @@
 # MNE-MCP
 
+[![CI](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml/badge.svg)](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/protocol-MCP-green.svg)](https://modelcontextprotocol.io)
@@ -14,8 +15,9 @@ Describe your analysis in plain language — MNE-MCP loads your recording, runs 
 (filtering, ICA, epoching, ERP/ERF averaging, time-frequency, source-level work via code),
 saves the figures, and explains the results.
 
-> Works in **Claude Code** and **opencode** (any MCP-capable client). Pairs with two bundled
-> Agent **Skills** (`mne-analyst`, `mne-mcp-guard`) for reliable, archived workflows.
+> Works in **Claude Code** and **opencode** (any MCP-capable client). Pairs with bundled
+> Agent **Skills** — `mne-analyst`, `mne-mcp-guard`, plus a skeptical **analysis suite**
+> (`mne-methodology-critic` + per-category skills) for reliable, archived workflows.
 
 ---
 
@@ -150,13 +152,20 @@ runtime: **environment variable > config file > built-in**. View the active conf
 
 ### Install the Skills
 
-`mne-mcp setup` installs these automatically. To do it by hand:
+`mne-mcp setup` installs all bundled skills automatically. To do it by hand, copy every folder under
+`skills/` into your skills dir — the suite is `mne-analyst`, `mne-mcp-guard`, `mne-methodology-critic`,
+plus the per-category analysis skills (`mne-preprocess`, `mne-artifacts`, `mne-erp`, `mne-spectral`,
+`mne-timefreq`, `mne-connectivity`, `mne-source`, `mne-decoding`, `mne-stats`, `mne-advanced`) and the
+write-up skill (`mne-writeup`):
 
 ```cmd
 set SKILLS_DIR=%USERPROFILE%\.claude\skills
-xcopy /E /I skills\mne-analyst    "%SKILLS_DIR%\mne-analyst"
-xcopy /E /I skills\mne-mcp-guard  "%SKILLS_DIR%\mne-mcp-guard"
+for %S in (mne-analyst mne-mcp-guard mne-methodology-critic mne-preprocess mne-artifacts mne-erp mne-spectral mne-timefreq mne-connectivity mne-source mne-decoding mne-stats mne-advanced mne-writeup) do xcopy /E /I skills\%S "%SKILLS_DIR%\%S"
 ```
+
+> `mne-mcp setup` also installs the `mne-methodology-critic` **subagent** to `~/.claude/agents/` (the
+> skills' Phase 3 dispatches it in an isolated context). Copy `agents\mne-methodology-critic.md` there
+> by hand if installing manually.
 
 Restart your client after installation. (Skills are a Claude Code feature; Codex / opencode use the
 MCP server directly.)

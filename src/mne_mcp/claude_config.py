@@ -125,6 +125,7 @@ def configure_claude_settings(
 
 # ─── OpenAI Codex CLI (~/.codex/config.toml) ─────────────────────────────────────
 
+
 def get_codex_config_path() -> Path:
     override = os.environ.get("MNE_MCP_CODEX_CONFIG")
     if override:
@@ -139,16 +140,20 @@ def _toml_basic_string(s: str) -> str:
 def _codex_block() -> str:
     command, args = get_entrypoint_config()
     args_toml = "[" + ", ".join(_toml_basic_string(a) for a in args) + "]"
-    env_toml = "{ " + ", ".join(
-        f"{k} = {_toml_basic_string(v)}" for k, v in server_env().items()
-    ) + " }"
-    return "\n".join([
-        f"[mcp_servers.{SERVER_KEY}]",
-        f"command = {_toml_basic_string(command)}",
-        f"args = {args_toml}",
-        f"env = {env_toml}",
-        "enabled = true",
-    ])
+    env_toml = (
+        "{ "
+        + ", ".join(f"{k} = {_toml_basic_string(v)}" for k, v in server_env().items())
+        + " }"
+    )
+    return "\n".join(
+        [
+            f"[mcp_servers.{SERVER_KEY}]",
+            f"command = {_toml_basic_string(command)}",
+            f"args = {args_toml}",
+            f"env = {env_toml}",
+            "enabled = true",
+        ]
+    )
 
 
 def _merge_codex_block(text: str, block: str) -> tuple[str, bool]:
@@ -180,11 +185,16 @@ def configure_codex(path: Path | None = None) -> dict:
     new_text, had = _merge_codex_block(text, _codex_block())
     path.write_text(new_text, encoding="utf-8")
     status = "updated" if had else ("added" if existed else "created")
-    return {"client": "codex", "status": status, "path": str(path),
-            "backup": str(backup) if backup else None}
+    return {
+        "client": "codex",
+        "status": status,
+        "path": str(path),
+        "backup": str(backup) if backup else None,
+    }
 
 
 # ─── opencode (~/.config/opencode/opencode.json) ────────────────────────────────
+
 
 def get_opencode_config_path() -> Path:
     override = os.environ.get("MNE_MCP_OPENCODE_CONFIG")
@@ -232,13 +242,32 @@ def configure_opencode(path: Path | None = None) -> dict:
         status = "unchanged"
     else:
         status = "updated"
-    return {"client": "opencode", "status": status, "path": str(path),
-            "backup": str(backup) if backup else None}
+    return {
+        "client": "opencode",
+        "status": status,
+        "path": str(path),
+        "backup": str(backup) if backup else None,
+    }
 
 
 # ─── Companion skills ────────────────────────────────────────────────────────────
 
-SKILL_NAMES = ("mne-analyst", "mne-mcp-guard")
+SKILL_NAMES = (
+    "mne-analyst",
+    "mne-mcp-guard",
+    "mne-methodology-critic",
+    "mne-preprocess",
+    "mne-artifacts",
+    "mne-erp",
+    "mne-spectral",
+    "mne-timefreq",
+    "mne-connectivity",
+    "mne-source",
+    "mne-decoding",
+    "mne-stats",
+    "mne-advanced",
+    "mne-writeup",
+)
 
 
 def get_skills_source_dir() -> Path | None:
@@ -248,12 +277,15 @@ def get_skills_source_dir() -> Path | None:
 
 
 def install_skills(dest: Path | None = None) -> dict:
-    """Copy the analyst + guard skills into the Claude Code skills directory."""
+    """Copy the bundled MNE skills (analyst, guard, methodology critic + the analysis suite) into the Claude Code skills directory."""
     dest = dest or (Path.home() / ".claude" / "skills")
     src = get_skills_source_dir()
     if src is None:
-        return {"installed": [], "dest": str(dest),
-                "error": "skills source not found (run from a source checkout)"}
+        return {
+            "installed": [],
+            "dest": str(dest),
+            "error": "skills source not found (run from a source checkout)",
+        }
     dest.mkdir(parents=True, exist_ok=True)
     installed = []
     for name in SKILL_NAMES:
@@ -264,6 +296,38 @@ def install_skills(dest: Path | None = None) -> dict:
         if d.exists():
             shutil.rmtree(d)
         shutil.copytree(s, d)
+        installed.append(name)
+    return {"installed": installed, "dest": str(dest), "error": None}
+
+
+# ─── Companion subagents ─────────────────────────────────────────────────────────
+
+AGENT_NAMES = ("mne-methodology-critic",)
+
+
+def get_agents_source_dir() -> Path | None:
+    """Locate the repo's agents/ dir (present in a source checkout / editable install)."""
+    candidate = Path(__file__).resolve().parents[2] / "agents"
+    return candidate if candidate.exists() else None
+
+
+def install_agents(dest: Path | None = None) -> dict:
+    """Copy the bundled subagents (e.g. mne-methodology-critic) into the Claude Code agents dir."""
+    dest = dest or (Path.home() / ".claude" / "agents")
+    src = get_agents_source_dir()
+    if src is None:
+        return {
+            "installed": [],
+            "dest": str(dest),
+            "error": "agents source not found (run from a source checkout)",
+        }
+    dest.mkdir(parents=True, exist_ok=True)
+    installed = []
+    for name in AGENT_NAMES:
+        s = src / f"{name}.md"
+        if not s.exists():
+            continue
+        shutil.copy2(s, dest / f"{name}.md")
         installed.append(name)
     return {"installed": installed, "dest": str(dest), "error": None}
 
@@ -279,8 +343,12 @@ _CLIENT_FUNCS = {
 
 def _claude_summary() -> dict:
     r = configure_claude_settings()
-    return {"client": "claude", "status": r["status"], "path": r["settings_path"],
-            "backup": r["backup_path"]}
+    return {
+        "client": "claude",
+        "status": r["status"],
+        "path": r["settings_path"],
+        "backup": r["backup_path"],
+    }
 
 
 def configure_clients(clients, with_skills: bool = True) -> dict:
@@ -292,4 +360,5 @@ def configure_clients(clients, with_skills: bool = True) -> dict:
             raise ValueError(f"Unknown client: {c}. Valid: {sorted(_CLIENT_FUNCS)}")
         results.append(func())
     skills = install_skills() if with_skills else None
-    return {"clients": results, "skills": skills}
+    agents = install_agents() if with_skills else None
+    return {"clients": results, "skills": skills, "agents": agents}
