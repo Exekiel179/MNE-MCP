@@ -3,19 +3,15 @@
 All notable changes to MNE-MCP are documented here. The format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are pre-1.0 and may move quickly.
 
-## [Unreleased]
+## [0.2.0] — 2026-06-05
 
 ### Added
-- Test **coverage** in CI (pytest-cov); added CLI, server-layer, and broad operation-layer tests
-  that lift coverage to ~71%, with a 65% regression floor.
+- Test **coverage** in CI (pytest-cov); CLI, server-layer, and broad operation-layer tests lift
+  coverage to ~71%, with a 65% regression floor.
 - **`py.typed`** marker (PEP 561) — the package ships inline type hints.
 - **`CONTRIBUTING.md`**, GitHub issue/PR templates, and a **`release.yml`** workflow that publishes
   to PyPI via Trusted Publishing on a version tag.
 - Opt GitHub Actions into **Node.js 24** (clears the Node 20 deprecation warning).
-
-## [0.2.0] — 2026-06-05
-
-### Added
 - **Continuous integration** (`.github/workflows/ci.yml`): unit tests on Linux/macOS/Windows ×
   Python 3.10/3.12; a **NumPy 1.x / 2.x compatibility matrix**; a **real-data eegbci smoke test**;
   and a black/isort lint job.
