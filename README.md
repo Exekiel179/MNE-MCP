@@ -82,6 +82,26 @@ for the full guide.
 > `--clients claude,codex`. The `mne_*` tools require **one client restart** afterwards (MCP servers
 > load at startup).
 
+### Run via `uvx` / `pipx` (standard MCP, after PyPI release)
+
+Once published to PyPI, the most portable path is the standard MCP launcher — no clone, no `setup`.
+Add this to your client config (`~/.claude.json` for Claude Code, `claude_desktop_config.json` for
+Claude Desktop):
+
+```json
+{ "mcpServers": { "mne": { "command": "uvx", "args": ["mne-mcp", "serve", "--transport", "stdio"] } } }
+```
+
+`uvx` (from [uv](https://docs.astral.sh/uv/)) fetches and runs `mne-mcp` on demand. Because MNE pulls
+in a large scientific stack, a **persistent** install is usually snappier than re-resolving each run:
+
+```bash
+pipx install mne-mcp        # or: uv tool install mne-mcp
+```
+
+then set the config `command` to `mne-mcp` with `args: ["serve", "--transport", "stdio"]`. The source
+install above remains the path for development.
+
 ---
 
 ## Configuration

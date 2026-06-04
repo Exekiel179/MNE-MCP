@@ -75,6 +75,25 @@ bash scripts/install.sh            # macOS / Linux
 > 并安装技能；可用 `--clients claude,codex` 缩小范围。无论哪种方式，装完都需**重启一次客户端**，
 > `mne_*` 工具才会加载（MCP 在客户端启动时加载）。
 
+### 用 `uvx` / `pipx` 运行（标准 MCP 方式，PyPI 发布后）
+
+发布到 PyPI 后，最通用的方式是标准 MCP 启动器——无需克隆、无需 `setup`。在客户端配置里加入
+（Claude Code 为 `~/.claude.json`，Claude Desktop 为 `claude_desktop_config.json`）：
+
+```json
+{ "mcpServers": { "mne": { "command": "uvx", "args": ["mne-mcp", "serve", "--transport", "stdio"] } } }
+```
+
+`uvx`（来自 [uv](https://docs.astral.sh/uv/)）会按需拉取并运行 `mne-mcp`。由于 MNE 依赖较重，
+**持久安装**通常比每次临时解析更快：
+
+```bash
+pipx install mne-mcp        # 或：uv tool install mne-mcp
+```
+
+随后把配置里的 `command` 指向 `mne-mcp`、`args: ["serve", "--transport", "stdio"]`。上面的源码安装
+仍是开发者路径。
+
 ---
 
 ## 配置
