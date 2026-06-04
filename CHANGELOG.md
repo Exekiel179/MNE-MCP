@@ -3,6 +3,15 @@
 All notable changes to MNE-MCP are documented here. The format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are pre-1.0 and may move quickly.
 
+## [Unreleased]
+
+### Added
+- Test **coverage** reporting in CI (pytest-cov) with a 45% regression floor.
+- **`py.typed`** marker (PEP 561) — the package ships inline type hints.
+- **`CONTRIBUTING.md`**, GitHub issue/PR templates, and a **`release.yml`** workflow that publishes
+  to PyPI via Trusted Publishing on a version tag.
+- Opt GitHub Actions into **Node.js 24** (clears the Node 20 deprecation warning).
+
 ## [0.2.0] — 2026-06-05
 
 ### Added
