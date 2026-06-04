@@ -11,6 +11,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   unit:
     name: unit · ${{ matrix.os }} · py${{ matrix.python }}
@@ -29,8 +32,8 @@ jobs:
       - run: pip install -e ".[ica,dev]"
       - name: Compile check
         run: python -m compileall src/mne_mcp
-      - name: Unit tests
-        run: pytest -q
+      - name: Unit tests (with coverage)
+        run: pytest -q --cov=mne_mcp --cov-report=term-missing --cov-fail-under=45
 
   numpy-compat:
     name: numpy compat · ${{ matrix.numpy }}
