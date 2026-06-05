@@ -312,9 +312,29 @@ MNE-MCP 的运行环境要求较为宽松：Python 3.10 及以上版本，MNE-Py
 
 该示例表明，研究者只需用自然语言描述目标，系统即可自动完成"看图—判断—调参—解读"的完整循环，并在每一步留存等效代码与图像，兼顾易用性与流程可复现性；与此同时，关键判断仍由研究者确认，统计推断仍需在组水平上完成。
 
+**3.4 真实分析案例：运动想象 EEG 的端到端流程**
+
+为在真实数据上完整展示系统能力，本节给出一个经 MNE-MCP 以自然语言逐步驱动、并由 mne-analyst 技能自动归档的端到端案例。数据取自公开的 PhysioNet EEG Motor Movement/Imagery 数据集（EEGBCI，由 BCI2000 系统采集；Schalk et al., 2004; Goldberger et al., 2000），被试 S001 的 runs 4、8、12，任务为想象左手与右手握拳（64 导联，160 Hz，三段拼接约 375 s）。整个分析——从加载、预处理、ICA、分段、叠加平均，到 Morlet 时频分析与基于共空间模式的解码——均通过对话完成；全部图像、可一键复现的等效脚本（pipeline.py）、预处理后的 FIF 对象与一份研究报告被按序号归档至工作目录的 mne_result/，从而把第 2.3 节所述的"等效代码 + 归档"可复现机制落到了一次具体的真实分析上（见图 5）。
+
+**预处理与质量检查（图 5a–c）。** 原始功率谱呈典型 1/f 衰减，可见约 10 Hz 的 mu 节律隆起与一个清晰的 60 Hz 工频尖峰——值得注意的是，该数据于美国采集、市电为 60 Hz，与系统配置的默认 50 Hz 不同，需由研究者在对话中据实指明（这亦说明可配置默认值与人对前提的确认缺一不可）；经 1–40 Hz 带通、60 Hz 陷波与平均参考后，工频峰消失（图 5b）。在 1 Hz 高通数据上拟合的 ICA 将 IC0 识别为典型的额部眨眼成分并予以剔除（图 5c）。
+
+**时域与频域（图 5d–e、图 6）。** 围绕事件以 −1–3 s 分段、按 300 µV 峰峰值阈剔除后保留 40/45 个试次（左 21、右 19）。叠加平均仅显示一个线索诱发的瞬态响应（约 0.29 s 达峰、额-中央分布），随后即回到基线（图 5d–e）——运动想象的持续特征并不显现于时域。转入时频分析后则可见教科书式的标志（图 6）：经基线 logratio 校正的 C3/C4 时频谱呈现贯穿整个想象期的 mu（~10–14 Hz）与 beta（~18–26 Hz）功率抑制，即事件相关去同步（ERD；Pfurtscheller & Lopes da Silva, 1999），并呈对侧倾向（想象右手时左半球 C3 的抑制更强）。这一时域/频域对比直观说明了为何运动想象脑机接口普遍以 mu/beta 功率而非 ERP 幅值为特征。
+
+**解码与诚实的边界（图 5f）。** 将数据带通至 7–30 Hz、截取持续想象期 0.5–2.5 s 后，以共空间模式（CSP；Ramoser et al., 2000）提取空间特征、再以线性判别分类，20 折交叉验证的左右手二分类准确率为 61.9% ± 19.6%（随机水平 52.5%）；CSP 空间模式聚焦于双侧感觉运动区（图 5f），提示判别信息源自真实的运动皮层信号而非伪迹。需要强调的是，该准确率虽在数值上高于随机，但标准差很大——这源于单被试、仅 40 个试次且未做被试特异的频段/时窗优化，因此只能作为方法学演示而非确证性结论。这恰是第 2.4 节方法学审查代理所要把关的情形：单被试的交叉验证波动不足以支撑群体层面的推断，后者尚需多被试设计与基于置换的时频-空间显著性检验。
+
+与第 2.6 节最小化的 Berger 效应验证相比，本案例展示的是一条覆盖高级工具（时频、CSP 解码）的完整真实工作流：系统不仅能跑通流程、复现公认的电生理标志，更能把整套分析连同可复现脚本与图像自洽地归档，便于审计与复用——同时也以诚实的不确定性表述守住了演示与确证之间的边界。
+
+![](media/figure5_casestudy.png)
+
+**图 5　运动想象 EEG 案例（PhysioNet eegbci S001，左/右手想象）经 MNE-MCP 的端到端产物：(a) 原始 PSD（含 60 Hz 工频峰）；(b) 滤波+陷波+平均参考后；(c) ICA 成分（IC0 眨眼，已剔除）；(d) 左手想象诱发响应（joint）；(e) C3 单试次 ERP 图像；(f) CSP 空间模式**
+
+![](media/casestudy/12_tfr_ERD_C3_C4.png)
+
+**图 6　案例关键结果：基线校正（logratio）后 C3、C4 在左/右手想象下的 Morlet 时频谱。蓝色为功率抑制（ERD）；可见贯穿想象期的 mu/beta ERD 与对侧倾向，而这一持续特征在时域叠加平均（图 5d）中并不显现**
+
 **4 结论**
 
-本文介绍了 MNE-MCP：一个基于模型上下文协议（MCP）的开源系统，将 MNE-Python 集成至 Claude Code 等 MCP 客户端，以支持自然语言驱动的神经电生理分析。针对该领域分析"有状态、强可视化"的本质，系统以常驻内存会话与"自动出图—AI 读图"闭环为核心设计，提供 38 个结构化工具（覆盖数据读取、预处理、ICA、事件分段、ERP/ERF、时频，以及源定位、连接性与解码等高级分析）与一个通用代码执行工具，并配以一套 14 个 Agent 技能——从提供标准流程与归档的 mne-analyst、做技术防错的 mne-mcp-guard，到按分析大类组织、遵循"质询—分析—审查"流程的怀疑式技能，以及在隔离上下文中裁定统计与科学有效性的独立方法学审查代理 mne-methodology-critic——从而将执行层面的可靠性与科学层面的有效性分别保障。系统通过 59 个单元测试（覆盖率约 71%）、跨 Linux/macOS/Windows 与多 Python/NumPy 版本的持续集成，以及一例真实数据（PhysioNet eegbci）端到端验证完成质量保证，其中真实数据测试稳健复现了 Berger 效应（闭眼枕区 α 功率显著升高）。
+本文介绍了 MNE-MCP：一个基于模型上下文协议（MCP）的开源系统，将 MNE-Python 集成至 Claude Code 等 MCP 客户端，以支持自然语言驱动的神经电生理分析。针对该领域分析"有状态、强可视化"的本质，系统以常驻内存会话与"自动出图—AI 读图"闭环为核心设计，提供 38 个结构化工具（覆盖数据读取、预处理、ICA、事件分段、ERP/ERF、时频，以及源定位、连接性与解码等高级分析）与一个通用代码执行工具，并配以一套 14 个 Agent 技能——从提供标准流程与归档的 mne-analyst、做技术防错的 mne-mcp-guard，到按分析大类组织、遵循"质询—分析—审查"流程的怀疑式技能，以及在隔离上下文中裁定统计与科学有效性的独立方法学审查代理 mne-methodology-critic——从而将执行层面的可靠性与科学层面的有效性分别保障。系统通过 59 个单元测试（覆盖率约 71%）、跨 Linux/macOS/Windows 与多 Python/NumPy 版本的持续集成，以及一例真实数据（PhysioNet eegbci）端到端验证完成质量保证，其中真实数据测试稳健复现了 Berger 效应（闭眼枕区 α 功率显著升高）。此外，一例真实运动想象分析（同为 PhysioNet eegbci 数据）端到端演示了涵盖 Morlet 时频（对侧 mu/beta ERD）与 CSP 解码的完整工作流，并自洽归档了可一键复现的脚本与图像，同时以诚实的不确定性表述界定了其单被试演示的边界（见 3.4 节）。
 
 MNE-MCP 的核心贡献在于实现并验证了一条契合神经电生理分析特点的工作流程：由 LLM 根据用户意图编排 MNE 流程、执行并回传结果与图像，再由 AI 读取图像作出解读与下一步建议；在此过程中，持久会话避免了大型对象的反复重载，"自动出图—AI 读图"闭环弥补了一次性代码执行范式难以"看见"中间图像的不足，每步返回的等效代码与归档机制则保障了工作流的复算与共享。与以 Python/R 代码生成为主的通用 LLM 数据分析方案相比，该实现路径更契合以图形交互为核心的神经科学分析场景。
 
@@ -331,6 +351,8 @@ Anthropic. (2025). *The complete guide to building skills for Claude*. Anthropic
 Delorme, A., & Makeig, S. (2004). EEGLAB: An open source toolbox for analysis of single-trial EEG dynamics including independent component analysis. *Journal of Neuroscience Methods, 134*(1), 9–21. https://doi.org/10.1016/j.jneumeth.2003.10.009
 
 Donoghue, T., Haller, M., Peterson, E. J., Varma, P., Sebastian, P., Gao, R., Noto, T., Lara, A. H., Wallis, J. D., Knight, R. T., Shestyuk, A., & Voytek, B. (2020). Parameterizing neural power spectra into periodic and aperiodic components. *Nature Neuroscience, 23*(12), 1655–1665. https://doi.org/10.1038/s41593-020-00744-x
+
+Goldberger, A. L., Amaral, L. A. N., Glass, L., Hausdorff, J. M., Ivanov, P. C., Mark, R. G., Mietus, J. E., Moody, G. B., Peng, C.-K., & Stanley, H. E. (2000). PhysioBank, PhysioToolkit, and PhysioNet: Components of a new research resource for complex physiologic signals. *Circulation, 101*(23), e215–e220. https://doi.org/10.1161/01.CIR.101.23.e215
 
 Google Cloud. (2025). *What is Model Context Protocol (MCP)?* Google Cloud Documentation. https://cloud.google.com/discover/what-is-model-context-protocol
 
@@ -358,7 +380,13 @@ Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O.,
 
 Pernet, C. R., Appelhoff, S., Gorgolewski, K. J., Flandin, G., Phillips, C., Delorme, A., & Oostenveld, R. (2019). EEG-BIDS, an extension to the brain imaging data structure for electroencephalography. *Scientific Data, 6*, 103. https://doi.org/10.1038/s41597-019-0104-8
 
+Pfurtscheller, G., & Lopes da Silva, F. H. (1999). Event-related EEG/MEG synchronization and desynchronization: Basic principles. *Clinical Neurophysiology, 110*(11), 1842–1857. https://doi.org/10.1016/S1388-2457(99)00141-8
+
 Rahman, M., Bhuiyan, A., Islam, M. S., Laskar, M. T. R., Mahbub, R., Masry, A., Joty, S., & Hoque, E. (2025). *LLM-based data science agents: A survey of capabilities, challenges, and future directions* (arXiv:2510.04023). arXiv. https://doi.org/10.48550/arXiv.2510.04023
+
+Ramoser, H., Müller-Gerking, J., & Pfurtscheller, G. (2000). Optimal spatial filtering of single trial EEG during imagined hand movement. *IEEE Transactions on Rehabilitation Engineering, 8*(4), 441–446. https://doi.org/10.1109/86.895946
+
+Schalk, G., McFarland, D. J., Hinterberger, T., Birbaumer, N., & Wolpaw, J. R. (2004). BCI2000: A general-purpose brain–computer interface (BCI) system. *IEEE Transactions on Biomedical Engineering, 51*(6), 1034–1043. https://doi.org/10.1109/TBME.2004.827072
 
 Virtanen, P., Gommers, R., Oliphant, T. E., Haberland, M., Reddy, T., Cournapeau, D., Burovski, E., Peterson, P., Weckesser, W., Bright, J., van der Walt, S. J., Brett, M., Wilson, J., Millman, K. J., Mayorov, N., Nelson, A. R. J., Jones, E., Kern, R., Larson, E., … SciPy 1.0 Contributors. (2020). SciPy 1.0: Fundamental algorithms for scientific computing in Python. *Nature Methods, 17*, 261–272. https://doi.org/10.1038/s41592-019-0686-2
 
