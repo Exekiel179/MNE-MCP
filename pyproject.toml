@@ -73,6 +73,12 @@ path = "src/mne_mcp/_version.py"
 [tool.hatch.build.targets.wheel]
 packages = ["src/mne_mcp"]
 
+[tool.hatch.build.targets.wheel.force-include]
+# Ship the companion skills + subagents inside the wheel so a plain
+# `pip install mne-mcp` carries them; `mne-mcp setup` installs from this copy.
+"skills" = "mne_mcp/_bundled/skills"
+"agents" = "mne_mcp/_bundled/agents"
+
 [tool.black]
 line-length = 88
 target-version = ["py310"]

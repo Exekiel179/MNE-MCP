@@ -271,7 +271,10 @@ SKILL_NAMES = (
 
 
 def get_skills_source_dir() -> Path | None:
-    """Locate the repo's skills/ dir (present in a source checkout / editable install)."""
+    """Locate the skills/ dir: bundled inside the installed wheel, else the repo checkout."""
+    bundled = Path(__file__).resolve().parent / "_bundled" / "skills"
+    if bundled.exists():
+        return bundled
     candidate = Path(__file__).resolve().parents[2] / "skills"
     return candidate if candidate.exists() else None
 
@@ -306,7 +309,10 @@ AGENT_NAMES = ("mne-methodology-critic",)
 
 
 def get_agents_source_dir() -> Path | None:
-    """Locate the repo's agents/ dir (present in a source checkout / editable install)."""
+    """Locate the agents/ dir: bundled inside the installed wheel, else the repo checkout."""
+    bundled = Path(__file__).resolve().parent / "_bundled" / "agents"
+    if bundled.exists():
+        return bundled
     candidate = Path(__file__).resolve().parents[2] / "agents"
     return candidate if candidate.exists() else None
 
