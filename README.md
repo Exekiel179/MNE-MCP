@@ -82,21 +82,23 @@ for the full guide.
 > `--clients claude,codex`. The `mne_*` tools require **one client restart** afterwards (MCP servers
 > load at startup).
 
-### Run via `uvx` / `pipx` (standard MCP, after PyPI release)
+### Run via `uvx` / `pipx` (standard MCP — recommended)
 
-Once published to PyPI, the most portable path is the standard MCP launcher — no clone, no `setup`.
-Add this to your client config (`~/.claude.json` for Claude Code, `claude_desktop_config.json` for
-Claude Desktop):
+`mne-mcp` is [published on PyPI](https://pypi.org/project/mne-mcp/), so the most portable path is the
+standard MCP launcher — no clone, no `setup`. Add this to your client config (`~/.claude.json` for
+Claude Code, `claude_desktop_config.json` for Claude Desktop):
 
 ```json
-{ "mcpServers": { "mne": { "command": "uvx", "args": ["mne-mcp", "serve", "--transport", "stdio"] } } }
+{ "mcpServers": { "mne": { "command": "uvx", "args": ["--from", "mne-mcp[ica]", "mne-mcp", "serve", "--transport", "stdio"] } } }
 ```
 
-`uvx` (from [uv](https://docs.astral.sh/uv/)) fetches and runs `mne-mcp` on demand. Because MNE pulls
-in a large scientific stack, a **persistent** install is usually snappier than re-resolving each run:
+`uvx` (from [uv](https://docs.astral.sh/uv/)) fetches and runs `mne-mcp` on demand. The `[ica]` extra
+pulls in scikit-learn so ICA works out of the box; swap it for **`mne-mcp[full]`** to also get the
+advanced tools (source localization, connectivity, decoding, BIDS). Because MNE pulls in a large
+scientific stack, a **persistent** install is usually snappier than re-resolving each run:
 
 ```bash
-pipx install mne-mcp        # or: uv tool install mne-mcp
+pipx install "mne-mcp[ica]"        # or: uv tool install "mne-mcp[ica]"  (use [full] for advanced tools)
 ```
 
 then set the config `command` to `mne-mcp` with `args: ["serve", "--transport", "stdio"]`. The source

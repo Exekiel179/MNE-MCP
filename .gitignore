@@ -27,6 +27,12 @@ demo_study/
 # Reference material (input docs, not part of the package)
 SPSS-MCP*.docx
 
+# Coverage artifacts
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
 # OS / editor
 .DS_Store
 Thumbs.db
