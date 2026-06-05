@@ -27,6 +27,9 @@ demo_study/
 # Reference material (input docs, not part of the package)
 SPSS-MCP*.docx
 
+# Paper build intermediate (pandoc output, before apa7_polish)
+paper/_base.docx
+
 # Coverage artifacts
 .coverage
 .coverage.*
