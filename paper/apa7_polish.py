@@ -158,8 +158,8 @@ for i, p in enumerate(paras):
         pf.space_after = Pt(4)
         continue
 
-    # Figure caption / table caption -> center the figure-related captions
-    if txt.startswith("图 1") or txt.startswith("图1"):
+    # Figure captions ("图 1" … "图 4") -> centered
+    if txt.startswith("图") and any(c.isdigit() for c in txt[1:4]):
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         continue
 
