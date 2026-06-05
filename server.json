@@ -1,0 +1,28 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Exekiel179/mne-mcp",
+  "title": "MNE-MCP",
+  "description": "MNE-Python neurophysiology analysis (EEG, MEG, sEEG, ECoG, fNIRS) via the Model Context Protocol",
+  "repository": {
+    "url": "https://github.com/Exekiel179/MNE-MCP",
+    "source": "github"
+  },
+  "version": "0.2.1",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "mne-mcp",
+      "version": "0.2.1",
+      "runtimeHint": "uvx",
+      "runtimeArguments": [
+        { "type": "named", "name": "--from", "value": "mne-mcp[ica]" }
+      ],
+      "packageArguments": [
+        { "type": "positional", "value": "serve" },
+        { "type": "named", "name": "--transport", "value": "stdio" }
+      ],
+      "transport": { "type": "stdio" }
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+<!-- mcp-name: io.github.Exekiel179/mne-mcp -->
+
 # MNE-MCP
 
 [![CI](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml/badge.svg)](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml)

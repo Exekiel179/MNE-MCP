@@ -3,6 +3,21 @@
 All notable changes to MNE-MCP are documented here. The format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are pre-1.0 and may move quickly.
 
+## [0.2.1] — 2026-06-05
+
+### Added
+- **Official MCP Registry** listing (`server.json`): the server is publishable to
+  `registry.modelcontextprotocol.io` under `io.github.Exekiel179/mne-mcp`, launched via
+  `uvx --from "mne-mcp[ica]" mne-mcp serve`. README carries the `mcp-name:` ownership marker
+  required by the registry's PyPI verification.
+
+### Changed
+- The documented standard `uvx` / `pipx` launch config now pulls the **`[ica]`** extra (and notes
+  `[full]`) so ICA and the advanced tools work out of the box — the bare package shipped neither.
+
+### Fixed
+- `.gitignore`: ignore `.coverage` artifacts.
+
 ## [0.2.0] — 2026-06-05
 
 ### Added
