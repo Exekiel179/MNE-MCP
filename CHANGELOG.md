@@ -3,6 +3,15 @@
 All notable changes to MNE-MCP are documented here. The format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are pre-1.0 and may move quickly.
 
+## [0.2.2] — 2026-06-05
+
+### Changed
+- **Skills + the methodology-critic subagent now ship inside the wheel** (hatch
+  `force-include` → `mne_mcp/_bundled/`). A plain `pip install`/`pipx install`/`uvx`
+  of `mne-mcp` now carries them, so `mne-mcp setup` installs the full skill suite
+  even when there is no source checkout. `get_skills_source_dir()` /
+  `get_agents_source_dir()` prefer the bundled copy and fall back to the repo.
+
 ## [0.2.1] — 2026-06-05
 
 ### Added

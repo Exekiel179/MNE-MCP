@@ -88,3 +88,25 @@ def test_plot_psd_accepts_comma_picks(occ_session):
     """The exact call that failed on real data must now succeed."""
     res = ops.plot_psd("raw", fmin=1, fmax=40, picks="O1,Oz,O2")
     assert len(res["figures"]) == 1
+
+
+# --- Packaging: skills/agents bundled in the wheel are found first (v0.2.2) ------
+
+
+def test_skills_agents_source_prefers_bundled(tmp_path, monkeypatch):
+    """get_*_source_dir must prefer the in-wheel `_bundled/` copy over the repo.
+
+    A `pip`/`pipx`/`uvx` install has no source checkout, so `mne-mcp setup` can only
+    install skills if they ship inside the wheel under `mne_mcp/_bundled/`.
+    """
+    from mne_mcp import claude_config
+
+    fake_pkg = tmp_path / "mne_mcp"
+    (fake_pkg / "_bundled" / "skills").mkdir(parents=True)
+    (fake_pkg / "_bundled" / "agents").mkdir(parents=True)
+    monkeypatch.setattr(claude_config, "__file__", str(fake_pkg / "claude_config.py"))
+
+    skills = claude_config.get_skills_source_dir()
+    agents = claude_config.get_agents_source_dir()
+    assert skills is not None and skills.parts[-2:] == ("_bundled", "skills")
+    assert agents is not None and agents.parts[-2:] == ("_bundled", "agents")
