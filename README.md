@@ -111,8 +111,9 @@ install above remains the path for development.
 ```bash
 python -m pip install --user pipx
 python -m pipx ensurepath          # reopen your terminal so `pipx` lands on PATH
-pipx install "mne-mcp[ica]"
+pipx install mne-mcp               # lightweight; provision the backend on demand
 mne-mcp setup                      # register in clients + install skills
+mne-mcp install-backend            # add MNE + ICA (or let the mne_install_backend tool do it)
 ```
 
 > **Skills are bundled in the package (since 0.2.2).** A PyPI install carries the skill suite and the
