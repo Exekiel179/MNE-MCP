@@ -21,17 +21,17 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
+# Hard dependencies are only the lightweight protocol layer, so a fresh
+# `pip install mne-mcp` (or pipx / uv tool / uvx) is near-instant. The heavy
+# scientific stack lives in the `analysis` extra and is installed up front via
+# `mne-mcp[analysis|ica|full]` OR on demand at runtime with `mne-mcp install-backend`
+# / the `mne_install_backend` tool (which pip-installs into the server's own env
+# and invalidates import caches so it works without a restart).
 dependencies = [
     "mcp>=1.2.0",
     "fastmcp>=2.14.0",
     "python-dotenv>=1.0.0",
     "pydantic>=2.0.0",
-    "mne>=1.6.0",
-    "numpy>=1.23.0",
-    "scipy>=1.9.0",
-    "matplotlib>=3.6.0",
-    "pandas>=2.0.0",
-    "tabulate>=0.9.0",
 ]
 
 [project.urls]
@@ -40,11 +40,24 @@ Repository = "https://github.com/Exekiel179/MNE-MCP"
 Issues = "https://github.com/Exekiel179/MNE-MCP/issues"
 
 [project.optional-dependencies]
-ica = ["scikit-learn>=1.1.0"]
+# The analysis backend. Keep these lists in sync with PROFILES in
+# src/mne_mcp/backend.py (tests/test_backend.py fails if they drift).
+analysis = [
+    "mne>=1.6.0",
+    "numpy>=1.23.0",
+    "scipy>=1.9.0",
+    "matplotlib>=3.6.0",
+    "pandas>=2.0.0",
+    "tabulate>=0.9.0",
+]
+ica = [
+    "mne-mcp[analysis]",
+    "scikit-learn>=1.1.0",
+]
 # Everything needed for the advanced analysis tools (source localization,
 # connectivity, decoding, BIDS, autoreject, extra readers, 3D rendering).
 full = [
-    "scikit-learn>=1.1.0",
+    "mne-mcp[ica]",
     "mne-connectivity>=0.5",
     "mne-bids>=0.13",
     "autoreject>=0.4",

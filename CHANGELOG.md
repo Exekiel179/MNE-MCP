@@ -3,6 +3,29 @@
 All notable changes to MNE-MCP are documented here. The format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are pre-1.0 and may move quickly.
 
+## [0.3.0] — 2026-06-13
+
+### Changed
+- **Lightweight by default — the heavy analysis stack is now installed on demand.**
+  Hard dependencies are reduced to the protocol layer only (`mcp`, `fastmcp`,
+  `pydantic`, `python-dotenv`), so `pip install mne-mcp` / `pipx install mne-mcp` /
+  `uv tool install mne-mcp` is near-instant. MNE-Python and the scientific stack
+  (numpy/scipy/matplotlib/pandas, plus scikit-learn for ICA) moved into the new
+  **`analysis`** extra; `ica` and `full` now build on it (`mne-mcp[analysis|ica|full]`
+  still install everything up front).
+- All startup-path imports are now lazy: importing the server no longer pulls in
+  numpy or matplotlib (`_compat` and `figures` defer them), so the bare shell runs
+  with zero scientific dependencies (proven by `tests/test_lightweight.py`).
+
+### Added
+- **On-demand backend provisioning** (`mne_mcp/backend.py`): `mne-mcp install-backend
+  [--profile analysis|ica|full]` and the **`mne_install_backend`** MCP tool install the
+  analysis stack into the *running server's own* Python environment, then call
+  `importlib.invalidate_caches()` so it becomes importable **without a client restart**.
+- `mne_check_status` / `mne-mcp status` now report when the backend is absent and how
+  to provision it; the missing-backend errors from every `mne_*` tool point at
+  `mne_install_backend`.
+
 ## [0.2.2] — 2026-06-05
 
 ### Changed

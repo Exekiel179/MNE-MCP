@@ -37,8 +37,8 @@ MNE 的分析是**有状态、强可视化**的，不同于一次性的统计批
 ## 环境要求
 
 - Python 3.10+
-- [MNE-Python](https://mne.tools/) ≥ 1.6（作为依赖自动安装）
-- `scikit-learn`（ICA 所需，可选 extra）
+- [MNE-Python](https://mne.tools/) ≥ 1.6 —— **按需安装**（见[默认轻量 —— 按需后端](#默认轻量--按需后端)）；想预装可用 `mne-mcp[analysis]`
+- `scikit-learn`（ICA 所需，在 `ica` / `full` extra 中，或用 `mne-mcp install-backend`）
 - Claude Code（或任意支持 MCP 的客户端）
 
 > 跨平台：MNE-Python 是纯 Python，分析功能在 Windows、macOS、Linux 上都可用。
@@ -107,6 +107,25 @@ mne-mcp setup                      # 注册到客户端 + 安装技能
 > **技能已随包发布（自 0.2.2 起）。** PyPI 包内自带技能套件与 `mne-methodology-critic` 子代理，因此
 > 多跑一条命令即可装上——`mne-mcp setup`（在 `pipx` / `uv tool install` 之后）或 `uvx mne-mcp setup`，
 > 无需克隆仓库。
+
+### 默认轻量 —— 按需后端
+
+自 **0.3.0** 起，包本身极小：直接 `pip install mne-mcp` / `pipx install mne-mcp` 只会装上 MCP 协议层
+（`mcp`、`fastmcp`、`pydantic`、`python-dotenv`），几秒装完。庞大的科学栈（MNE-Python + numpy/scipy/
+matplotlib/pandas，以及 ICA 用的 scikit-learn）会在**第一次真正需要分析时按需安装**：
+
+- 在对话里直接提需求即可——当某个工具报告"后端缺失"时，调用 **`mne_install_backend`** 工具
+  （`mne_check_status` 也会提示）。它会 `pip install` 到服务器**自己那个环境**，并且**无需重启客户端**就能用。
+- 在终端里：`mne-mcp install-backend`（加 `--profile full` 可装源定位 / 连接性 / 解码 / BIDS）。
+
+```bash
+pipx install mne-mcp            # 极小、瞬间装好
+mne-mcp install-backend        # 准备好了再装 MNE + ICA（或让工具自己装）
+```
+
+想一次装全？改用 extra：**`mne-mcp[analysis]`**（MNE 核心）、**`[ica]`**（+ scikit-learn）、
+**`[full]`**（+ 高级工具）。对于临时的 `uvx` 运行，请在配置里固定 extra（如上的 `--from mne-mcp[ica]`），
+因为 `uvx` 环境每次运行后即丢弃，按需安装不会保留。
 
 ---
 
