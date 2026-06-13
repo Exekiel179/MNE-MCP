@@ -12,20 +12,35 @@ from __future__ import annotations
 
 import os
 
-# Force a headless backend before anything imports pyplot for real.
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-
 # Keep MNE's interactive browsers (raw.plot / epochs.plot) on the matplotlib
-# backend so they render to capturable figures instead of a Qt window.
+# backend so they render to capturable figures instead of a Qt window. The
+# Agg backend itself is forced via MPLBACKEND=Agg in mne_mcp/__init__.py.
 os.environ.setdefault("MNE_BROWSER_BACKEND", "matplotlib")
+
+_plt = None
+
+
+def _get_plt():
+    """Import ``matplotlib.pyplot`` on first use.
+
+    matplotlib is part of the heavy analysis backend, not a hard dependency of
+    the bare server, so we defer importing it until a figure is actually
+    captured. Importing this module therefore stays cheap and dependency-free.
+    """
+    global _plt
+    if _plt is None:
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        _plt = plt
+    return _plt
 
 
 def open_figure_numbers() -> set[int]:
     """Return the set of currently-open matplotlib figure numbers."""
-    return set(plt.get_fignums())
+    return set(_get_plt().get_fignums())
 
 
 def _next_index(results_dir, prefix: str) -> int:
@@ -49,6 +64,7 @@ def capture_new_figures(
     Returns the list of saved PNG paths (as strings). Figures are saved in
     ascending figure-number order so multi-panel sequences stay ordered.
     """
+    plt = _get_plt()
     results_dir.mkdir(parents=True, exist_ok=True)
     after = set(plt.get_fignums())
     new_nums = sorted(after - before)
@@ -79,4 +95,5 @@ def capture_new_figures(
 
 def close_all() -> None:
     """Close all open figures (used on session reset)."""
-    plt.close("all")
+    if _plt is not None:
+        _plt.close("all")

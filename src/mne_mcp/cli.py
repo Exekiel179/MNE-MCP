@@ -41,6 +41,19 @@ def main():
     # setup-info
     subparsers.add_parser("setup-info", help="Show Claude Code MCP config snippet")
 
+    # install-backend (on-demand provisioning of the heavy analysis stack)
+    backend_parser = subparsers.add_parser(
+        "install-backend",
+        help="Install the analysis backend (MNE-Python + scientific stack) into this environment",
+    )
+    backend_parser.add_argument(
+        "--profile",
+        choices=["analysis", "ica", "full"],
+        default="ica",
+        help="analysis = MNE + numpy/scipy/matplotlib/pandas; ica adds scikit-learn (default); "
+        "full adds source localization / connectivity / decoding / BIDS / extra readers",
+    )
+
     # configure (defaults wizard)
     cfg_parser = subparsers.add_parser(
         "configure",
@@ -122,6 +135,13 @@ def main():
         print(f"Results dir  : {cfg['results_dir']}")
         print(f"Data dir     : {cfg['data_dir']}")
         print(f"Timeout      : {cfg['timeout']}s")
+        if not caps["mne"]:
+            print()
+            print(
+                "Analysis backend not installed (lightweight shell). Provision it with:\n"
+                "  mne-mcp install-backend            # MNE + ICA\n"
+                "  mne-mcp install-backend --profile full   # + advanced tools"
+            )
         sys.exit(0)
 
     elif args.command == "setup-info":
@@ -138,6 +158,33 @@ def main():
         print("Add to your Claude Code MCP settings:")
         print(json.dumps(snippet, indent=2))
         sys.exit(0)
+
+    elif args.command == "install-backend":
+        import importlib
+        import subprocess
+
+        from mne_mcp import backend
+
+        cmd = backend.pip_command(args.profile)
+        print(f"=== MNE-MCP install-backend (profile '{args.profile}') ===")
+        print(f"Target interpreter: {sys.executable}")
+        print(f"Running: {' '.join(cmd)}\n")
+        # Stream pip's own output (no capture) so the user sees download progress.
+        returncode = subprocess.run(cmd).returncode
+        importlib.invalidate_caches()
+        if returncode == 0 and backend.backend_available():
+            from mne_mcp.config import detect_capabilities
+
+            caps = detect_capabilities()
+            print(f"\nBackend ready: MNE-Python v{caps['mne_version']} is importable.")
+            print(
+                "A running MCP server picks this up immediately (no restart). "
+                "If your client started the server before this install, just continue —"
+                " the next mne_* call will work."
+            )
+            sys.exit(0)
+        print(f"\nInstall did not complete (returncode {returncode}).")
+        sys.exit(1)
 
     elif args.command == "configure":
         from mne_mcp import wizard

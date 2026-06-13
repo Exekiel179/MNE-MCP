@@ -39,6 +39,13 @@ class Session:
         self._init_namespace()
 
     def _init_namespace(self) -> None:
+        # Re-apply the NumPy 2.x alias shim now that numpy is importable (it is a
+        # no-op if it already ran at package import, but matters when the backend
+        # was installed on demand after the server started).
+        from mne_mcp._compat import apply_numpy_compat
+
+        apply_numpy_compat()
+
         import matplotlib.pyplot as plt  # noqa
         import mne
         import numpy as np
