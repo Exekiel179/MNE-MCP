@@ -34,7 +34,10 @@ async def server_lifespan(server: FastMCP):
     if caps.get("mne"):
         sys.stderr.write(f"  MNE-Python : available v{caps['mne_version']}\n")
     else:
-        sys.stderr.write("  MNE-Python : NOT FOUND (pip install mne)\n")
+        sys.stderr.write(
+            "  MNE-Python : NOT INSTALLED — call the `mne_install_backend` tool "
+            "(or run `mne-mcp install-backend`) on first use; no restart needed.\n"
+        )
     sys.stderr.write(
         f"  scikit-learn (ICA): {'available v' + caps['sklearn_version'] if caps['sklearn'] else 'NOT FOUND'}\n"
     )
@@ -57,19 +60,25 @@ _EXEC_LOCK = asyncio.Lock()
 
 
 def _require_mne() -> str | None:
-    caps = detect_capabilities()
-    if not caps.get("mne"):
-        return (
-            "This tool requires MNE-Python. Install it into the server's "
-            "environment with `pip install mne` (and `scikit-learn` for ICA)."
-        )
-    return None
+    from mne_mcp.backend import backend_available
+
+    if backend_available():
+        return None
+    return (
+        "The analysis backend (MNE-Python + the scientific stack) is not installed "
+        "in this server's environment yet. Provision it on demand by calling the "
+        "`mne_install_backend` tool (profile 'ica' by default), or run "
+        "`mne-mcp install-backend` in a terminal. No client restart is needed afterwards."
+    )
 
 
 def _require_sklearn() -> str | None:
     caps = detect_capabilities()
     if not caps.get("sklearn"):
-        return "ICA requires scikit-learn. Install it with `pip install scikit-learn`."
+        return (
+            "ICA / decoding requires scikit-learn. Call `mne_install_backend` "
+            "(profile 'ica') to add it, or run `mne-mcp install-backend`."
+        )
     return None
 
 
@@ -81,8 +90,9 @@ def _require_module(modname: str, pip_name: str = None) -> str | None:
         return None
     except Exception:
         return (
-            f"This tool requires `{modname}`. Install it with "
-            f'`pip install {pip_name or modname}` (or `pip install -e ".[full]"`).'
+            f"This tool requires `{modname}` (part of the advanced backend). "
+            "Call `mne_install_backend` with profile 'full' to add it, or run "
+            "`mne-mcp install-backend --profile full`."
         )
 
 
@@ -146,8 +156,8 @@ async def mne_check_status(ctx: Context = None) -> str:
     lines = [
         "## MNE MCP Status",
         "",
-        f"- MNE-Python: {'OK v' + caps['mne_version'] if caps['mne'] else 'NOT FOUND (pip install mne)'}",
-        f"- scikit-learn (ICA): {'OK v' + caps['sklearn_version'] if caps['sklearn'] else 'NOT FOUND'}",
+        f"- MNE-Python: {'OK v' + caps['mne_version'] if caps['mne'] else 'NOT INSTALLED'}",
+        f"- scikit-learn (ICA): {'OK v' + caps['sklearn_version'] if caps['sklearn'] else 'not installed'}",
         f"- numpy: {caps['numpy_version']}  |  scipy: {caps['scipy_version']}",
         f"- matplotlib: {caps['matplotlib_version']}  |  pandas: {caps['pandas_version']}",
         "",
@@ -156,7 +166,73 @@ async def mne_check_status(ctx: Context = None) -> str:
         f"- Operation timeout: {cfg['timeout']}s",
         f"- Config file: `{cfg['config_path']}`  (edit with `mne-mcp configure`)",
     ]
+    if not caps["mne"]:
+        lines += [
+            "",
+            "> **Analysis backend not installed.** The server is running in its "
+            "lightweight shell. Call `mne_install_backend` (or run "
+            "`mne-mcp install-backend`) to provision MNE-Python on demand — no "
+            "restart needed. Use profile `full` for source localization / "
+            "connectivity / decoding.",
+        ]
     return "\n".join(lines)
+
+
+@mcp.tool(
+    name="mne_install_backend",
+    description=(
+        "Provision the analysis backend (MNE-Python + numpy/scipy/matplotlib/pandas, plus "
+        "scikit-learn for ICA) into this server's own Python environment, on demand. Call this "
+        "once when mne_check_status reports the backend is not installed; afterwards every mne_* "
+        "tool works with NO client restart. profile: 'ica' (default), 'analysis' (no scikit-learn), "
+        "or 'full' (adds source localization, connectivity, decoding, BIDS, extra file readers). "
+        "The first run downloads a large scientific stack and may take a few minutes."
+    ),
+)
+async def mne_install_backend(profile: str = "ica", ctx: Context = None) -> str:
+    from mne_mcp import backend
+
+    profile = (profile or "ica").strip().lower()
+    if profile not in backend.PROFILES:
+        return (
+            f"Error: unknown profile '{profile}'. "
+            f"Choose one of: {', '.join(sorted(backend.PROFILES))}."
+        )
+
+    # Already satisfied? (For 'full' we still run to pull the advanced extras.)
+    if profile != "full" and not backend.missing_core():
+        if profile == "analysis" or detect_capabilities().get("sklearn"):
+            return (
+                "Backend already installed — MNE-Python is importable. "
+                "Run `mne_check_status` to see versions. "
+                "(Use profile='full' to add the advanced tools.)"
+            )
+
+    if ctx:
+        await ctx.info(f"Installing analysis backend (profile '{profile}')…")
+    try:
+        async with _EXEC_LOCK:
+            result = await asyncio.to_thread(backend.install_backend, profile)
+    except Exception as e:  # noqa: BLE001
+        return f"Error installing backend: {type(e).__name__}: {e}"
+
+    if result["ok"]:
+        return (
+            f"✅ Installed the analysis backend (profile '{result['profile']}'). "
+            "MNE-Python is now importable in the running server — no restart needed. "
+            "Run `mne_check_status` to confirm versions, then continue your analysis.\n\n"
+            f"_pip: `{result['command']}`_"
+        )
+    tail = (result["stderr_tail"] or result["stdout_tail"] or "").strip()
+    return (
+        f"⚠️ Backend install did not complete (returncode {result['returncode']}, "
+        f"mne importable = {result['available']}).\n\n"
+        f"Command: `{result['command']}`\n\n"
+        f"```\n{tail[-1500:]}\n```\n"
+        "Common causes: no network access; or a bleeding-edge Python (3.13+) where some "
+        "scientific wheels must build from source — try running the server on a 3.11/3.12 "
+        "interpreter and reinstall."
+    )
 
 
 @mcp.tool(

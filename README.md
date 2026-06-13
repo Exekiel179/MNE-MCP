@@ -43,8 +43,8 @@ MNE analysis is **stateful and visual** — unlike a one-shot statistics batch j
 ## Requirements
 
 - Python 3.10+
-- [MNE-Python](https://mne.tools/) ≥ 1.6 (installed automatically as a dependency)
-- `scikit-learn` for ICA (optional extra)
+- [MNE-Python](https://mne.tools/) ≥ 1.6 — **provisioned on demand** (see [Lightweight by default](#lightweight-by-default--on-demand-backend)); install it up front with `mne-mcp[analysis]` if you prefer
+- `scikit-learn` for ICA (in the `ica` / `full` extras, or `mne-mcp install-backend`)
 - Claude Code (or any MCP client) with MCP support
 
 > Cross-platform: unlike a closed engine, MNE-Python is pure Python, so analysis tools work on
@@ -109,6 +109,29 @@ install above remains the path for development.
 > **Skills are bundled in the package (since 0.2.2).** A PyPI install carries the skill suite and the
 > `mne-methodology-critic` agent, so one extra command installs them — `mne-mcp setup` (after `pipx`/
 > `uv tool install`) or `uvx mne-mcp setup`. No clone required.
+
+### Lightweight by default — on-demand backend
+
+Since **0.3.0** the package itself is tiny: a bare `pip install mne-mcp` / `pipx install mne-mcp`
+pulls in only the MCP protocol layer (`mcp`, `fastmcp`, `pydantic`, `python-dotenv`), so it installs
+in seconds. The heavy scientific stack (MNE-Python + numpy/scipy/matplotlib/pandas, and scikit-learn
+for ICA) is **provisioned the first time an analysis needs it**:
+
+- In a session, just ask — when a tool reports the backend is missing, call the **`mne_install_backend`**
+  tool (or it is offered by `mne_check_status`). It `pip install`s into the server's own environment and
+  becomes usable **without a client restart**.
+- From a terminal: `mne-mcp install-backend` (add `--profile full` for source localization / connectivity
+  / decoding / BIDS).
+
+```bash
+pipx install mne-mcp            # tiny, instant
+mne-mcp install-backend        # add MNE + ICA when you're ready (or let the tool do it)
+```
+
+Prefer everything up front? Install an extra instead: **`mne-mcp[analysis]`** (MNE core), **`[ica]`**
+(+ scikit-learn), or **`[full]`** (+ advanced tools). For ephemeral `uvx` runs, pin the extra in the
+config (`--from mne-mcp[ica]`, as above) since an `uvx` environment is discarded between runs, so an
+on-demand install would not persist.
 
 ---
 

@@ -7,13 +7,13 @@
     "url": "https://github.com/Exekiel179/MNE-MCP",
     "source": "github"
   },
-  "version": "0.2.2",
+  "version": "0.3.0",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "mne-mcp",
-      "version": "0.2.2",
+      "version": "0.3.0",
       "runtimeHint": "uvx",
       "runtimeArguments": [
         { "type": "named", "name": "--from", "value": "mne-mcp[ica]" }

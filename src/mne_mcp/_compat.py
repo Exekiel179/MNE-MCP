@@ -13,8 +13,6 @@ so on older NumPy it is a no-op. Call ``apply_numpy_compat()`` once at import ti
 
 from __future__ import annotations
 
-import numpy as np
-
 # old name -> attribute on numpy to alias it to
 _FUNC_ALIASES = {
     "trapz": "trapezoid",
@@ -43,8 +41,17 @@ _applied = False
 
 
 def apply_numpy_compat() -> list[str]:
-    """Restore NumPy aliases removed in NumPy 2.x. Idempotent. Returns names restored."""
+    """Restore NumPy aliases removed in NumPy 2.x. Idempotent and import-safe.
+
+    Returns the names restored. When numpy is not installed yet (lightweight
+    install, before the analysis backend is provisioned) this is a no-op and
+    returns ``[]`` rather than raising ImportError.
+    """
     global _applied
+    try:
+        import numpy as np
+    except ImportError:
+        return []
     restored: list[str] = []
     for old, new in _FUNC_ALIASES.items():
         if not hasattr(np, old) and hasattr(np, new):
