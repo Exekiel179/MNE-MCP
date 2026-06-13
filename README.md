@@ -106,6 +106,15 @@ pipx install "mne-mcp[ica]"        # or: uv tool install "mne-mcp[ica]"  (use [f
 then set the config `command` to `mne-mcp` with `args: ["serve", "--transport", "stdio"]`. The source
 install above remains the path for development.
 
+**No `uv`? Bootstrap `pipx` with plain Python, then install and register in one go:**
+
+```bash
+python -m pip install --user pipx
+python -m pipx ensurepath          # reopen your terminal so `pipx` lands on PATH
+pipx install "mne-mcp[ica]"
+mne-mcp setup                      # register in clients + install skills
+```
+
 > **Skills are bundled in the package (since 0.2.2).** A PyPI install carries the skill suite and the
 > `mne-methodology-critic` agent, so one extra command installs them — `mne-mcp setup` (after `pipx`/
 > `uv tool install`) or `uvx mne-mcp setup`. No clone required.
