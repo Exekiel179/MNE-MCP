@@ -18,10 +18,21 @@ SERVER_KEY = "mne"
 
 
 def get_entrypoint_config() -> tuple[str, list[str]]:
-    """Return the preferred command/args pair for launching this MCP server."""
+    """Return the preferred command/args pair for launching this MCP server.
+
+    Prefer the installed ``mne-mcp`` console script, but resolve it to its
+    **absolute path**. Returning the bare name would break MCP clients that
+    relaunch the server outside the virtualenv active during ``setup`` — the
+    venv's ``bin``/``Scripts`` directory is no longer on ``PATH`` then, so a
+    bare ``mne-mcp`` fails to start and the server shows up as disconnected.
+    """
     installed_entrypoint = shutil.which("mne-mcp")
     if installed_entrypoint:
-        return "mne-mcp", ["serve", "--transport", "stdio"]
+        return os.path.abspath(installed_entrypoint), [
+            "serve",
+            "--transport",
+            "stdio",
+        ]
     return sys.executable, ["-m", "mne_mcp.cli", "serve", "--transport", "stdio"]
 
 
