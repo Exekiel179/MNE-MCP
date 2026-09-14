@@ -25,10 +25,13 @@ computing, frame as exploratory, and critique before believing.**
 
 > Companion skills: `mne-mcp-guard` for technical execution safety; `mne-methodology-critic` for
 > Phase 3; `mne-spectral` for the canonical PSD / aperiodic workflow. Loaded objects persist in one
-> MNE session. **Install the named library first** (e.g. `pip install pycrostates`); flag it as an
+> MNE session. **Install the named library first** (e.g. `python -m pip install pycrostates`); flag it as an
 > optional dependency to the user before running.
 
 ---
+
+Scientific libraries are user-managed. Check imports in the server interpreter first; do not run
+package installation inside mne_run_code. Environment changes require user authorization.
 
 ## PHASE 1 — GRILL (before computing anything)
 
@@ -74,7 +77,7 @@ Capability + look first: `mne_check_status`; plot the relevant signal/PSD and **
 Then run the matching skeleton via `mne_run_code` (objects `raw`/`epochs` are pre-bound). **Each
 library is an optional dependency — install and flag it.** Keep the framing **exploratory**.
 
-**Microstates** — `pip install pycrostates` (optional):
+**Microstates** — `python -m pip install pycrostates` (optional):
 ```python
 from pycrostates.cluster import ModKMeans          # optional dependency
 gfp = raw.copy().pick("eeg").set_eeg_reference("average")
@@ -82,7 +85,7 @@ mk = ModKMeans(n_clusters=4, random_state=42).fit(gfp, n_jobs=1)   # fits on GFP
 segm = mk.predict(gfp); params = segm.compute_parameters()         # GEV, coverage, duration, occurrence
 ```
 
-**Complexity / entropy** — `pip install antropy neurokit2` (optional):
+**Complexity / entropy** — `python -m pip install antropy neurokit2` (optional):
 ```python
 import antropy as ant                              # optional dependency
 x = raw.get_data(picks="eeg")[0]
@@ -91,7 +94,7 @@ lziv = ant.lziv_complexity((x > np.median(x)).astype(int), normalize=True)
 # multiscale entropy via neurokit2.entropy_multiscale(x, scale=range(1,21))
 ```
 
-**Graph / network metrics** from a connectivity matrix `C` (`pip install networkx bctpy`, optional):
+**Graph / network metrics** from a connectivity matrix `C` (`python -m pip install networkx bctpy`, optional):
 ```python
 import networkx as nx                               # optional dependency
 A = (np.abs(C) > thr).astype(int); np.fill_diagonal(A, 0)   # threshold → caveat: density-dependent
@@ -100,13 +103,13 @@ deg = dict(G.degree()); clust = nx.average_clustering(G); L = nx.average_shortes
 # small-worldness vs degree-matched random nulls; modularity via community detection
 ```
 
-**Aperiodic 1/f deep-dive** — `pip install specparam` (optional); see **`mne-spectral`** for the full
+**Aperiodic 1/f deep-dive** — `python -m pip install specparam` (optional); see **`mne-spectral`** for the full
 workflow. Report exponent/offset + peaks; compare `aperiodic_mode="fixed"` vs `"knee"`.
 
 **Intracranial sEEG/ECoG**: re-reference **bipolar** (`mne.set_bipolar_reference`); high-gamma =
 filter 70–150 Hz → Hilbert envelope → log-power; HFO via a detector (ripples 80–250 Hz).
 
-**fNIRS GLM** — `pip install mne-nirs` (optional):
+**fNIRS GLM** — `python -m pip install mne-nirs` (optional):
 ```python
 import mne_nirs                                     # optional dependency
 od = mne.preprocessing.nirs.optical_density(raw)

@@ -1,0 +1,13 @@
+# Development and test tools for Python 3.12.
+# Runtime dependencies come from requirements.lock.
+black==26.5.1
+coverage==7.14.1
+iniconfig==2.3.0
+isort==8.0.1
+mypy-extensions==1.1.0
+pathspec==1.1.1
+pluggy==1.6.0
+pytest==9.0.3
+pytest-asyncio==1.4.0
+pytest-cov==7.1.0
+pytokens==0.4.1

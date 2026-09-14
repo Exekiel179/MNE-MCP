@@ -74,6 +74,10 @@ default **and explicitly flag the open risk** — never silently choose.
    skill's output. Cluster tests want an array shaped **(n_observations, …)** — e.g.
    `(n_subjects, n_times, n_channels)` for spatio-temporal — where the observation axis is what gets
    permuted. Confirm the axis order matches the adjacency.
+   For decoding mean curves/matrices from independent subjects, use `mne_decoding_group_test`;
+   read [group decoding inference](../mne-decoding/references/group-inference.md) first.
+   Never treat CV folds as subjects. This is sign flipping across subjects, not trial-label
+   shuffling, and requires an explicit reference and symmetry/independence assumptions.
 2. **Build channel adjacency from the montage** (so neighbouring sensors cluster together):
 
    ```python
@@ -111,7 +115,7 @@ default **and explicitly flag the open risk** — never silently choose.
    from scipy import stats
    t, p = stats.ttest_1samp(X_roi, 0)            # one value per pre-registered ROI/window
    reject, p_fdr = fdr_correction(p, alpha=0.05) # Benjamini-Hochberg
-   p_bonf = np.minimum(p * len(p), 1.0)          # Bonferroni (conservative, independent only)
+   p_bonf = np.minimum(p * p.size, 1.0)         # Bonferroni also permits dependent tests
    ```
 
 6. **Report cluster-level results + effect size.** State each significant cluster's **extent**

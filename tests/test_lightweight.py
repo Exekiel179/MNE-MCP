@@ -1,13 +1,4 @@
-"""
-Proof that the MCP server runs in a lightweight shell.
-
-The whole point of the on-demand backend is that importing the server must NOT
-pull in the heavy scientific stack (numpy/scipy/matplotlib/mne/pandas/sklearn).
-We verify that in a clean subprocess by installing an import blocker that raises
-for those top-level packages, then importing the server modules. If any of them
-were imported at module load, the import would fail and the subprocess would not
-print the sentinel.
-"""
+"""Importing the server must not eagerly import the scientific stack."""
 
 import subprocess
 import sys
@@ -32,10 +23,6 @@ def test_server_imports_without_scientific_stack():
         import mne_mcp            # runs __init__ (numpy compat must be a no-op)
         import mne_mcp.server     # registers all tools; must stay light
         import mne_mcp.cli
-        import mne_mcp.backend
-
-        # The capability probe must not import the heavy stack either.
-        assert mne_mcp.backend.backend_available() is False
         print("LIGHT-OK")
         """)
     proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)

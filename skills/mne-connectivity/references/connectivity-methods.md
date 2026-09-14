@@ -2,8 +2,12 @@
 
 Companion to `mne-connectivity/SKILL.md`. All snippets assume the MNE MCP session has loaded objects
 (`raw`, `epochs`) and run inside `mne_run_code` (where `mne`, `np`, `plt`, and loaded objects are
-pre-bound). Connectivity needs the **`[full]`** extra: `mne-connectivity` (and `pactools`/`tensorpac`
-for PAC).
+pre-bound). Check `mne-connectivity` in the server environment; `pactools`/`tensorpac` are
+optional extensions for PAC.
+
+For the MCP structured interface, first read [structured-connectivity.md](structured-connectivity.md).
+It supports multi-band and ordered-pair requests while preserving signs and complex values.
+Unlike direct all-to-all calls below, MCP outputs use explicit compact edge indices.
 
 ## Choosing a measure — the field-spread problem
 

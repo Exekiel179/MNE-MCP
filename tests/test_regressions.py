@@ -96,8 +96,7 @@ def test_plot_psd_accepts_comma_picks(occ_session):
 def test_skills_agents_source_prefers_bundled(tmp_path, monkeypatch):
     """get_*_source_dir must prefer the in-wheel `_bundled/` copy over the repo.
 
-    A `pip`/`pipx`/`uvx` install has no source checkout, so `mne-mcp setup` can only
-    install skills if they ship inside the wheel under `mne_mcp/_bundled/`.
+    A built wheel has no source checkout, so bundled skills must be preferred.
     """
     from mne_mcp import claude_config
 

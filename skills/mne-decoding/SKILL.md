@@ -60,8 +60,12 @@ sensible default **and explicitly flag the open risk** — never silently choose
 
 1. **Capability + look first.** `mne_check_status` (confirm scikit-learn present); inspect class
    counts (`epochs["condA"]`, `epochs["condB"]`) — balance and totals decide metric and CV.
-2. **Time-resolved decoding (quick path).** `mne_decode(cond_a, cond_b, scoring="roc_auc", cv=5)`
-   returns mean/peak AUC + a scores-vs-time plot. **Read the PNG** — where does AUC rise above chance?
+2. **Structured decoding (preferred path).** Read
+   [structured-decoding.md](references/structured-decoding.md) for `mne_decode` parameters,
+   grouped-CV examples, time windows, classifier options and output axes. Use named arguments:
+   `mne_decode(cond_a="a", cond_b="b", scoring="roc_auc", cv=5)`.
+   Read the PNG, per-fold scores and split diagnostics. A curve crossing 0.5 is descriptive,
+   not a significance result. The tool supports binary labels only.
 3. **Custom path (full control via `mne_run_code`).** Build a leakage-free `Pipeline` and slide it
    over time, cross-validated:
 
@@ -76,9 +80,11 @@ sensible default **and explicitly flag the open risk** — never silently choose
    scores = cross_val_multiscore(sl, X, y, cv=5).mean(0)    # (n_times,)
    ```
 
-4. **Temporal generalization.** Swap `SlidingEstimator` → `GeneralizingEstimator`; the result is a
-   train-time × test-time matrix. Read the **diagonal** for decodability; **off-diagonal** only for
-   maintenance/reactivation, and only if pre-planned.
+4. **Temporal generalization.** Use `mne_decode(method="generalizing", ...)`; output axes are
+   `(train_time, test_time)`, plotted with test time horizontal and train time vertical.
+   Read the diagonal for same-time decoding. Off-diagonal scores show cross-time generalization,
+   not proof of maintenance or reactivation. Crop with `tmin/tmax` to bound quadratic scoring cost;
+   do not select the window after inspecting scores and then treat it as confirmatory.
 5. **CSP for oscillatory BCI.** Band-pass first, then `mne.decoding.CSP` inside the pipeline:
 
    ```python
@@ -86,9 +92,15 @@ sensible default **and explicitly flag the open risk** — never silently choose
    clf = make_pipeline(CSP(n_components=4), LogisticRegression(max_iter=1000))
    ```
 
-6. **Establish chance by permutation** (not 1/n): shuffle `y` many times, re-run CV, build the null
+6. **Establish an empirical null by permutation**: shuffle labels only within valid exchangeability
+   blocks (for example within participant when the design permits), re-run the complete CV pipeline,
+   build the null
    distribution of scores; compare the observed curve to it (`sklearn.model_selection.permutation_test_score`
-   for a single window). Then **cluster-test** scores-vs-chance across time.
+   for a single window). For group inference, subjects, not overlapping CV folds, are independent
+   observations. Predefine the multiple-comparison correction across time or the train/test matrix.
+   For independent-subject mean curves/matrices, use `mne_decoding_group_test` after reading
+   [group-inference.md](references/group-inference.md). It provides group sign flips with
+   max-t or cluster correction, not within-subject label permutations or nested tuning.
 7. **Archive** the equivalent code + figures (the `mne-analyst` archiving convention).
 
 Best-practice reminders: ROC-AUC / balanced accuracy under imbalance; `Vectorizer` to flatten

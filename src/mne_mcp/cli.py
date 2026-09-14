@@ -41,19 +41,6 @@ def main():
     # setup-info
     subparsers.add_parser("setup-info", help="Show Claude Code MCP config snippet")
 
-    # install-backend (on-demand provisioning of the heavy analysis stack)
-    backend_parser = subparsers.add_parser(
-        "install-backend",
-        help="Install the analysis backend (MNE-Python + scientific stack) into this environment",
-    )
-    backend_parser.add_argument(
-        "--profile",
-        choices=["analysis", "ica", "full"],
-        default="ica",
-        help="analysis = MNE + numpy/scipy/matplotlib/pandas; ica adds scikit-learn (default); "
-        "full adds source localization / connectivity / decoding / BIDS / extra readers",
-    )
-
     # configure (defaults wizard)
     cfg_parser = subparsers.add_parser(
         "configure",
@@ -79,8 +66,8 @@ def main():
     )
     setup_parser.add_argument(
         "--clients",
-        default="claude,codex,opencode",
-        help="Comma list of clients to configure (default: claude,codex,opencode)",
+        required=True,
+        help="Comma list of clients to configure: claude,codex,opencode",
     )
     setup_parser.add_argument(
         "--no-skills",
@@ -122,10 +109,10 @@ def main():
         cfg = get_runtime_config()
         print("=== MNE MCP Capability Status ===")
         print(
-            f"MNE-Python   : {'OK v' + caps['mne_version'] if caps['mne'] else 'NOT FOUND  (pip install mne)'}"
+            f"MNE-Python   : {'OK v' + caps['mne_version'] if caps['mne'] else 'NOT FOUND'}"
         )
         print(
-            f"scikit-learn : {'OK v' + caps['sklearn_version'] if caps['sklearn'] else 'NOT FOUND  (pip install scikit-learn) — needed for ICA'}"
+            f"scikit-learn : {'OK v' + caps['sklearn_version'] if caps['sklearn'] else 'unavailable (optional: ICA/decoding)'}"
         )
         print(f"numpy        : {caps['numpy_version'] or 'NOT FOUND'}")
         print(f"scipy        : {caps['scipy_version'] or 'NOT FOUND'}")
@@ -138,9 +125,8 @@ def main():
         if not caps["mne"]:
             print()
             print(
-                "Analysis backend not installed (lightweight shell). Provision it with:\n"
-                "  mne-mcp install-backend            # MNE + ICA\n"
-                "  mne-mcp install-backend --profile full   # + advanced tools"
+                f"MNE cannot be imported in {sys.executable}. Activate your MNE environment "
+                "and register that interpreter. Inspect the import error before installing dependencies."
             )
         sys.exit(0)
 
@@ -158,33 +144,6 @@ def main():
         print("Add to your Claude Code MCP settings:")
         print(json.dumps(snippet, indent=2))
         sys.exit(0)
-
-    elif args.command == "install-backend":
-        import importlib
-        import subprocess
-
-        from mne_mcp import backend
-
-        cmd = backend.pip_command(args.profile)
-        print(f"=== MNE-MCP install-backend (profile '{args.profile}') ===")
-        print(f"Target interpreter: {sys.executable}")
-        print(f"Running: {' '.join(cmd)}\n")
-        # Stream pip's own output (no capture) so the user sees download progress.
-        returncode = subprocess.run(cmd).returncode
-        importlib.invalidate_caches()
-        if returncode == 0 and backend.backend_available():
-            from mne_mcp.config import detect_capabilities
-
-            caps = detect_capabilities()
-            print(f"\nBackend ready: MNE-Python v{caps['mne_version']} is importable.")
-            print(
-                "A running MCP server picks this up immediately (no restart). "
-                "If your client started the server before this install, just continue —"
-                " the next mne_* call will work."
-            )
-            sys.exit(0)
-        print(f"\nInstall did not complete (returncode {returncode}).")
-        sys.exit(1)
 
     elif args.command == "configure":
         from mne_mcp import wizard
@@ -211,8 +170,8 @@ def main():
         clients = [c.strip().lower() for c in args.clients.split(",") if c.strip()]
         try:
             result = configure_clients(clients, with_skills=not args.no_skills)
-        except ValueError as e:
-            print(f"Error: {e}")
+        except (OSError, ValueError, json.JSONDecodeError) as e:
+            print(f"Setup failed: {type(e).__name__}: {e}", file=sys.stderr)
             sys.exit(2)
 
         print("=== MNE-MCP setup ===")

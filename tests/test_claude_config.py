@@ -11,6 +11,7 @@ def test_build_server_config_shape():
     assert isinstance(entry["args"], list)
     assert "serve" in entry["args"]
     assert "MNE_MCP_TIMEOUT" in entry["env"]
+    assert "_MNE_FAKE_HOME_DIR" not in entry["env"]
 
 
 def test_configure_creates_then_unchanged(tmp_path):

@@ -16,6 +16,7 @@ Operations raise on failure; the server layer formats the error for the user.
 from __future__ import annotations
 
 import ast
+import math
 import os
 from pathlib import Path
 
@@ -31,6 +32,7 @@ from mne_mcp.config import (
     get_results_dir,
 )
 from mne_mcp.kernel import get_session
+from mne_mcp.parameters import ConnectivityParameters, TFRParameters
 from mne_mcp.summaries import describe, object_kind
 
 # Extensions MNE can read as raw recordings (not exhaustive, but the common set).
@@ -191,19 +193,47 @@ def get_info(name: str) -> dict:
 # ── Preprocessing ──────────────────────────────────────────────────────────────
 
 
+def _finite_number(value, label: str, *, positive: bool = False) -> None:
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+    ):
+        raise ValueError(f"{label} must be a finite number, not a boolean.")
+    if positive and value <= 0:
+        raise ValueError(f"{label} must be positive.")
+
+
 def filter_data(
     name: str,
     l_freq: float | None = None,
     h_freq: float | None = None,
     notch: float | None = None,
-    picks: str | None = None,
+    picks: str | list[str] | list[int] | None = None,
 ) -> dict:
     s = get_session()
     obj = s.get(name)
     _require_kind(obj, name, ("Raw", "Epochs", "Evoked"))
+    picks = _parse_picks(picks)
     # No band and no notch given → fall back to the configured default filter band.
     if l_freq is None and h_freq is None and notch is None:
         l_freq, h_freq = get_filter_band()
+    nyquist = obj.info["sfreq"] / 2
+    for label, value in (("l_freq", l_freq), ("h_freq", h_freq), ("notch", notch)):
+        if value is not None:
+            _finite_number(value, label)
+            if value < 0 or value >= nyquist or (label != "l_freq" and value == 0):
+                raise ValueError(
+                    f"{label} must be below Nyquist ({nyquist:g} Hz) and positive (l_freq may be zero)."
+                )
+    if l_freq is not None and h_freq is not None and l_freq >= h_freq:
+        raise ValueError(
+            "l_freq must be less than h_freq for this band-pass tool. Use mne_run_code for an explicit band-stop design."
+        )
+    if notch is not None and not callable(getattr(obj, "notch_filter", None)):
+        raise ValueError(
+            "This object does not support notch_filter. Notch continuous Raw before epoching, or use mne_run_code for an explicit array workflow."
+        )
     code_lines = []
     if l_freq is not None or h_freq is not None:
         obj.filter(l_freq, h_freq, picks=picks, verbose="ERROR")
@@ -214,13 +244,25 @@ def filter_data(
     if not code_lines:
         raise ValueError("Provide at least one of l_freq, h_freq, or notch.")
     md = f"Filtered `{name}`.\n\n" + describe(obj)
-    return _result(md, code="\n".join(code_lines))
+    result = _result(md, code="\n".join(code_lines))
+    result["guidance"] = {
+        "status": "processed_not_quality_certified",
+        "checks": [
+            "Inspect pre/post PSD and traces; parameter validity is not proof of artifact removal.",
+            "Choose cutoffs for the target ERP or frequency range; filtering can alter amplitude and latency.",
+        ],
+        "limits": [
+            "Processing is in place; runtime failures may still leave partial changes."
+        ],
+    }
+    return result
 
 
 def resample(name: str, sfreq: float) -> dict:
     s = get_session()
     obj = s.get(name)
     _require_kind(obj, name, ("Raw", "Epochs"))
+    _finite_number(sfreq, "sfreq", positive=True)
     obj.resample(sfreq, verbose="ERROR")
     return _result(
         f"Resampled `{name}` to {sfreq} Hz.\n\n" + describe(obj),
@@ -232,6 +274,14 @@ def crop(name: str, tmin: float = 0.0, tmax: float | None = None) -> dict:
     s = get_session()
     obj = s.get(name)
     _require_kind(obj, name, ("Raw", "Epochs", "Evoked"))
+    _finite_number(tmin, "tmin")
+    if tmax is not None:
+        _finite_number(tmax, "tmax")
+    end = obj.times[-1] if tmax is None else tmax
+    if tmin > end or tmin < obj.times[0] or end > obj.times[-1]:
+        raise ValueError(
+            "Crop bounds must be ordered and inside the current time range (seconds)."
+        )
     obj.crop(tmin=tmin, tmax=tmax)
     return _result(
         f"Cropped `{name}` to [{tmin}, {tmax}] s.\n\n" + describe(obj),
@@ -265,10 +315,16 @@ def set_reference(name: str, ref_channels: str = "average") -> dict:
     s = get_session()
     obj = s.get(name)
     _require_kind(obj, name, ("Raw", "Epochs", "Evoked"))
+    if ref_channels == "REST":
+        raise ValueError(
+            "REST requires a forward model. Use mne_run_code: inst.set_eeg_reference('REST', forward=fwd); this shortcut has no forward parameter."
+        )
     ref = ref_channels
     if isinstance(ref_channels, str) and ref_channels not in ("average", "REST"):
         # comma-separated list of explicit reference channel names
         ref = [c.strip() for c in ref_channels.split(",") if c.strip()]
+        if not ref:
+            raise ValueError("Provide at least one reference channel, or 'average'.")
     obj.set_eeg_reference(ref_channels=ref, verbose="ERROR")
     return _result(
         f"Re-referenced `{name}` to `{ref_channels}`.\n\n" + describe(obj),
@@ -497,12 +553,19 @@ def events_from_annotations(raw_name: str = "raw", events_name: str = "events") 
 def make_epochs(
     raw_name: str = "raw",
     events_name: str = "events",
-    event_id: str | None = None,
+    event_id: str | dict[str, int] | None = None,
     tmin: float | None = None,
     tmax: float | None = None,
-    baseline: str | None = "default",
+    baseline: str | list[float | None] | None = "default",
     reject_eeg: float | None = None,
     epochs_name: str = "epochs",
+    *,
+    reject: dict[str, float] | None = None,
+    flat: dict[str, float] | None = None,
+    picks: str | list[str] | list[int] | None = None,
+    detrend: int | None = None,
+    reject_by_annotation: bool = True,
+    event_repeated: str = "error",
 ) -> dict:
     import mne
 
@@ -518,7 +581,16 @@ def make_epochs(
         tmax = cfg_tmax
 
     eid = None
-    if event_id:
+    if isinstance(event_id, dict):
+        if not event_id or any(
+            not isinstance(k, str) or not k.strip() or type(v) is not int
+            for k, v in event_id.items()
+        ):
+            raise ValueError(
+                "event_id must be a nonempty mapping of labels to integer codes."
+            )
+        eid = event_id.copy()
+    elif event_id:
         eid = {}
         for pair in event_id.split(","):
             if ":" in pair:
@@ -532,12 +604,26 @@ def make_epochs(
     elif baseline is None or str(baseline).strip().lower() == "none":
         bl = None
     else:
-        bl = ast.literal_eval(baseline)  # safe: only literals, e.g. "(None, 0.1)"
-    if reject_eeg is None:
+        bl = ast.literal_eval(baseline) if isinstance(baseline, str) else baseline
+        if not isinstance(bl, (tuple, list)) or len(bl) != 2:
+            raise ValueError("baseline must be [start, end], 'default', or null.")
+        bl = tuple(bl)
+    if reject is not None and reject_eeg is not None:
+        raise ValueError("Provide reject or reject_eeg, not both.")
+    if reject is None and reject_eeg is None:
         cfg_reject = get_reject_eeg()
         reject = {"eeg": cfg_reject} if cfg_reject else None
-    else:
+    elif reject_eeg is not None:
         reject = {"eeg": reject_eeg}
+    for label, thresholds in (("reject", reject), ("flat", flat)):
+        if thresholds is not None and any(
+            isinstance(value, bool) or not math.isfinite(value) or value < 0
+            for value in thresholds.values()
+        ):
+            raise ValueError(
+                f"{label} thresholds must be finite, nonnegative SI values."
+            )
+    picks = _parse_picks(picks)
 
     epochs = mne.Epochs(
         raw,
@@ -547,6 +633,11 @@ def make_epochs(
         tmax=tmax,
         baseline=bl,
         reject=reject,
+        flat=flat,
+        picks=picks,
+        detrend=detrend,
+        reject_by_annotation=reject_by_annotation,
+        event_repeated=event_repeated,
         preload=True,
         verbose="ERROR",
     )
@@ -554,7 +645,10 @@ def make_epochs(
     md = f"Created epochs `{epochs_name}` from `{raw_name}`.\n\n" + describe(epochs)
     code = (
         f"{epochs_name} = mne.Epochs({raw_name}, {events_name}, event_id={eid!r}, "
-        f"tmin={tmin}, tmax={tmax}, baseline={bl!r}, reject={reject!r}, preload=True)"
+        f"tmin={tmin}, tmax={tmax}, baseline={bl!r}, reject={reject!r}, "
+        f"flat={flat!r}, picks={picks!r}, detrend={detrend!r}, "
+        f"reject_by_annotation={reject_by_annotation!r}, "
+        f"event_repeated={event_repeated!r}, preload=True)"
     )
     return _result(md, code=code)
 
@@ -633,6 +727,72 @@ def plot_topomap(name: str = "evoked", times: str = "auto") -> dict:
 # ── Time-frequency ─────────────────────────────────────────────────────────────
 
 
+def compute_tfr(params: TFRParameters) -> dict:
+    """Compute total power/ITC without changing the input epochs."""
+    s = get_session()
+    epochs = s.get(params.epochs_name)
+    _require_kind(epochs, params.epochs_name, ("Epochs",))
+    if params.freqs[-1] >= epochs.info["sfreq"] / 2:
+        raise ValueError(
+            "All freqs must be below the data Nyquist frequency (sfreq / 2)."
+        )
+    if not len(epochs):
+        raise ValueError(
+            "No epochs remain. Inspect the epoch drop log before computing TFR."
+        )
+    kwargs = dict(
+        method=params.method,
+        freqs=params.freqs,
+        n_cycles=params.n_cycles,
+        picks=_parse_picks(params.picks),
+        average=params.average,
+        return_itc=params.return_itc,
+        decim=params.decim,
+        output="power",
+    )
+    if params.time_bandwidth is not None:
+        kwargs["time_bandwidth"] = params.time_bandwidth
+    result = epochs.compute_tfr(**kwargs, verbose="ERROR")
+    power, itc = result if params.return_itc else (result, None)
+    if params.baseline is not None:
+        power.apply_baseline(
+            params.baseline, mode=params.baseline_mode, verbose="ERROR"
+        )
+    figs = []
+    if params.plot:
+        before = figures.open_figure_numbers()
+        display = power if params.average else power.average()
+        display.plot(combine="mean", show=False)
+        figs = figures.capture_new_figures(before, get_results_dir(), prefix="tfr")
+    s.set(params.tfr_name, power)
+    if itc is not None:
+        s.set(params.itc_name, itc)
+    target = (
+        f"{params.tfr_name}, {params.itc_name}"
+        if params.return_itc
+        else params.tfr_name
+    )
+    arguments = ", ".join(f"{key}={value!r}" for key, value in kwargs.items())
+    code = f"{target} = {params.epochs_name}.compute_tfr({arguments})"
+    if params.baseline is not None:
+        code += f"\n{params.tfr_name}.apply_baseline({params.baseline!r}, mode={params.baseline_mode!r})"
+    if params.plot:
+        display_code = (
+            params.tfr_name if params.average else f"{params.tfr_name}.average()"
+        )
+        code += f"\n{display_code}.plot(combine='mean', show=False)"
+    md = (
+        f"{params.method} power: `{params.epochs_name}` -> `{params.tfr_name}`; "
+        f"shape={power.data.shape}, average={params.average}, decim={params.decim}. "
+        f"Baseline={params.baseline!r}, mode={params.baseline_mode if params.baseline is not None else 'none'}."
+    )
+    if itc is not None:
+        md += f" ITC stored as `{params.itc_name}` (not baseline-normalized)."
+    if params.decim > 1:
+        md += " Decimation is post-transform subsampling and can alias."
+    return _result(md, figs=figs, code=code)
+
+
 def tfr_morlet(
     epochs_name: str = "epochs",
     fmin: float = 4.0,
@@ -686,6 +846,12 @@ def save_object(name: str, path: str, overwrite: bool = True) -> dict:
 # ── Decoding (MVPA) ─────────────────────────────────────────────────────────────
 
 
+def decoding_group_test(params) -> dict:
+    from mne_mcp.inference import decoding_group_test as run_test
+
+    return run_test(params)
+
+
 def decode_time(
     epochs_name: str = "epochs",
     cond_a: str | None = None,
@@ -693,57 +859,42 @@ def decode_time(
     scoring: str = "roc_auc",
     cv: int = 5,
     name: str = "decoding",
+    *,
+    cv_strategy: str = "stratified",
+    groups: list[str] | list[int] | None = None,
+    picks: str | list[str] | list[int] | None = None,
+    shuffle: bool = False,
+    random_state: int = 97,
+    plot: bool = True,
+    method: str = "sliding",
+    tmin: float | None = None,
+    tmax: float | None = None,
+    C: float = 1.0,
+    class_weight: str | None = None,
+    max_iter: int = 1000,
 ) -> dict:
-    import numpy as np
-    from mne.decoding import SlidingEstimator, cross_val_multiscore
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.pipeline import make_pipeline
-    from sklearn.preprocessing import StandardScaler
+    from mne_mcp.decoding import run_decoding
 
-    s = get_session()
-    epochs = s.get(epochs_name)
-    _require_kind(epochs, epochs_name, ("Epochs",))
-    sub = epochs[[cond_a, cond_b]] if (cond_a and cond_b) else epochs
-    X = sub.get_data(copy=False)
-    y = sub.events[:, 2]
-    classes = np.unique(y)
-    if len(classes) != 2:
-        raise ValueError(
-            f"Time-resolved decoding needs exactly 2 classes; got {len(classes)} "
-            f"({classes}). Pass cond_a and cond_b to pick two conditions."
-        )
-    clf = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))
-    estimator = SlidingEstimator(clf, scoring=scoring, n_jobs=1, verbose="ERROR")
-    scores = cross_val_multiscore(estimator, X, y, cv=cv, n_jobs=1).mean(axis=0)
-    s.set(name, scores)
-
-    before = figures.open_figure_numbers()
-    import matplotlib.pyplot as plt
-
-    fig, ax = plt.subplots()
-    ax.plot(sub.times, scores, lw=2)
-    ax.axhline(0.5, color="k", linestyle="--", label="chance")
-    ax.set(xlabel="Time (s)", ylabel=scoring, title=f"Decoding {cond_a} vs {cond_b}")
-    ax.legend()
-    figs = figures.capture_new_figures(before, get_results_dir(), prefix="decode")
-
-    peak = int(np.argmax(scores))
-    md = (
-        f"Time-resolved decoding ({cond_a} vs {cond_b}, {scoring}) on `{epochs_name}`: "
-        f"mean={scores.mean():.3f}, peak={scores[peak]:.3f} at {sub.times[peak]:.3f}s "
-        f"({len(y)} trials, {cv}-fold CV)."
+    return run_decoding(
+        epochs_name,
+        cond_a,
+        cond_b,
+        scoring,
+        cv,
+        name,
+        cv_strategy=cv_strategy,
+        groups=groups,
+        picks=_parse_picks(picks),
+        shuffle=shuffle,
+        random_state=random_state,
+        plot=plot,
+        method=method,
+        tmin=tmin,
+        tmax=tmax,
+        C=C,
+        class_weight=class_weight,
+        max_iter=max_iter,
     )
-    code = (
-        "from mne.decoding import SlidingEstimator, cross_val_multiscore\n"
-        "from sklearn.pipeline import make_pipeline\n"
-        "from sklearn.preprocessing import StandardScaler\n"
-        "from sklearn.linear_model import LogisticRegression\n"
-        f"sub = {epochs_name}[[{cond_a!r}, {cond_b!r}]]\n"
-        "clf = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))\n"
-        f"sl = SlidingEstimator(clf, scoring={scoring!r})\n"
-        f"{name} = cross_val_multiscore(sl, sub.get_data(), sub.events[:, 2], cv={cv}).mean(0)"
-    )
-    return _result(md, figs=figs, code=code)
 
 
 # ── Connectivity ────────────────────────────────────────────────────────────────
@@ -756,53 +907,180 @@ def connectivity(
     fmax: float = 13.0,
     con_name: str = "con",
 ) -> dict:
+    return compute_connectivity(
+        ConnectivityParameters(
+            epochs_name=epochs_name,
+            method=method,
+            fmin=fmin,
+            fmax=fmax,
+            con_name=con_name,
+        ),
+        _legacy_dense=True,
+    )
+
+
+def compute_connectivity(
+    params: ConnectivityParameters, *, _legacy_dense: bool = False
+) -> dict:
+    """Keep ordered edges, signs and complex values intact in the stored result."""
+    import warnings
+
     import numpy as np
     from mne_connectivity import spectral_connectivity_epochs
 
     s = get_session()
-    epochs = s.get(epochs_name)
-    _require_kind(epochs, epochs_name, ("Epochs",))
-    con = spectral_connectivity_epochs(
-        epochs,
-        method=method,
-        mode="multitaper",
-        sfreq=epochs.info["sfreq"],
-        fmin=fmin,
-        fmax=fmax,
-        faverage=True,
-        verbose="ERROR",
+    epochs = s.get(params.epochs_name)
+    _require_kind(epochs, params.epochs_name, ("Epochs",))
+    if len(epochs) < 2:
+        raise ValueError(
+            "Connectivity across epochs requires at least two retained trials; few trials remain unreliable."
+        )
+    selected = epochs.copy().pick(
+        _parse_picks(params.picks) if params.picks is not None else "data",
+        exclude="bads",
     )
-    s.set(con_name, con)
-    mat = np.asarray(con.get_data(output="dense"))[:, :, 0]
-    full = mat + mat.T
-    np.fill_diagonal(full, 0.0)
-
-    before = figures.open_figure_numbers()
-    import matplotlib.pyplot as plt
-
-    fig, ax = plt.subplots()
-    im = ax.imshow(full, cmap="viridis")
-    fig.colorbar(im, ax=ax, label=method)
-    ax.set(
-        title=f"{method} connectivity {fmin}-{fmax} Hz",
-        xlabel="channel",
-        ylabel="channel",
+    names = selected.ch_names
+    if len(names) < 2:
+        raise ValueError("Select at least two non-bad data channels.")
+    lows = params.fmin if isinstance(params.fmin, list) else [params.fmin]
+    highs = params.fmax if isinstance(params.fmax, list) else [params.fmax]
+    if max(highs + (params.cwt_freqs or [])) >= epochs.info["sfreq"] / 2:
+        raise ValueError(
+            "Frequency edges and cwt_freqs must be below Nyquist (sfreq / 2)."
+        )
+    tmin = epochs.times[0] if params.tmin is None else params.tmin
+    tmax = epochs.times[-1] if params.tmax is None else params.tmax
+    if tmin < epochs.times[0] or tmax > epochs.times[-1] or tmin >= tmax:
+        raise ValueError("Time window must lie inside the epoch and have tmin < tmax.")
+    if params.pairs is not None:
+        unknown = sorted({ch for pair in params.pairs for ch in pair} - set(names))
+        if unknown:
+            raise ValueError(
+                f"Pair channels absent after picks/bad-channel exclusion: {unknown}"
+            )
+        seeds = [names.index(a) for a, _ in params.pairs]
+        targets = [names.index(b) for _, b in params.pairs]
+    elif params.method == "dpli":
+        seeds, targets = np.where(~np.eye(len(names), dtype=bool))
+        seeds, targets = seeds.tolist(), targets.tolist()
+    else:
+        seeds, targets = np.tril_indices(len(names), k=-1)
+        seeds, targets = seeds.tolist(), targets.tolist()
+    kwargs = dict(
+        method=params.method,
+        mode=params.mode,
+        indices=(seeds, targets),
+        fmin=tuple(lows),
+        fmax=tuple(highs),
+        faverage=params.faverage,
+        tmin=params.tmin,
+        tmax=params.tmax,
+        block_size=params.block_size,
+        n_jobs=1,
     )
-    figs = figures.capture_new_figures(before, get_results_dir(), prefix="conn")
+    if _legacy_dense:
+        kwargs["indices"] = None
+        if params.method == "dpli":
+            # Compute both directions rather than infer them; keep n_channels**2 storage.
+            rows, cols = np.indices((len(names), len(names)))
+            kwargs["indices"] = (rows.ravel().tolist(), cols.ravel().tolist())
+    if params.mode == "multitaper":
+        kwargs.update(
+            mt_bandwidth=params.mt_bandwidth,
+            mt_adaptive=params.mt_adaptive,
+            mt_low_bias=params.mt_low_bias,
+        )
+    elif params.mode == "cwt_morlet":
+        kwargs.update(
+            cwt_freqs=np.asarray(params.cwt_freqs),
+            cwt_n_cycles=(
+                params.cwt_n_cycles if params.cwt_n_cycles is not None else 7.0
+            ),
+        )
+    with warnings.catch_warnings(record=True) as captured:
+        warnings.simplefilter("always")
+        con = spectral_connectivity_epochs(selected, **kwargs, verbose="WARNING")
+    values = np.asarray(con.get_data())
+    if _legacy_dense:
+        values = con.get_data(output="dense")[seeds, targets]
+    labels = [f"{names[a]} -> {names[b]}" for a, b in zip(seeds, targets)]
+    # Summaries never infer reverse edges or discard imaginary/sign information.
+    display = np.abs(values) if np.iscomplexobj(values) else values
+    if display.ndim == 3:
+        display = display.mean(axis=-1)
+    nonfinite = int((~np.isfinite(values)).sum())
+    figs = []
+    if params.plot:
+        import matplotlib.pyplot as plt
 
-    names = epochs.ch_names
-    il = np.tril_indices_from(full, k=-1)
-    vals = full[il]
-    order = np.argsort(vals)[::-1][:5]
-    top = "; ".join(f"{names[il[0][o]]}–{names[il[1][o]]}={vals[o]:.2f}" for o in order)
+        before = figures.open_figure_numbers()
+        count = min(len(labels), 30)
+        fig, ax = plt.subplots(figsize=(8, max(3, min(10, count * 0.3))))
+        metric = f"abs({params.method})" if np.iscomplexobj(values) else params.method
+        color_options = {"cmap": "viridis"}
+        if params.method == "imcoh":
+            color_options = {"cmap": "RdBu_r", "vmin": -1, "vmax": 1}
+        elif params.method == "dpli":
+            color_options = {"cmap": "RdBu_r", "vmin": 0, "vmax": 1}
+        im = ax.imshow(
+            np.ma.masked_invalid(display[:count]), aspect="auto", **color_options
+        )
+        fig.colorbar(im, ax=ax, label=metric)
+        ax.set_yticks(range(count), labels[:count])
+        if params.faverage:
+            ax.set_xticks(
+                range(len(lows)), [f"{lo:g}-{hi:g} Hz" for lo, hi in zip(lows, highs)]
+            )
+        elif len(con.freqs) <= 12:
+            ax.set_xticks(range(len(con.freqs)), [f"{f:g}" for f in con.freqs])
+        ax.set(
+            xlabel=(
+                "Band" if params.faverage else "Frequency bin (Hz labels where shown)"
+            ),
+            ylabel="Ordered edge",
+            title=f"{metric}: first {count}/{len(labels)} edges"
+            + (" (time mean)" if values.ndim == 3 else ""),
+        )
+        fig.tight_layout()
+        figs = figures.capture_new_figures(before, get_results_dir(), prefix="conn")
+    s.set(params.con_name, con)
     md = (
-        f"Spectral connectivity ({method}, {fmin}-{fmax} Hz) for `{epochs_name}` → `{con_name}`. "
-        f"Mean={vals.mean():.3f}. Strongest pairs: {top}"
+        f"Spectral connectivity ({params.method}, {params.mode}) for `{params.epochs_name}` "
+        f"-> `{params.con_name}`; {len(epochs)} trials, {len(names)} channels, {len(labels)} ordered edges, "
+        f"stored_shape={con.get_data().shape}, edge_shape={values.shape}, "
+        f"bands={list(zip(lows, highs))}, faverage={params.faverage}. "
+        "Stored values retain sign/complex components; uncomputed reverse edges are not inferred."
+    )
+    if params.method == "dpli":
+        md += " dPLI is an ordered phase-lag statistic, not evidence of causality."
+    if params.mode == "cwt_morlet":
+        md += " Time points are retained in the result; the plot averages over time. Estimates are across trials, not single-trial connectivity."
+    if nonfinite:
+        md += f" Warning: {nonfinite} non-finite values; inspect flat channels, trial count and spectral support."
+    warning_messages = list(dict.fromkeys(str(w.message) for w in captured))
+    if warning_messages:
+        md += "\n\nUpstream warnings:\n" + "\n".join(
+            f"- {message}" for message in warning_messages[:5]
+        )
+        if len(warning_messages) > 5:
+            md += (
+                f"\n- {len(warning_messages) - 5} additional distinct warnings omitted."
+            )
+    md += "\n\nFirst edges (mean over returned frequencies/bands and time; descriptive only):\n"
+    for label, value in zip(labels[:10], values[:10]):
+        md += f"- {label}: {value.mean():.5g}\n"
+    arguments = ", ".join(
+        (
+            f"{key}=np.array({value.tolist()!r})"
+            if isinstance(value, np.ndarray)
+            else f"{key}={value!r}"
+        )
+        for key, value in kwargs.items()
     )
     code = (
-        "from mne_connectivity import spectral_connectivity_epochs\n"
-        f"{con_name} = spectral_connectivity_epochs({epochs_name}, method={method!r}, "
-        f"fmin={fmin}, fmax={fmax}, faverage=True)"
+        "import numpy as np\nfrom mne_connectivity import spectral_connectivity_epochs\n"
+        f"{params.con_name} = spectral_connectivity_epochs("
+        f"{params.epochs_name}.copy().pick({names!r}), {arguments})"
     )
     return _result(md, figs=figs, code=code)
 

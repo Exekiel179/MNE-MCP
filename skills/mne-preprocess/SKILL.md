@@ -18,7 +18,7 @@ description: >
 
 Preprocessing & data-quality cleanup of neurophysiology data via the MNE MCP server. This skill is
 **skeptical by design**: nearly every preprocessing mistake (a too-aggressive high-pass that eats
-your slow ERP, a reference that fabricates connectivity, filtering before epoching, differential
+your slow ERP, a reference that biases connectivity, filtering after epoching, differential
 bad-channel handling between groups) runs *without any error* and silently biases everything
 downstream — so the discipline is to **grill the downstream analysis before cleaning, and critique
 the pipeline before believing.**
@@ -93,10 +93,10 @@ propose a sensible default **and explicitly flag the open risk** — never silen
    ```python
    raw.set_eeg_reference("average", projection=False)          # whole-head, common for source/ERP
    # linked mastoid:  raw.set_eeg_reference(["TP9", "TP10"])
-   # REST (infinity): raw.set_eeg_reference("REST")            # needs a forward / sphere model
+   # REST (infinity): raw.set_eeg_reference("REST", forward=fwd) # needs an appropriate forward model
    ```
    (Structured form: `mne_set_reference(name="raw", ref_channels="average")` /
-   `"REST"` / `"TP9,TP10"`.)
+   `"TP9,TP10"`. REST requires `mne_run_code` with `forward=fwd`; the shortcut rejects REST.)
 
 5. **Bad channels + interpolate** — prefer an objective criterion, then spline-interpolate:
 
@@ -122,6 +122,13 @@ propose a sensible default **and explicitly flag the open risk** — never silen
 8. **Re-inspect.** `mne_plot_psd` again — confirm the line-noise spike is gone, the high-pass
    removed drift, and no channel still looks dead/noisy. Then **archive** the equivalent code +
    figures (the `mne-analyst` archiving convention).
+
+Structured filter calls preflight finite cutoff/notch values against Nyquist, ordered band-pass
+edges, and object notch support before processing. Zero high-pass is allowed by MNE; band-stop
+designs use explicit code. Notch on Epochs/Evoked is rejected when the object has no notch method:
+prefer continuous Raw before epoching. Crop bounds must lie within the current time range;
+resampling requires a positive finite rate. These are parameter checks, not scientific approval.
+Operations remain in place; unexpected runtime errors can still leave partial changes.
 
 Best-practice reminders: filter **before** epoching to avoid edge artifacts at every epoch boundary;
 pick the high-pass for the analysis; report **per-group** bad-channel/rejection counts; track how

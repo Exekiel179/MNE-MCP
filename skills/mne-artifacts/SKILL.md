@@ -88,7 +88,7 @@ a sensible default **and explicitly flag the open risk** — never silently choo
    `mne_apply_ica(ica_name="ica", inst_name="raw", exclude="0,3")`.
 7. **Alternatives where appropriate** — **SSP** (project out a blink/ECG subspace), or **autoreject**
    (automated per-channel epoch thresholds / interpolation). Both via `mne_run_code` and **need extra
-   deps from the `[full]` extra** (`autoreject`, `mne-icalabel`).
+   dependencies** (both `autoreject` and `mne-icalabel` are user-managed optional extensions).
 8. **Archive** the equivalent code + figures, and **report n components removed** (the `mne-analyst`
    archiving convention).
 

@@ -3,16 +3,19 @@
 Companion to `mne-advanced/SKILL.md`. All snippets assume the MNE MCP session has loaded objects
 (`raw`, `epochs`) and run inside `mne_run_code` (where `mne`, `np`, `plt`, and loaded objects are
 pre-bound). **Every external library named below is an OPTIONAL dependency** — install it explicitly
-(`pip install <lib>`), flag it to the user, and **record its version** (these tools move fast).
+(`python -m pip install <lib>`), flag it to the user, and **record its version** (these tools move fast).
 
 | Method | External library (optional) | Install |
 |---|---|---|
-| EEG microstates | `pycrostates` | `pip install pycrostates` |
-| Entropy / complexity | `antropy`, `neurokit2` | `pip install antropy neurokit2` |
-| Graph / network metrics | `networkx`, `bctpy` | `pip install networkx bctpy` |
-| Aperiodic 1/f | `specparam` (was FOOOF) | `pip install specparam` |
-| fNIRS GLM | `mne-nirs` | `pip install mne-nirs` |
-| Real-time / online | `mne-realtime`, `pylsl` | `pip install mne-realtime pylsl` |
+| EEG microstates | `pycrostates` | `python -m pip install pycrostates` |
+| Entropy / complexity | `antropy`, `neurokit2` | `python -m pip install antropy neurokit2` |
+| Graph / network metrics | `networkx`, `bctpy` | `python -m pip install networkx bctpy` |
+| Aperiodic 1/f | `specparam` (was FOOOF) | `python -m pip install specparam` |
+| fNIRS GLM | `mne-nirs` | `python -m pip install mne-nirs` |
+| Real-time / online | `mne-realtime`, `pylsl` | `python -m pip install mne-realtime pylsl` |
+
+Scientific libraries are user-managed. Check imports in the server interpreter first; do not run
+package installation inside mne_run_code. Environment changes require user authorization.
 
 ## EEG microstates (pycrostates)
 

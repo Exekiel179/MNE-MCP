@@ -23,7 +23,7 @@ is a **quantitative source claim resting on a template head with no individual M
 discipline is to **grill the model before computing and critique the localization before believing.**
 
 > Companion skills: `mne-mcp-guard` for technical execution safety; `mne-methodology-critic` for
-> Phase 3. Loaded objects persist in one MNE session. Source tools need the **`[full]`** extra
+> Phase 3. Loaded objects persist in one MNE session. Check optional source-tool dependencies in the server environment before this workflow
 > (`nibabel` for the forward model, `pyvista` for rendering).
 
 ---
@@ -69,7 +69,7 @@ answer one, propose a sensible default **and explicitly flag the open risk** —
 
 ## PHASE 2 — ANALYZE
 
-1. **Capability + look first.** `mne_check_status` (confirm the `[full]` extra: `nibabel`, `pyvista`);
+1. **Capability + look first.** `mne_check_status` (confirm `nibabel` and `pyvista`);
    review the evoked/epochs you will invert (`mne_plot_evoked` / `mne_describe`) — a clean, baselined
    evoked with a sensible reference and montage is the prerequisite for a meaningful inverse.
 

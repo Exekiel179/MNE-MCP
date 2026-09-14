@@ -3,7 +3,7 @@
 Companion to `mne-source/SKILL.md`. All snippets assume the MNE MCP session has loaded objects
 (`epochs`, `evoked`, and after the steps below `noise_cov`, `fwd`, `stc`) and run inside
 `mne_run_code` (where `mne`, `np`, `plt`, and loaded objects are pre-bound). Source tools need the
-**`[full]`** extra (`nibabel` for the forward model, `pyvista` for off-screen rendering).
+user-managed optional libraries (`nibabel` for the forward model, `pyvista` for off-screen rendering).
 
 ## The inverse problem is ill-posed
 

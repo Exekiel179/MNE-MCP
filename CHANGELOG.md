@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.0 - 2026-09-15
+
+- Standardize on Python 3.12 and one existing scientific environment. Remove
+  runtime backend installation, legacy shell installers and analysis extras.
+- Add the agent installation guide and installer: preflight, missing core
+  dependency provisioning, explicit client selection, backups and all 14 skills.
+- Add validated Morlet/multitaper TFR and structured multi-band connectivity.
+- Extend decoding with grouped cross-validation, temporal generalization,
+  participant-level corrected inference and reproducible parameter records.
+- Separate result evidence, methods, interpretation, limitations and review-needed
+  manuscript drafts. Do not treat folds as participants or peaks as significance.
+- Extend scientific parameter validation and companion workflow references.
+- Restrict test discovery and source distributions to intended project files.
+
 All notable changes to MNE-MCP are documented here. The format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are pre-1.0 and may move quickly.
 

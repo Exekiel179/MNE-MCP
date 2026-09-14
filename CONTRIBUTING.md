@@ -8,8 +8,8 @@ workflow, and how the project is released.
 ```bash
 git clone https://github.com/Exekiel179/MNE-MCP.git
 cd MNE-MCP
-python -m venv .venv && . .venv/bin/activate      # Windows: .venv\Scripts\activate
-pip install -e ".[ica,dev]"                        # or ".[full,dev]" for the advanced tools
+python -m pip install -r requirements.lock -r requirements-dev.lock
+python -m pip install .
 ```
 
 `status` confirms the environment:
@@ -30,8 +30,8 @@ python tests/smoke_eegbci.py                       # REAL-data smoke (downloads 
 - Unit tests must stay fast and **offline** (synthetic data only).
 - The real-data smoke (`smoke_eegbci.py`) downloads a small public dataset; it **skips cleanly** if
   the network is unavailable so it never flakes CI.
-- Advanced tools (connectivity, source, decoding) need the `[full]` extra; tests that require an
-  optional package guard it with `pytest.importorskip(...)`.
+- The supported installer includes the structured advanced-tool dependencies. Tests for truly
+  optional extensions still use `pytest.importorskip(...)`.
 
 ## Lint / formatting
 
@@ -54,7 +54,7 @@ each skill self-contained (it is installed per-folder by `mne-mcp setup`), and a
 
 `.github/workflows/ci.yml` runs on every push/PR to `main`:
 
-- **unit** — Linux/macOS/Windows × Python 3.10/3.12 (with coverage)
+- **unit** — Linux/macOS/Windows × Python 3.12 (with coverage)
 - **numpy-compat** — NumPy 1.x and 2.x
 - **real-data-smoke** — the eegbci Berger-effect end-to-end
 - **lint** — black + isort

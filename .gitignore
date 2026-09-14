@@ -4,6 +4,7 @@ __pycache__/
 *.egg-info/
 .eggs/
 build/
+.build-check/
 dist/
 .pytest_cache/
 .mypy_cache/
@@ -41,3 +42,11 @@ coverage.xml
 Thumbs.db
 .idea/
 .vscode/
+
+# Local test runs and downloaded native backends
+tmp/
+.codex-pytest*/
+.pytest-local/
+.qa-test-tmp/
+.test-tmp/
+.tmp-uv-cache/

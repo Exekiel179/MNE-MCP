@@ -22,18 +22,30 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python: ["3.10", "3.12"]
+        python: ["3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - run: python -m pip install --upgrade pip
-      - run: pip install -e ".[ica,dev]"
+      - run: python -m pip install -r requirements.lock
+      - run: python -m pip install .
+      - run: python -m pip install --requirement requirements-dev.lock
+        if: runner.os != 'Windows'
+      - run: python -m pip install --requirement requirements-dev.lock
+        if: runner.os == 'Windows'
       - name: Compile check
         run: python -m compileall src/mne_mcp
+        if: runner.os != 'Windows'
+      - name: Compile check (Windows)
+        run: python -m compileall src/mne_mcp
+        if: runner.os == 'Windows'
       - name: Unit tests (with coverage)
-        run: pytest -q --cov=mne_mcp --cov-report=term-missing --cov-fail-under=65
+        run: python -m pytest -q --cov=mne_mcp --cov-report=term-missing --cov-fail-under=65
+        if: runner.os != 'Windows'
+      - name: Unit tests (Windows, with coverage)
+        run: python -m pytest -q --cov=mne_mcp --cov-report=term-missing --cov-fail-under=65
+        if: runner.os == 'Windows'
 
   numpy-compat:
     name: numpy compat · ${{ matrix.numpy }}
@@ -49,13 +61,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python -m pip install --upgrade pip
-      - run: pip install -e ".[ica,dev]"
+      - run: python -m pip install -r requirements.lock
+      - run: python -m pip install .
+      - run: python -m pip install --requirement requirements-dev.lock
       - name: Pin NumPy line
-        run: pip install "${{ matrix.numpy }}"
+        run: python -m pip install "${{ matrix.numpy }}"
       - run: python -c "import numpy; print('NumPy', numpy.__version__)"
       - name: Regression + unit tests
-        run: pytest -q
+        run: python -m pytest -q
 
   real-data-smoke:
     name: real eegbci smoke · ubuntu · py3.12
@@ -71,8 +84,8 @@ jobs:
         with:
           path: ~/mne_data
           key: mne-eegbci-S001-r1r2
-      - run: python -m pip install --upgrade pip
-      - run: pip install -e ".[ica]"
+      - run: python -m pip install -r requirements.lock
+      - run: python -m pip install .
       - name: Real-data end-to-end (eyes-open vs eyes-closed alpha)
         run: python tests/smoke_eegbci.py
 
@@ -84,6 +97,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install black isort
-      - run: black --check src tests
-      - run: isort --check-only --profile black src tests
+      - run: python -m pip install --requirement requirements-dev.lock
+      - run: black --check scripts/install.py src tests
+      - run: isort --check-only --profile black scripts/install.py src tests

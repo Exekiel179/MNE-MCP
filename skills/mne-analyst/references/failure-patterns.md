@@ -22,7 +22,7 @@ Signals are in **volts/tesla**. A rejection threshold of `100` means 100 *volts*
 - `n_components` too high vs data rank (after average reference rank drops by 1) → reduce, or pass a
   float like `0.99` (variance fraction).
 - ICA unstable / components look like drift → you forgot to high-pass (~1 Hz) before fitting.
-- "requires scikit-learn" → `pip install scikit-learn` into the server env.
+- "requires scikit-learn" → check the server interpreter; install scikit-learn there only with user authorization, then restart.
 - FastICA didn't converge → try `method=picard` or `method=infomax`.
 
 ## TFR: "wavelet is longer than the signal"
@@ -43,8 +43,10 @@ smaller `n_cycles` (e.g. fixed `n_cycles=3`).
   (`mne.io.read_raw_nihon`, `read_raw_curry`, `read_raw_snirf`, …).
 
 ## Timeouts
-Big files, ICA, and TFR are slow. Raise `MNE_MCP_TIMEOUT` (seconds) in the MCP env config and restart
-Claude Code. For very large raw, `mne_load_raw preload=false` and crop before heavy steps.
+Timeout does not stop the worker. Check `mne_check_status` until execution is `idle`, then
+inspect objects before deciding whether another call is needed. Session operations are rejected
+while busy; do not queue retries or reset. Partial changes may already exist. Increase
+`MNE_MCP_TIMEOUT` for future slow steps. Restarting loses unsaved in-memory data.
 
 ## Figures
 Every plot tool returns `> Figure: <path>`. If you don't *read* the PNG you're flying blind — read it

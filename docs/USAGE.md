@@ -27,17 +27,12 @@ MNE-MCP 针对这一点设计：
 
 ## 2. 安装
 
-环境要求：Windows / macOS / Linux，Python 3.10+。
+环境要求：Windows / macOS / Linux，Python 3.12。
 
 ```bash
 git clone https://github.com/Exekiel179/MNE-MCP.git
 cd MNE-MCP
-
-# 安装本体 + MNE + numpy/scipy/matplotlib + scikit-learn(ICA)
-pip install -e ".[ica]"
-
-# 确认环境
-mne-mcp status
+python -m pip install .
 ```
 
 `mne-mcp status` 会显示 MNE / scikit-learn / numpy 等版本和结果目录。看到 `MNE-Python: OK vX.Y` 就说明装好了。
@@ -49,7 +44,7 @@ mne-mcp status
 ### 3.1 一键注册 + 装技能（推荐）
 
 ```bash
-mne-mcp setup                          # Claude Code + Codex + opencode + 技能
+mne-mcp setup --clients codex           # Claude Code + Codex + opencode + 技能
 mne-mcp setup --clients claude,codex   # 只配置指定客户端
 ```
 
@@ -171,7 +166,7 @@ Claude 会读取这张 PNG 来判断（功率谱里的工频峰、ICA 里的眼�
 
 | 现象 | 原因 | 解决 |
 |---|---|---|
-| ICA 报错需要 scikit-learn | 服务器环境缺 sklearn | `pip install scikit-learn` 后重启 |
+| ICA 报错需要 scikit-learn | 安装不完整 | 确认服务解释器，在同一环境准备 scikit-learn 后重启客户端 |
 | 画地形图/插值报导联位置错误 | 没设导联 | 先 `mne_set_montage` |
 | 剔除阈值不起作用/全被剔 | 单位写错 | 信号是伏特，100 µV 要写 `100e-6` |
 | 时频报"wavelet longer than signal" | 分段太短 | 用更宽的分段窗（如 -0.5~1.5s）或提高 fmin |
@@ -194,7 +189,7 @@ Claude 会读取这张 PNG 来判断（功率谱里的工频峰、ICA 里的眼�
 - **高级分析(6)**：`mne_decode` `mne_connectivity` `mne_compute_noise_cov` `mne_make_forward` `mne_apply_inverse` `mne_plot_source_estimate`
 - **导出(1)**：`mne_save`
 
-完整参数见 `TOOLS_REFERENCE.md`。高级分析需 `pip install -e ".[full]"`。
+完整参数见 `TOOLS_REFERENCE.md`。高级分析所需依赖由用户在同一 MNE 环境中按需准备。
 
 ---
 

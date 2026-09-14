@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml/badge.svg)](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/protocol-MCP-green.svg)](https://modelcontextprotocol.io)
 
 **English** | [简体中文](README.zh-CN.md)
@@ -32,7 +32,7 @@ MNE analysis is **stateful and visual** — unlike a one-shot statistics batch j
   session** so recordings never get re-loaded between steps.
 - Every decision is driven by **looking** (PSD, sensor maps, ICA components, ERPs). Every plotting
   tool saves a **PNG** the assistant can read and interpret.
-- MNE is a huge pure-Python API. MNE-MCP gives you **38 structured tools** spanning the common
+- MNE has a large Python API. MNE-MCP gives you **41 structured tools** spanning the common
   pipeline *and* advanced analysis (source localization, connectivity, decoding), plus an
   **`mne_run_code`** escape hatch that reaches the entire MNE API in the same live session.
 - Defaults (line frequency, montage, filter band, rejection threshold, ICA settings, epoch window,
@@ -42,149 +42,50 @@ MNE analysis is **stateful and visual** — unlike a one-shot statistics batch j
 
 ## Requirements
 
-- Python 3.10+
-- [MNE-Python](https://mne.tools/) ≥ 1.6 — **provisioned on demand** (see [Lightweight by default](#lightweight-by-default--on-demand-backend)); install it up front with `mne-mcp[analysis]` if you prefer
-- `scikit-learn` for ICA (in the `ica` / `full` extras, or `mne-mcp install-backend`)
-- Claude Code (or any MCP client) with MCP support
+- Python **3.12**
+- Git
+- Claude Code, Codex, opencode, or another MCP client
 
 > Cross-platform: unlike a closed engine, MNE-Python is pure Python, so analysis tools work on
 > Windows, macOS, and Linux.
 
 ---
 
-## Quick Install
+## Installation
+
+### Install with your agent
+
+Send this to a coding agent with terminal access:
+
+> Follow https://github.com/Exekiel179/MNE-MCP/blob/main/INSTALL_AGENT.md to install MNE-MCP and all companion skills in my existing MNE environment, configure my current client, and verify the result.
+
+The agent checks the environment, installs missing MNE/core libraries when needed, installs the lightweight interface and all 14 skills, and
+registers the selected client. A client restart is required. Use the versioned
+[v0.4.0 installation guide](https://github.com/Exekiel179/MNE-MCP/blob/v0.4.0/INSTALL_AGENT.md)
+for a reproducible installation.
+
+### Manual installation
+
+Activate your existing Python 3.12 MNE environment, then install the lightweight interface:
 
 ```bash
-git clone https://github.com/Exekiel179/MNE-MCP.git
-cd MNE-MCP
-
-# 1. Install (pulls in mne, numpy, scipy, matplotlib, scikit-learn for ICA)
-pip install -e ".[ica]"
-
-# 2. Register in your MCP client(s) — Claude Code, Codex, opencode — and install skills
-mne-mcp setup
-
-# 3. Restart your client
+python -m pip install "mne-mcp==0.4.0"
+python -m mne_mcp.cli setup --clients codex
 ```
 
-Or run the **one-shot installer** (creates the venv, installs, verifies, registers, installs skills):
-
-```powershell
-pwsh -File scripts\install.ps1     # Windows
-```
-```bash
-bash scripts/install.sh            # macOS / Linux
-```
-
-See [QUICK_START.md](QUICK_START.md) for a guided first session, or [docs/INSTALL.md](docs/INSTALL.md)
-for the full guide.
-
-> **One command does everything:** `mne-mcp setup` registers the `mne` server in **Claude Code,
-> Codex, and opencode** (whichever you use) *and* installs the companion skills. Narrow it with
-> `--clients claude,codex`. The `mne_*` tools require **one client restart** afterwards (MCP servers
-> load at startup).
-
-### Run via `uvx` / `pipx` (standard MCP — recommended)
-
-`mne-mcp` is [published on PyPI](https://pypi.org/project/mne-mcp/), so the most portable path is the
-standard MCP launcher — no clone, no `setup`. Add this to your client config (`~/.claude.json` for
-Claude Code, `claude_desktop_config.json` for Claude Desktop):
-
-```json
-{ "mcpServers": { "mne": { "command": "uvx", "args": ["--from", "mne-mcp[ica]", "mne-mcp", "serve", "--transport", "stdio"] } } }
-```
-
-`uvx` (from [uv](https://docs.astral.sh/uv/)) fetches and runs `mne-mcp` on demand. The `[ica]` extra
-pulls in scikit-learn so ICA works out of the box; swap it for **`mne-mcp[full]`** to also get the
-advanced tools (source localization, connectivity, decoding, BIDS). Because MNE pulls in a large
-scientific stack, a **persistent** install is usually snappier than re-resolving each run:
-
-```bash
-pipx install "mne-mcp[ica]"        # or: uv tool install "mne-mcp[ica]"  (use [full] for advanced tools)
-```
-
-then set the config `command` to `mne-mcp` with `args: ["serve", "--transport", "stdio"]`. The source
-install above remains the path for development.
-
-**No `uv`? Bootstrap `pipx` with plain Python, then install and register in one go:**
-
-```bash
-python -m pip install --user pipx
-python -m pipx ensurepath          # reopen your terminal so `pipx` lands on PATH
-pipx install mne-mcp               # lightweight; provision the backend on demand
-mne-mcp setup                      # register in clients + install skills
-mne-mcp install-backend            # add MNE + ICA (or let the mne_install_backend tool do it)
-```
-
-> **Skills are bundled in the package (since 0.2.2).** A PyPI install carries the skill suite and the
-> `mne-methodology-critic` agent, so one extra command installs them — `mne-mcp setup` (after `pipx`/
-> `uv tool install`) or `uvx mne-mcp setup`. No clone required.
-
-### Lightweight by default — on-demand backend
-
-Since **0.3.0** the package itself is tiny: a bare `pip install mne-mcp` / `pipx install mne-mcp`
-pulls in only the MCP protocol layer (`mcp`, `fastmcp`, `pydantic`, `python-dotenv`), so it installs
-in seconds. The heavy scientific stack (MNE-Python + numpy/scipy/matplotlib/pandas, and scikit-learn
-for ICA) is **provisioned the first time an analysis needs it**:
-
-- In a session, just ask — when a tool reports the backend is missing, call the **`mne_install_backend`**
-  tool (or it is offered by `mne_check_status`). It `pip install`s into the server's own environment and
-  becomes usable **without a client restart**.
-- From a terminal: `mne-mcp install-backend` (add `--profile full` for source localization / connectivity
-  / decoding / BIDS).
-
-```bash
-pipx install mne-mcp            # tiny, instant
-mne-mcp install-backend        # add MNE + ICA when you're ready (or let the tool do it)
-```
-
-Prefer everything up front? Install an extra instead: **`mne-mcp[analysis]`** (MNE core), **`[ica]`**
-(+ scikit-learn), or **`[full]`** (+ advanced tools). For ephemeral `uvx` runs, pin the extra in the
-config (`--from mne-mcp[ica]`, as above) since an `uvx` environment is discarded between runs, so an
-on-demand install would not persist.
-
----
+Release downloads: [v0.4.0](https://github.com/Exekiel179/MNE-MCP/releases/tag/v0.4.0).
+For a downloaded source archive, extract it and use `python -m pip install .` in that directory.
+Use `claude`, `codex`, or `opencode` (comma-separated) to choose clients. Restart them after setup.
+MNE and scientific libraries are user-managed; installing this package does not install them.
+See [installation instructions](docs/INSTALL.md) for dependencies and troubleshooting.
 
 ## Configuration
 
-### Auto-configure (recommended)
+### Repair or reconfigure
 
-```bash
-mne-mcp setup                          # Claude Code + Codex + opencode, plus skills
-mne-mcp setup --clients claude,codex   # only specific clients
-mne-mcp configure-claude               # Claude Code only (subset of setup)
-```
-
-`setup` registers the `mne` server in each client and installs the skills, writing a timestamped
-backup of any file it touches:
-
-| Client | Config file | Key |
-|---|---|---|
-| Claude Code | `~/.claude.json` | `mcpServers.mne` |
-| OpenAI Codex CLI | `~/.codex/config.toml` | `[mcp_servers.mne]` |
-| opencode | `~/.config/opencode/opencode.json` | `mcp.mne` |
-
-### Manual setup
-
-Point `command` at the Python where you installed the package (or `mne-mcp` if it is on PATH).
-
-**Claude Code** — `~/.claude.json`:
-```json
-{ "mcpServers": { "mne": { "type": "stdio", "command": "mne-mcp", "args": ["serve", "--transport", "stdio"] } } }
-```
-
-**Codex CLI** — `~/.codex/config.toml`:
-```toml
-[mcp_servers.mne]
-command = "mne-mcp"
-args = ["serve", "--transport", "stdio"]
-enabled = true
-```
-
-**opencode** — `~/.config/opencode/opencode.json`:
-```json
-{ "mcp": { "mne": { "type": "local", "command": ["mne-mcp", "serve", "--transport", "stdio"], "enabled": true } } }
-```
+Run `python -m mne_mcp.cli setup --clients codex` in the same MNE environment.
+Setup registers that exact interpreter and installs the bundled skills for the selected clients.
+Existing configuration and skill files are backed up before updates.
 
 ### Environment variables (optional `.env`)
 
@@ -211,25 +112,11 @@ Defaults are saved to `~/.mne-mcp/config.json` (override path with `MNE_MCP_CONF
 runtime: **environment variable > config file > built-in**. View the active config in-session with the
 `mne_get_config` tool. Restart the MCP server for changes to take effect.
 
-### Install the Skills
+### Skills
 
-`mne-mcp setup` installs all bundled skills automatically. To do it by hand, copy every folder under
-`skills/` into your skills dir — the suite is `mne-analyst`, `mne-mcp-guard`, `mne-methodology-critic`,
-plus the per-category analysis skills (`mne-preprocess`, `mne-artifacts`, `mne-erp`, `mne-spectral`,
-`mne-timefreq`, `mne-connectivity`, `mne-source`, `mne-decoding`, `mne-stats`, `mne-advanced`) and the
-write-up skill (`mne-writeup`):
-
-```cmd
-set SKILLS_DIR=%USERPROFILE%\.claude\skills
-for %S in (mne-analyst mne-mcp-guard mne-methodology-critic mne-preprocess mne-artifacts mne-erp mne-spectral mne-timefreq mne-connectivity mne-source mne-decoding mne-stats mne-advanced mne-writeup) do xcopy /E /I skills\%S "%SKILLS_DIR%\%S"
-```
-
-> `mne-mcp setup` also installs the `mne-methodology-critic` **subagent** to `~/.claude/agents/` (the
-> skills' Phase 3 dispatches it in an isolated context). Copy `agents\mne-methodology-critic.md` there
-> by hand if installing manually.
-
-Restart your client after installation. (Skills are a Claude Code feature; Codex / opencode use the
-MCP server directly.)
+Setup installs all 14 skills into the selected client's skill directory, including their references.
+Claude also receives the methodology-review subagent. Other clients use the methodology-critic skill.
+Rerun setup after updating the package.
 
 ---
 
@@ -270,7 +157,7 @@ fully reproducible.
 
 ---
 
-## Available Tools (38)
+## Available Tools (41)
 
 ### Status & Session (7)
 `mne_check_status` · `mne_session_info` · `mne_describe` · `mne_get_info` ·
@@ -293,19 +180,24 @@ fully reproducible.
 `mne_find_events` · `mne_events_from_annotations` · `mne_make_epochs` ·
 `mne_plot_epochs_image` · `mne_average_evoked` · `mne_plot_evoked` · `mne_plot_topomap`
 
-### Time-frequency (1)
-`mne_tfr_morlet`
+### Time-frequency (2)
+`mne_compute_tfr` (Morlet/multitaper, custom cycles, ITC, trial power, baseline) · `mne_tfr_morlet`
 
-### Advanced analysis (6)
-`mne_decode` (MVPA) · `mne_connectivity` · `mne_compute_noise_cov` · `mne_make_forward` ·
+### Advanced analysis (8)
+`mne_decode` (MVPA) · `mne_connectivity` · `mne_compute_connectivity` (bands, pairs, estimators) · `mne_compute_noise_cov` · `mne_make_forward` ·
 `mne_apply_inverse` · `mne_plot_source_estimate`
+
+`mne_decoding_group_test` provides participant-level max-T or cluster-corrected inference.
+Decoding reports separate numerical evidence, methods, interpretation, limitations
+and a results draft requiring scientific review. The code escape hatch is not
+equivalent to validated structured coverage of every MNE API.
 
 ### Export (1)
 `mne_save`
 
 Anything still not covered — BIDS, custom statistics, beamformers, autoreject — is reachable through
 **`mne_run_code`** in the same live session. See [TOOLS_REFERENCE.md](TOOLS_REFERENCE.md) for full
-parameter details. Advanced tools need the `[full]` extra (`pip install -e ".[full]"`).
+parameter details. Advanced dependencies are checked per feature and are not bundled.
 
 ---
 
@@ -320,7 +212,7 @@ pytest
 
 # CLI commands
 mne-mcp status            # Check environment
-mne-mcp setup             # Register in Claude Code / Codex / opencode + install skills
+mne-mcp setup --clients codex # Register in Claude Code / Codex / opencode + install skills
 mne-mcp configure-claude  # Claude Code only
 ```
 

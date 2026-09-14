@@ -40,16 +40,16 @@ default **and explicitly flag the open risk** — never silently choose.
 - **Power or inter-trial coherence (ITC)?** Power = spectral magnitude over time; ITC = phase
   consistency across trials (0–1). They answer different questions — a stimulus can drive ITC with
   little power change (and vice versa). State which, or both.
-- **Evoked or induced (total) power?** ⚠️ Power of the *average* (evoked) captures only
-  phase-locked activity; per-trial power *then* averaged (total/induced) also captures
+- **Evoked, total, or induced power?** ⚠️ Power of the *average* (evoked) captures only
+  phase-locked activity; per-trial power *then* averaged (total) also captures
   non-phase-locked oscillations. These are **different claims**; mixing them (e.g. computing total
   power but interpreting it as the evoked response) is the most common fatal error here.
 
 **Data & parameters**
 - **Frequencies of interest**, and is the **LOWEST freq resolvable** given epoch length? A Morlet
-  wavelet at `f` Hz with `n_cycles` cycles has half-length ≈ `n_cycles / (2f)` s — the epoch must
+  wavelet at `f` Hz with `n_cycles` cycles has approximate half-support `5*n_cycles/(2*pi*f)` s — the epoch must
   extend that far beyond every time point you interpret, or you read **edge artifacts**.
-- **n_cycles** choice (default `freqs/2`) and its **time ↔ frequency resolution tradeoff**: fewer
+- **n_cycles** choice (legacy quick tool: `freqs/2`; `mne_compute_tfr`: 7) and its **time ↔ frequency resolution tradeoff**: fewer
   cycles = better time, worse frequency resolution (and shorter wavelet → less edge contamination).
 - **Baseline window + normalization TYPE** (logratio / zscore / percent / mean) — and is the
   baseline clean (no spillover from the previous trial, no anticipatory activity)?
@@ -68,10 +68,15 @@ default **and explicitly flag the open risk** — never silently choose.
 
 1. **Capability + look first.** `mne_check_status`; `mne_describe("epochs")` to read the epoch
    window. **Check the epoch is wide enough**: for the lowest frequency, you need
-   ≈ `n_cycles/(2·fmin)` s of pad on *each* side of the interpretable window. If not, **re-epoch
+   approximately `5*n_cycles/(2*pi*fmin)` s of pad on *each* side of the interpretable window. If not, **re-epoch
    wider** (e.g. `-0.5` to `1.0+` s) from `raw` before computing.
-2. **Compute Morlet power (+ ITC).** Quick path: `mne_tfr_morlet(fmin=, fmax=, n_freqs=)`. For ITC
-   and full control use `mne_run_code`:
+2. **Compute power (+ ITC).** Prefer `mne_compute_tfr(params={...})` for Morlet or multitaper:
+   `freqs=[8,12,20]`, scalar/per-frequency `n_cycles`, `return_itc=true` (requires
+   `average=true`), optional `picks`, `time_bandwidth` (multitaper only), and `plot=false`
+   for numeric workflows. `average=false` retains trials. `baseline=[start,end]` and
+   `baseline_mode` normalize the stored power, not ITC; do not normalize twice.
+   `decim` is post-transform subsampling, not anti-alias filtering. Use distinct output names.
+   Legacy quick path: `mne_tfr_morlet(fmin=, fmax=, n_freqs=)`. For other APIs use `mne_run_code`:
 
    ```python
    import numpy as np
@@ -79,7 +84,7 @@ default **and explicitly flag the open risk** — never silently choose.
    n_cycles = freqs / 2.0                       # default tradeoff; raise for fine freq resolution
    power, itc = mne.time_frequency.tfr_morlet(
        epochs, freqs=freqs, n_cycles=n_cycles,
-       use_fft=True, return_itc=True, average=True)   # average=True ⇒ total/induced power + ITC
+       use_fft=True, return_itc=True, average=True)   # average=True ⇒ total power + ITC
    ```
    (Multitaper: `tfr_multitaper(..., time_bandwidth=4.0)`. Stockwell: `tfr_stockwell(epochs, fmin=4,
    fmax=40)`. Evoked power: compute on `epochs.average()` instead of per-trial.)
@@ -95,8 +100,9 @@ default **and explicitly flag the open risk** — never silently choose.
 4. **Plot and read the PNG.** Inspect the time-frequency map; identify where the **edge zone** lies
    (the cone of influence widens at low frequencies) and **explicitly avoid interpreting it**.
 
-5. **Induced vs evoked, explicitly.** If the claim is about non-phase-locked oscillations, confirm
-   you used per-trial power (`average=True` over single-trial TFRs), not power of the evoked average.
+5. **Induced vs evoked, explicitly.** Averaged single-trial power is total power and includes
+   the evoked contribution. For induced-only analysis, justify removal of the evoked signal
+   (for example, subtract the condition ERP from each trial before computing power).
 
 6. **Archive** the equivalent code + figures (the `mne-analyst` archiving convention).
 

@@ -23,24 +23,25 @@ spectral SD `σ_f = f/(2·n_cycles)`. So:
 - **Fewer cycles** → narrower in time (better temporal localization), **broader in frequency**, and
   a **shorter wavelet** (less edge contamination).
 - **More cycles** → sharper frequency resolution but blurred in time and a longer wavelet.
-- The default `n_cycles = freqs/2` scales cycles with frequency (constant relative bandwidth).
+- The legacy quick tool uses `n_cycles = freqs/2` (constant temporal width).
+  `mne_compute_tfr` defaults to a fixed 7 cycles (constant relative frequency bandwidth).
 
-The wavelet **half-length** ≈ `n_cycles/(2f)` seconds. The epoch must extend that far beyond every
-time point you interpret. Example: 4 Hz, `n_cycles=7` ⇒ half-length ≈ 0.875 s — a `-0.2` to `0.5` s
-epoch cannot support a clean 4 Hz estimate anywhere. **Re-epoch wider** (`-0.5` to `1.0+` s) and
-crop the *display*, not the computation.
+MNE truncates Morlet wavelets near five temporal SDs: half-support is approximately
+`5 * n_cycles / (2*pi*f)` seconds. At 4 Hz and 7 cycles that is about 1.39 s on
+each side. Choose padding for the actual frequency/cycle pair, rather than treating a
+fixed epoch window as sufficient. Crop the display, not the computation.
 
-## Power: evoked vs induced (total)
+## Power: evoked vs total vs induced
 
 - **Evoked power** = TFR of the **averaged** signal (`epochs.average()`): only phase-locked activity
   survives averaging.
-- **Induced / total power** = TFR per trial, **then** averaged across trials: captures both
+- **Total power** = TFR per trial, **then** averaged across trials: captures both
   phase-locked and non-phase-locked (induced) oscillations.
-- Strictly, *induced* = total − evoked. Most "oscillatory power increase" claims mean total/induced;
-  state explicitly which you computed. Conflating the two is a substantive error, not a cosmetic one.
+- **Induced-only power** removes the evoked contribution, commonly by subtracting the
+  condition ERP from each trial before the transform. State the exact procedure.
 
 ```python
-# total / induced (per-trial then average):
+# total (per-trial then average):
 power = mne.time_frequency.tfr_morlet(epochs, freqs, n_cycles, average=True, return_itc=False)
 # evoked (power of the average):
 evk_power = mne.time_frequency.tfr_morlet(epochs.average(), freqs, n_cycles, return_itc=False)

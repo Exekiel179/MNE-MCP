@@ -20,6 +20,10 @@ tool returns `> Figure: <path>` — **read that PNG and interpret it before deci
 
 ## Quick start
 
+MNE-MCP is a lightweight interface: skills ship with it, scientific libraries do not.
+Before a workflow, read [environment checks](references/environment.md). Use the server's
+reported Python, not the agent terminal's default interpreter, when diagnosing dependencies.
+
 ```
 mne_check_status                 # 1. confirm MNE (+ sklearn for ICA) is available
 mne_load_raw path=... name=raw   # 2. load
@@ -35,9 +39,9 @@ mne_plot_psd name=raw            # 4. LOOK (read the PNG) → pick filter cutoff
 | Clean / preprocess | `mne_filter` (+`notch`), `mne_mark_bad_channels` → `mne_interpolate_bads`, `mne_set_reference` |
 | Remove eye/heart artifacts | `mne_fit_ica` (on ~1 Hz HP data) → `mne_plot_ica_components` → `mne_apply_ica exclude=...` |
 | ERP / evoked | get events (`mne_find_events` or `mne_events_from_annotations`) → `mne_make_epochs` → `mne_average_evoked` → `mne_plot_evoked` / `mne_plot_topomap` |
-| Time-frequency | `mne_make_epochs` (wide window) → `mne_tfr_morlet` |
+| Time-frequency | `mne_make_epochs` (wide window) → `mne_compute_tfr`; legacy quick path: `mne_tfr_morlet` |
 | Decoding (MVPA) | `mne_decode cond_a=… cond_b=…` |
-| Connectivity | `mne_connectivity method=coh fmin=8 fmax=13` |
+| Connectivity | `mne_compute_connectivity` for bands/pairs/estimator settings; `mne_connectivity` for one-band quick calls |
 | Source localization (EEG) | `mne_compute_noise_cov` → `mne_make_forward` → `mne_apply_inverse` → `mne_plot_source_estimate` |
 | Save | `mne_save` |
 | BIDS / stats / anything else | `mne_run_code` (see [references/mne-pipelines.md](references/mne-pipelines.md)) |
@@ -82,6 +86,12 @@ After a meaningful analysis/plot step, archive to `mne_result/` in the working d
 
 ## References
 
+- **[Evidence-bound result interpretation](../mne-writeup/references/evidence-to-claims.md)** —
+  read before turning numerical/visual findings into scientific conclusions; separates observations,
+  corrected inference, limitations and review-only manuscript wording.
+
+- **[references/structured-analysis.md](references/structured-analysis.md)** — JSON epoch parameters,
+  configurable Morlet/multitaper, ITC, trial power and safe timeout recovery. Read for advanced parameters.
 - **[references/mne-pipelines.md](references/mne-pipelines.md)** — full preprocessing/ERP/TFR pipelines
   + `mne_run_code` recipes for source localization, connectivity, decoding, statistics, BIDS, Report.
 - **[references/mne-mcp-tools.md](references/mne-mcp-tools.md)** — every tool with parameters.

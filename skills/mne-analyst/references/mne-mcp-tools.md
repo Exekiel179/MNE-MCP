@@ -51,7 +51,7 @@ All tools operate on the **persistent session**. Names default sensibly (`raw`, 
 |---|---|---|
 | `mne_find_events` | Events from a stim channel. | `raw_name`, `stim_channel`, `events_name` |
 | `mne_events_from_annotations` | Events from annotations. | `raw_name`, `events_name` |
-| `mne_make_epochs` | Segment around events. | `raw_name`, `events_name`, `event_id`, `tmin`, `tmax`, `baseline`, `reject_eeg`, `epochs_name` |
+| `mne_make_epochs` | Segment around events; JSON event mapping/baseline supported. | `raw_name`, `events_name`, `event_id`, `tmin`, `tmax`, `baseline`, `reject_eeg` or `reject`, `flat`, `picks`, `detrend`, `reject_by_annotation`, `event_repeated`, `epochs_name` |
 | `mne_plot_epochs_image` | ERP-image heatmap. | `name`, `picks` |
 | `mne_average_evoked` | Average epochs → evoked. | `epochs_name`, `condition`, `evoked_name` |
 | `mne_plot_evoked` | `joint` / `topo` / `butterfly`. | `name`, `style` |
@@ -61,13 +61,15 @@ All tools operate on the **persistent session**. Names default sensibly (`raw`, 
 | Tool | Purpose | Key args |
 |---|---|---|
 | `mne_tfr_morlet` | Morlet TF power + plot. | `epochs_name`, `fmin`, `fmax`, `n_freqs`, `tfr_name` |
+| `mne_compute_tfr` | Configurable Morlet/multitaper power, optional ITC. | `params`: `freqs`, `n_cycles`, `method`, `time_bandwidth`, `picks`, `average`, `return_itc`, `decim`, `baseline`, `baseline_mode`, `epochs_name`, `tfr_name`, `itc_name`, `plot` |
 | `mne_save` | Save object (`*_raw.fif` / `*-epo.fif` / `*-ave.fif`). | `name`, `path`, `overwrite` |
 
-## Advanced analysis (needs the `[full]` extra)
+## Advanced analysis (user-managed optional dependencies)
 | Tool | Purpose | Key args |
 |---|---|---|
 | `mne_decode` | Time-resolved decoding (MVPA) of two conditions. | `epochs_name`, `cond_a`, `cond_b`, `scoring`, `cv` |
-| `mne_connectivity` | Channel×channel spectral connectivity in a band. | `epochs_name`, `method`, `fmin`, `fmax`, `con_name` |
+| `mne_connectivity` | Single-band connectivity, legacy full storage and ordered-edge heatmap. | `epochs_name`, `method`, `fmin`, `fmax`, `con_name` |
+| `mne_compute_connectivity` | Bivariate bands/pairs; preserves signed, directed, complex results. | `params`: `epochs_name`, `con_name`, `method`, `mode`, `fmin`, `fmax`, `faverage`, `picks`, `pairs`, `tmin`, `tmax`, `mt_bandwidth`, `mt_adaptive`, `mt_low_bias`, `cwt_freqs`, `cwt_n_cycles`, `block_size`, `plot` |
 | `mne_compute_noise_cov` | Noise covariance from epochs baseline. | `name`, `tmax`, `cov_name` |
 | `mne_make_forward` | fsaverage template EEG forward model (downloads once). | `name`, `fwd_name` |
 | `mne_apply_inverse` | Source estimate (dSPM/MNE/sLORETA/eLORETA). | `evoked_name`, `fwd_name`, `cov_name`, `method`, `snr` |

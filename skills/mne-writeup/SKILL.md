@@ -39,6 +39,15 @@ for neurophysiology and is **gated by the critic**.
 
 ## Workflow
 
+For evidence-bound interpretation of current MCP outputs, read
+[evidence-to-claims.md](references/evidence-to-claims.md). It adapts the requested
+`academic-paper-strategist` -> `academic-paper-composer` sequence: first align question,
+method, evidence and permitted claims; then draft and check numbers, terminology and
+limitations. These external skills are optional for downstream users, not runtime dependencies.
+Tool-generated `interpretation` and Results Draft fields are review inputs, never an automatic
+critic PASS or publication-ready text. Apply the user's preferred language while retaining
+the exact values, units, direction and inference level from the tool.
+
 ### 1. CONFIG (intake)
 Confirm: output target (full paper / Methods+Results section / report), discipline + venue, citation
 format (**APA 7** default), language (and whether a bilingual abstract is needed), output format
@@ -53,6 +62,9 @@ what will be reported and what becomes a limitation.
 ### 3. OUTLINE
 IMRaD (or just Methods + Results). Map every reported result to a figure or table and to its source
 artifact. Allocate the figures that will be copied into `paper/figures/`.
+First write a compact claim plan: question -> observation unit -> method -> measured result ->
+permitted claim -> missing evidence. Keep data observations separate from theoretical interpretation.
+Do not claim novelty or clinical/causal significance without independent support.
 
 ### 4. DRAFT
 - **Methods** — participants/data, recording, preprocessing (filter, reference, montage, bad
@@ -64,6 +76,9 @@ artifact. Allocate the figures that will be copied into `paper/figures/`.
   inference where cluster tests were used.
 - Apply a brief **writing-quality pass** (varied sentence rhythm; avoid AI-typical filler and em-dash
   overuse; no throat-clearing openers) — good-writing rules, à la ARS.
+- Check consistency across Methods, Results, figures and Discussion: same n, labels, units,
+  time windows, correction family, direction and metric. Missing effect sizes/CIs stay explicitly
+  missing; mark the paragraph incomplete rather than manufacturing them or suppressing the issue.
 
 ### 5. INTEGRITY & CRITIC GATE
 - **Citations**: every reference cited is in the list and vice-versa; APA 7 formatting; verify DOIs

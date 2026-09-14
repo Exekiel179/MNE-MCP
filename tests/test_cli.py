@@ -38,3 +38,8 @@ def test_cli_configure_claude_writes_tmp(monkeypatch, capsys, tmp_path):
     code = run_cli(["configure-claude", "--settings-file", str(settings)], monkeypatch)
     assert code == 0
     assert settings.exists()
+
+
+def test_cli_setup_rejects_empty_clients(monkeypatch, capsys):
+    assert run_cli(["setup", "--clients", ""], monkeypatch) == 2
+    assert "Setup failed" in capsys.readouterr().err

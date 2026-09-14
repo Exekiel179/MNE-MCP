@@ -56,7 +56,7 @@ ecg_idx, ecg_scores = ica.find_bads_ecg(raw, method="correlation")
 ica.exclude = sorted(set(eog_idx + ecg_idx))
 ```
 
-**ICLabel** (needs `mne-icalabel`, from the `[full]` extra) labels every component as brain / eye /
+**ICLabel** (needs the optional `mne-icalabel` extension) labels every component as brain / eye /
 heart / muscle / line / channel-noise / other with probabilities — apply a **fixed probability
 threshold** so selection is identical across subjects:
 
@@ -72,7 +72,7 @@ exclude = [i for i, lab in enumerate(labels)
 
 SSP builds a small set of projectors from blink/ECG **epochs** and projects that subspace out. It
 removes fewer degrees of freedom than ICA and is reproducible, but is less selective. Needs the EOG/
-ECG epoch helpers (`[full]` extra for some readers):
+ECG epoch helpers:
 
 ```python
 eog_epochs = mne.preprocessing.create_eog_epochs(raw)
@@ -84,7 +84,7 @@ Report how many projectors were added — each one also reduces rank.
 
 ## autoreject — automated epoch repair
 
-`autoreject` (from the `[full]` extra) learns per-channel peak-to-peak thresholds by cross-validation
+`autoreject` (optional, user-managed) learns per-channel peak-to-peak thresholds by cross-validation
 and either interpolates or drops epochs, replacing arbitrary fixed-µV rejection:
 
 ```python

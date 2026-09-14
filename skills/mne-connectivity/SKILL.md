@@ -19,7 +19,7 @@ trial-count/SNR bias, common-reference artifact) run *without any error* and pro
 heatmap — so the discipline is to **grill before computing and critique before believing.**
 
 > Companion skills: `mne-mcp-guard` for technical execution safety; `mne-methodology-critic` for
-> Phase 3. Loaded objects persist in one MNE session. Connectivity needs the **`[full]`** extra
+> Phase 3. Loaded objects persist in one MNE session. Check `mne_connectivity` in the server environment before this workflow
 > (`mne-connectivity`; PAC via `pactools`/`tensorpac`).
 
 ---
@@ -67,15 +67,19 @@ sensible default **and explicitly flag the open risk** — never silently choose
 1. **Capability + look first.** `mne_check_status` (confirm `mne-connectivity` is importable);
    `mne_plot_psd` and **read the PNG** — connectivity is band-specific, so confirm the band of
    interest actually has power and is line-noise-free.
-2. **Pick a field-spread-robust measure** and compute the channel×channel map with `mne_connectivity`
-   (returns a heatmap + strongest pairs):
+2. **Pick a field-spread-robust measure** and compute ordered edges with `mne_connectivity`
+   (returns an edge-by-band heatmap and descriptive values, without forcing symmetry):
 
    ```
    mne_connectivity(epochs_name="epochs", method="wpli", fmin=8, fmax=13)   # alpha-band wPLI
    ```
    (`method="imcoh"` / `"pli"` for field-spread-robust; `"coh"`/`"plv"` only with an explicit caveat.)
 
-3. **Advanced / full control** via `mne_run_code` with the `mne_connectivity` library:
+3. **Structured advanced parameters.** Prefer `mne_compute_connectivity(params={...})`
+   for multi-band edges, named seed/target pairs, channel selection, time windows and
+   multitaper/Fourier/Morlet settings. Read [structured-connectivity.md](references/structured-connectivity.md)
+   for JSON examples, compact output axes, signed/directed/complex interpretation and limits.
+   For multivariate methods, PAC or simultaneous estimators, use `mne_run_code`:
 
    ```python
    from mne_connectivity import spectral_connectivity_epochs

@@ -16,6 +16,11 @@ time-frequency, source localization) and on unfamiliar data.
 
 ## Workflow
 
+Scientific dependencies are user-managed. Report the interpreter shown by mne_check_status.
+Distinguish missing packages from import-time binary/configuration errors. Never install packages
+inside mne_run_code or recreate an existing research environment. Missing optional libraries block
+only the relevant feature. After an authorized environment change, restart and check status again.
+
 1. **Check capability first** — `mne_check_status`. If MNE is missing, stop and say so; if
    scikit-learn is missing, ICA is unavailable.
 2. **Inspect before processing** — `mne_get_info` / `mne_describe`. Never guess channel names,
@@ -39,8 +44,9 @@ time-frequency, source localization) and on unfamiliar data.
 - **Set a montage** before topomaps, ICA component plots, or interpolation.
 - **High-pass before ICA** (~1 Hz) or components will be unstable.
 - Don't assume a file loads in one call — BrainVision/EEGLAB need sidecar files; point at the header.
-- Don't conclude "timeout = broken." ICA/TFR/large files are genuinely slow; raise
-  `MNE_MCP_TIMEOUT` and retry, or crop/decimate first.
+- Timeout does not stop the worker. Check `mne_check_status` until idle, then inspect
+  objects before deciding on a retry. Never repeat an in-place step blindly; partial
+  changes may already exist. Busy sessions reject code, reads and reset as well.
 
 ## Decision tree
 
@@ -50,10 +56,11 @@ time-frequency, source localization) and on unfamiliar data.
 3. **ICA error or weird components?** → confirm sklearn present, high-pass applied, and
    `n_components` ≤ data rank (lower it or use a `0.99` variance fraction).
 4. **TFR "wavelet longer than signal"?** → wider epochs, higher `fmin`, or smaller `n_cycles` via
-   `mne_run_code`.
+   `mne_compute_tfr` (explicit frequencies and cycles).
 5. **All epochs dropped / empty evoked?** → loosen `reject_eeg`, verify event codes, check the epoch
    window against recording length.
-6. **Step times out?** → increase `MNE_MCP_TIMEOUT`; for large raw use `preload=false` + `mne_crop`.
+6. **Step times out?** → check busy/idle status, inspect results after idle, then adjust future
+   timeouts or workload. A restart loses unsaved session data and needs an explicit decision.
 
 ## References
 

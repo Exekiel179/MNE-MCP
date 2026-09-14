@@ -11,22 +11,16 @@ authors = [
     { name = "MNE MCP Contributors" }
 ]
 license = {text = "MIT"}
-requires-python = ">=3.10"
+requires-python = ">=3.12,<3.13"
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
-# Hard dependencies are only the lightweight protocol layer, so a fresh
-# `pip install mne-mcp` (or pipx / uv tool / uvx) is near-instant. The heavy
-# scientific stack lives in the `analysis` extra and is installed up front via
-# `mne-mcp[analysis|ica|full]` OR on demand at runtime with `mne-mcp install-backend`
-# / the `mne_install_backend` tool (which pip-installs into the server's own env
-# and invalidates import caches so it works without a restart).
+# Reuse the user's scientific environment. Analysis libraries are not installed
+# or upgraded by this interface package.
 dependencies = [
     "mcp>=1.2.0",
     "fastmcp>=2.14.0",
@@ -40,34 +34,6 @@ Repository = "https://github.com/Exekiel179/MNE-MCP"
 Issues = "https://github.com/Exekiel179/MNE-MCP/issues"
 
 [project.optional-dependencies]
-# The analysis backend. Keep these lists in sync with PROFILES in
-# src/mne_mcp/backend.py (tests/test_backend.py fails if they drift).
-analysis = [
-    "mne>=1.6.0",
-    "numpy>=1.23.0",
-    "scipy>=1.9.0",
-    "matplotlib>=3.6.0",
-    "pandas>=2.0.0",
-    "tabulate>=0.9.0",
-]
-ica = [
-    "mne-mcp[analysis]",
-    "scikit-learn>=1.1.0",
-]
-# Everything needed for the advanced analysis tools (source localization,
-# connectivity, decoding, BIDS, autoreject, extra readers, 3D rendering).
-full = [
-    "mne-mcp[ica]",
-    "mne-connectivity>=0.5",
-    "mne-bids>=0.13",
-    "autoreject>=0.4",
-    "nibabel>=5.0",
-    "pymatreader>=0.0.30",
-    "edfio>=0.4",
-    "h5io>=0.2",
-    "pyvista>=0.43",
-    "python-picard>=0.7",
-]
 dev = [
     "pytest>=7.0.0",
     "pytest-asyncio>=0.23.0",
@@ -94,10 +60,14 @@ packages = ["src/mne_mcp"]
 
 [tool.black]
 line-length = 88
-target-version = ["py310"]
+target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src/mne_mcp", "/skills", "/agents", "/scripts/install.py", "/tests", "/docs/*.md", "/README*.md", "/QUICK_START.md", "/INSTALL_AGENT.md", "/TOOLS_REFERENCE*.md", "/CHANGELOG.md", "/CONTRIBUTING.md", "/LICENSE", "/pyproject.toml", "/requirements*.lock"]

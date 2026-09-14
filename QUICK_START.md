@@ -4,28 +4,15 @@
 
 ## 1. 安装 / Install
 
+先激活已有 Python 3.12 MNE 环境，执行：
+
 ```bash
-cd F:\MCP\MNE-MCP
-pip install -e ".[ica]"        # 安装 MNE + numpy/scipy/matplotlib + scikit-learn(ICA)
-mne-mcp status                 # 确认环境
-mne-mcp setup                  # 注册到 Claude Code/Codex/opencode 并装技能 (会先备份)
+python -m pip install "mne-mcp==0.4.0"
+python -m mne_mcp.cli setup --clients codex
 ```
 
-> 已用 `uv` 在 `.venv` 中装好依赖：用 `.venv\Scripts\python.exe -m mne_mcp.cli status` 也可。
-> 想更省事可直接跑一键脚本：`pwsh -File scripts\install.ps1`（Windows）/ `bash scripts/install.sh`。
-
-重启客户端后，`mne` MCP 服务即可用。
-
-## 2. 技能（已随 setup 自动安装）
-
-`mne-mcp setup` 已把 `mne-analyst`、`mne-mcp-guard` 两个技能装好（让 Claude 掌握标准流程、参数约定，
-并自动把结果归档到 `mne_result/`）。如需手动安装：
-
-```cmd
-set SKILLS_DIR=%USERPROFILE%\.claude\skills
-xcopy /E /I skills\mne-analyst    "%SKILLS_DIR%\mne-analyst"
-xcopy /E /I skills\mne-mcp-guard  "%SKILLS_DIR%\mne-mcp-guard"
-```
+选择 `claude`、`codex` 或 `opencode`，完成后重启所选客户端。
+MNE 科学计算栈由用户管理；setup 安装全部 14 个技能及参考文件。
 
 ## 2.5 配置默认参数（可选）/ Configure defaults
 
@@ -74,7 +61,7 @@ Claude 会：加载 → 预处理 → ICA → 分段 → 叠加平均 → 画图
 
 ## 常见问题 / Troubleshooting
 
-- **ICA 报错需要 scikit-learn** → `pip install scikit-learn` 后重启。
+- **ICA 报错需要 scikit-learn** → 在 MCP 使用的同一环境补齐 scikit-learn，然后重启客户端。
 - **地形图/插值报导联位置错误** → 先 `mne_set_montage`。
 - **阈值单位** → 信号是伏特，100 µV 要写 `100e-6`。
 - **慢/超时** → 在配置里调大 `MNE_MCP_TIMEOUT`（秒）。

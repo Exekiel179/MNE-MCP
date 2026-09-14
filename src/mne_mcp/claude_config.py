@@ -18,11 +18,14 @@ SERVER_KEY = "mne"
 
 
 def get_entrypoint_config() -> tuple[str, list[str]]:
-    """Return the preferred command/args pair for launching this MCP server."""
-    installed_entrypoint = shutil.which("mne-mcp")
-    if installed_entrypoint:
-        return "mne-mcp", ["serve", "--transport", "stdio"]
-    return sys.executable, ["-m", "mne_mcp.cli", "serve", "--transport", "stdio"]
+    """Launch with the exact interpreter that performed registration.
+
+    Looking up ``mne-mcp`` on PATH is ambiguous when several virtual
+    environments exist. An absolute interpreter path keeps the registered
+    server tied to the verified installation.
+    """
+    executable = str(Path(sys.executable).absolute())
+    return executable, ["-m", "mne_mcp.cli", "serve", "--transport", "stdio"]
 
 
 def server_env() -> dict:
@@ -74,7 +77,7 @@ def _backup_settings(path: Path) -> Path | None:
     if not path.exists():
         return None
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     backup_path = path.with_name(f"{path.name}.backup.{timestamp}")
     shutil.copy2(path, backup_path)
     return backup_path
@@ -293,12 +296,19 @@ def install_skills(dest: Path | None = None) -> dict:
     installed = []
     for name in SKILL_NAMES:
         s = src / name
-        if not s.exists():
-            continue
+        if not (s / "SKILL.md").is_file():
+            raise ValueError(f"Bundled skill is missing: {name}")
         d = dest / name
         if d.exists():
-            shutil.rmtree(d)
-        shutil.copytree(s, d)
+            backup = (
+                dest.parent
+                / "mne-mcp-backups"
+                / datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                / name
+            )
+            backup.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(d, backup)
+        shutil.copytree(s, d, dirs_exist_ok=True)
         installed.append(name)
     return {"installed": installed, "dest": str(dest), "error": None}
 
@@ -332,7 +342,8 @@ def install_agents(dest: Path | None = None) -> dict:
     for name in AGENT_NAMES:
         s = src / f"{name}.md"
         if not s.exists():
-            continue
+            raise ValueError(f"Bundled agent is missing: {name}")
+        _backup_settings(dest / f"{name}.md")
         shutil.copy2(s, dest / f"{name}.md")
         installed.append(name)
     return {"installed": installed, "dest": str(dest), "error": None}
@@ -359,12 +370,51 @@ def _claude_summary() -> dict:
 
 def configure_clients(clients, with_skills: bool = True) -> dict:
     """Register the server in each named client and (optionally) install skills."""
+    if not clients:
+        raise ValueError("At least one client is required")
+    clients = list(dict.fromkeys(clients))
+    unknown = set(clients) - _CLIENT_FUNCS.keys()
+    if unknown:
+        raise ValueError(f"Unknown clients: {sorted(unknown)}")
+    if with_skills:
+        source = get_skills_source_dir()
+        if source is None or any(
+            not (source / n / "SKILL.md").is_file() for n in SKILL_NAMES
+        ):
+            raise ValueError(
+                "The installed package has an incomplete skill suite; reinstall MNE-MCP."
+            )
+        if "claude" in clients:
+            agents_source = get_agents_source_dir()
+            if agents_source is None or any(
+                not (agents_source / f"{n}.md").is_file() for n in AGENT_NAMES
+            ):
+                raise ValueError(
+                    "The installed package has an incomplete agent bundle."
+                )
     results = []
     for c in clients:
         func = _CLIENT_FUNCS.get(c)
         if func is None:
             raise ValueError(f"Unknown client: {c}. Valid: {sorted(_CLIENT_FUNCS)}")
         results.append(func())
-    skills = install_skills() if with_skills else None
-    agents = install_agents() if with_skills else None
+    skills = None
+    if with_skills:
+        destinations = {
+            "claude": Path.home() / ".claude" / "skills",
+            "codex": Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex")))
+            / "skills",
+            "opencode": Path(
+                os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config"))
+            )
+            / "opencode"
+            / "skills",
+        }
+        installs = [install_skills(destinations[c]) for c in clients]
+        skills = {
+            "installed": list(SKILL_NAMES),
+            "dest": ", ".join(r["dest"] for r in installs),
+            "error": None,
+        }
+    agents = install_agents() if with_skills and "claude" in clients else None
     return {"clients": results, "skills": skills, "agents": agents}

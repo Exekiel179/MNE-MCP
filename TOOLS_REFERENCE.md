@@ -2,9 +2,15 @@
 
 **English** | [简体中文](TOOLS_REFERENCE.zh-CN.md)
 
-38 tools over a **persistent session**: loaded objects (`raw`, `epochs`, `evoked`, `ica`, …) live in
+40 tools over a **persistent session**: loaded objects (`raw`, `epochs`, `evoked`, `ica`, …) live in
 memory across calls. Plotting tools save a PNG and return its path; read the PNG to interpret it.
 Tool results also include the equivalent MNE code in a ```python``` block.
+
+Decoding and decoding group tests now include evidence-bound interpretation, limitations,
+missing information and review-only Results drafts. These do not certify study design or
+generate missing CIs/citations. See the [interpretation contract](skills/mne-writeup/references/evidence-to-claims.md).
+Filter calls validate all cutoffs/notch frequencies before processing; crop and resample
+reject invalid bounds/rates. REST reference requires `mne_run_code` with an explicit forward model.
 
 Many tools fall back to **user-configurable defaults** (line frequency, montage, filter band,
 rejection threshold, ICA settings, epoch window) when a parameter is omitted — set them with
@@ -16,6 +22,8 @@ rejection threshold, ICA settings, epoch window) when a parameter is omitted —
 
 ### `mne_check_status`
 Versions of MNE / scikit-learn / numpy / scipy / matplotlib / pandas, and runtime dirs. **Call first.**
+Also reports execution `busy`/`idle`. A timeout does not stop its worker; session access
+is rejected while busy. Inspect objects after idle before retrying in-place operations.
 
 ### `mne_session_info`
 Table of every loaded object with a one-line summary (kind, channels, sfreq, etc.).
@@ -92,6 +100,11 @@ Fit ICA (needs scikit-learn). `n_components`: int, float (variance frac, e.g. `0
 ### `mne_make_epochs(raw_name, events_name, event_id=None, tmin=-0.2, tmax=0.5, baseline="default", reject_eeg=None, epochs_name="epochs")`
 `event_id="target:1,standard:2"` names/selects conditions; `baseline="default"` = `(None,0)`;
 `reject_eeg=100e-6` = 100 µV peak-to-peak rejection.
+Prefer JSON `event_id={"target":1,"standard":2}` and `baseline=[null,0]` (or null to disable).
+Additional parameters: `reject`/`flat` channel-type-to-SI-threshold mappings, `picks`
+(type/name list/index list), `detrend=null|0|1`, `reject_by_annotation=true`, and
+`event_repeated="error"|"drop"|"merge"`. `reject={}` disables configured rejection;
+omit it to use defaults. Do not combine `reject` with `reject_eeg`.
 
 ### `mne_plot_epochs_image(name="epochs", picks=None)` · epochs × time heatmap.
 ### `mne_average_evoked(epochs_name="epochs", condition=None, evoked_name="evoked")` · ERP/ERF.
@@ -102,6 +115,16 @@ Fit ICA (needs scikit-learn). `n_components`: int, float (variance frac, e.g. `0
 
 ## Time-frequency & Export
 
+### `mne_compute_tfr(params)`
+Configurable Morlet/multitaper power with optional ITC. `params` requires `freqs` (ascending Hz).
+Optional: `epochs_name="epochs"`, `method="morlet"`, `n_cycles=7` (scalar or one per frequency),
+`time_bandwidth=null` (multitaper only), `picks=null`, `average=true`, `return_itc=false`,
+`decim=1`, `baseline=null`, `baseline_mode="mean"`, `tfr_name="power"`, `itc_name="itc"`, `plot=true`.
+ITC requires averaging. Baseline normalization changes stored power, not ITC.
+`average=false` retains trials; plotting averages trial powers for display only.
+Decimation is post-transform subsampling and can alias. Input epochs are unchanged;
+output names can replace existing results. See [JSON examples](skills/mne-analyst/references/structured-analysis.md).
+
 ### `mne_tfr_morlet(epochs_name="epochs", fmin=4, fmax=40, n_freqs=20, tfr_name="power")`
 Morlet wavelet power (`n_cycles=freqs/2`) + plot. Needs epochs long enough for the lowest frequency.
 
@@ -110,15 +133,44 @@ Naming: Raw → `*_raw.fif`, Epochs → `*-epo.fif`, Evoked → `*-ave.fif`.
 
 ---
 
-## Advanced analysis (needs the `[full]` extra)
+## Advanced analysis (user-managed optional dependencies)
 
 ### `mne_decode(epochs_name="epochs", cond_a, cond_b, scoring="roc_auc", cv=5, name="decoding")`
-Time-resolved decoding (MVPA): a classifier per time point discriminating two conditions, cross-validated.
-Returns mean/peak score + a scores-vs-time plot. Needs scikit-learn.
+Binary decoding with fold-local StandardScaler + logistic regression. `method="sliding"` (default)
+returns `(time,)`; `method="generalizing"` returns `(train_time, test_time)`, with an optional plot.
+Supports `cv_strategy="stratified"|"stratified_group"|"leave_one_group_out"`, `groups` aligned
+with ALL retained input epochs, `picks`, `shuffle=false`, `random_state=97`, `plot=true`.
+Optional `tmin/tmax` crop a copy; classifier parameters: `C=1.0`, `class_weight=null|"balanced"`,
+`max_iter=1000`. Stores mean scores, `name_folds` and `name_details` with split/class diagnostics.
+Reference lines are not significance tests; folds are not independent subjects. Needs scikit-learn.
+See [examples and result semantics](skills/mne-decoding/references/structured-decoding.md).
+
+### `mne_decoding_group_test(params)`
+Group sign-flip inference on one `mne_decode` mean curve/matrix per independent subject.
+Required: `score_names`, unique `subject_ids`, `independent_subjects=true`, explicit `null_value`.
+Supports ROC AUC/balanced accuracy with matching grids and methods, never CV folds as subjects.
+`correction="max_t"` (two-sided, pointwise FWER) or `"cluster"` (cluster-mass FWER with lattice
+adjacency across time or both train/test axes); `tail=0`, `n_permutations=1024`, `seed=97`,
+`alpha=0.05`, `threshold=null` (cluster-forming t threshold), `name="decoding_stats"`, `plot=true`.
+Stores corrected p values or cluster p values, statistic, mask, mean effect, H0 and diagnostics.
+Assumes symmetric independent-subject effects. Not single-subject label permutation or prevalence.
+See [design limits, examples and result semantics](skills/mne-decoding/references/group-inference.md).
 
 ### `mne_connectivity(epochs_name="epochs", method="coh", fmin=8, fmax=13, con_name="con")`
-Channel×channel spectral connectivity in a band (`coh`/`plv`/`wpli`/`pli`/`imcoh`…). Returns a heatmap +
-strongest pairs. Needs mne-connectivity.
+Single-band connectivity (`coh`/`plv`/`wpli`/`pli`/`imcoh`...). Keeps legacy full storage,
+but plots ordered edges without forcing symmetry. Default channel selection excludes bads
+and non-data channels. Needs mne-connectivity and at least two retained epochs.
+
+### `mne_compute_connectivity(params)`
+Bivariate multi-band connectivity. Parameters: `epochs_name="epochs"`, `con_name="con"`,
+`method="coh"`, `mode="multitaper"|"fourier"|"cwt_morlet"`, `fmin=8`, `fmax=13`
+(scalars or matching lists), `faverage=true`, `picks=null`, `pairs=null` (ordered channel-name pairs),
+`tmin=null`, `tmax=null`, `mt_bandwidth=null`, `mt_adaptive=false`, `mt_low_bias=true`,
+`cwt_freqs=null`, `cwt_n_cycles=null` (Morlet default 7), `block_size=1000`, `plot=true`.
+Rejects incompatible estimator options. Stores compact `(edges, frequencies_or_bands[, times])`
+values, preserving signs and complex components. Plot: first 30 edges, complex magnitude,
+time mean for Morlet; no inferred symmetry. Granger/multivariate/PAC use `mne_run_code`.
+See [examples and output semantics](skills/mne-connectivity/references/structured-connectivity.md).
 
 ### `mne_compute_noise_cov(name="epochs", tmax=0.0, cov_name="noise_cov")`
 Noise covariance from the epochs baseline — prerequisite for the inverse operator.

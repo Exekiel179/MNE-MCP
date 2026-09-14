@@ -9,9 +9,13 @@ Tools are thin wrappers over :mod:`mne_mcp.operations`; the flexible
 
 import asyncio
 import sys
+import threading
 from contextlib import asynccontextmanager
+from typing import Literal
 
 from fastmcp import Context, FastMCP
+from fastmcp.exceptions import ToolError
+from pydantic import StrictInt
 
 from mne_mcp import operations as ops
 from mne_mcp.config import (
@@ -23,6 +27,12 @@ from mne_mcp.config import (
     load_config,
 )
 from mne_mcp.kernel import get_session
+from mne_mcp.parameters import (
+    ConnectivityParameters,
+    DecodingGroupTestParameters,
+    PositiveFloat,
+    TFRParameters,
+)
 
 # ─── Lifespan ─────────────────────────────────────────────────────────────────
 
@@ -35,8 +45,7 @@ async def server_lifespan(server: FastMCP):
         sys.stderr.write(f"  MNE-Python : available v{caps['mne_version']}\n")
     else:
         sys.stderr.write(
-            "  MNE-Python : NOT INSTALLED — call the `mne_install_backend` tool "
-            "(or run `mne-mcp install-backend`) on first use; no restart needed.\n"
+            f"  MNE-Python unavailable in {sys.executable}; inspect its import error.\n"
         )
     sys.stderr.write(
         f"  scikit-learn (ICA): {'available v' + caps['sklearn_version'] if caps['sklearn'] else 'NOT FOUND'}\n"
@@ -53,32 +62,59 @@ mcp = FastMCP("MNE", lifespan=server_lifespan)
 # capture figures or race on session objects. (MNE steps are CPU-bound and the
 # session is shared anyway, so there is nothing to gain from running them in
 # parallel.)
-_EXEC_LOCK = asyncio.Lock()
+_EXEC_LOCK = threading.Lock()
+
+
+class SessionBusyError(RuntimeError):
+    """A running worker still owns the shared analysis state."""
+
+
+async def _run_serialized(fn, *args, **kwargs):
+    """Keep ownership in the worker, not in the cancellable request."""
+    if not _EXEC_LOCK.acquire(blocking=False):
+        raise SessionBusyError(
+            "Session busy: a previous operation is still running (possibly after a "
+            "timeout). Check mne_check_status; do not retry or reset until it is idle."
+        )
+
+    def run():
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            _EXEC_LOCK.release()
+
+    try:
+        task = asyncio.get_running_loop().run_in_executor(None, run)
+    except BaseException:
+        _EXEC_LOCK.release()
+        raise
+    # Retrieve eventual errors even when the caller has stopped waiting.
+    task.add_done_callback(lambda done: None if done.cancelled() else done.exception())
+    return await asyncio.wait_for(asyncio.shield(task), timeout=get_timeout())
+
+
+def _timeout_message() -> str:
+    return (
+        f"Error: operation timed out after {get_timeout()}s, but the worker may still "
+        "be running. The session remains protected until it finishes. Check "
+        "mne_check_status, then inspect session objects before retrying; partial "
+        "changes are possible. Increase MNE_MCP_TIMEOUT for future slow steps."
+    )
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 
 def _require_mne() -> str | None:
-    from mne_mcp.backend import backend_available
-
-    if backend_available():
+    if detect_capabilities().get("mne"):
         return None
-    return (
-        "The analysis backend (MNE-Python + the scientific stack) is not installed "
-        "in this server's environment yet. Provision it on demand by calling the "
-        "`mne_install_backend` tool (profile 'ica' by default), or run "
-        "`mne-mcp install-backend` in a terminal. No client restart is needed afterwards."
-    )
+    return _require_module("mne")
 
 
 def _require_sklearn() -> str | None:
     caps = detect_capabilities()
     if not caps.get("sklearn"):
-        return (
-            "ICA / decoding requires scikit-learn. Call `mne_install_backend` "
-            "(profile 'ica') to add it, or run `mne-mcp install-backend`."
-        )
+        return _require_module("sklearn", "scikit-learn")
     return None
 
 
@@ -88,11 +124,11 @@ def _require_module(modname: str, pip_name: str = None) -> str | None:
     try:
         importlib.import_module(modname)
         return None
-    except Exception:
+    except Exception as error:
         return (
-            f"This tool requires `{modname}` (part of the advanced backend). "
-            "Call `mne_install_backend` with profile 'full' to add it, or run "
-            "`mne-mcp install-backend --profile full`."
+            f"Cannot import {modname} in {sys.executable}: {type(error).__name__}: {error}. "
+            f"This feature requires {pip_name or modname} in this same environment. "
+            "Inspect the import error before installing anything; analysis dependencies are user-managed."
         )
 
 
@@ -101,6 +137,19 @@ def _format(result: dict) -> str:
     md = result.get("markdown")
     if md:
         parts.append(md)
+    if result.get("interpretation"):
+        from mne_mcp.reporting import render_interpretation
+
+        parts.append(render_interpretation(result["interpretation"]))
+    if result.get("guidance"):
+        guidance = result["guidance"]
+        parts.append(
+            "### Scientific Checks\n\n"
+            + "\n".join(
+                f"- {item}"
+                for item in guidance.get("checks", []) + guidance.get("limits", [])
+            )
+        )
     for fig in result.get("figures", []):
         parts.append(f"\n> Figure: `{fig}`")
     if result.get("figures"):
@@ -115,28 +164,30 @@ async def _exec(fn, ctx, *args, **kwargs) -> str:
     """Run a synchronous operation in a worker thread with a timeout."""
     err = _require_mne()
     if err:
-        return f"Error: {err}"
+        raise ToolError(f"[DEPENDENCY_UNAVAILABLE] {err}")
     try:
-        async with _EXEC_LOCK:
-            result = await asyncio.wait_for(
-                asyncio.to_thread(fn, *args, **kwargs), timeout=get_timeout()
-            )
-    except asyncio.TimeoutError:
-        return (
-            f"Error: operation timed out after {get_timeout()}s. "
-            "Increase MNE_MCP_TIMEOUT for slow steps (ICA, time-frequency, large files)."
-        )
+        result = await _run_serialized(fn, *args, **kwargs)
+    except asyncio.TimeoutError as e:
+        raise ToolError(f"[TIMEOUT] {_timeout_message()}") from e
+    except SessionBusyError as e:
+        raise ToolError(f"[SESSION_BUSY] {e}") from e
     except KeyError as e:
-        return (
-            f"Error: no session object named {e}. "
-            "Call `mne_session_info` to list loaded objects, or load data first."
-        )
+        raise ToolError(
+            f"[MISSING_KEY] Missing object or mapping key {e}. "
+            "Check mne_session_info and the requested condition/parameter keys."
+        ) from e
     except FileNotFoundError as e:
-        return f"Error: {e}"
+        raise ToolError(
+            f"[FILE_NOT_FOUND] {e}. Check the path and required sidecar files."
+        ) from e
+    except (ValueError, TypeError) as e:
+        raise ToolError(
+            f"[INVALID_INPUT] {e}. Inspect data and parameters before retrying; partial changes may exist."
+        ) from e
     except Exception as e:  # noqa: BLE001
-        if ctx:
-            await ctx.error(f"{fn.__name__} error: {e}")
-        return f"Error: {type(e).__name__}: {e}"
+        raise ToolError(
+            f"[OPERATION_FAILED] {type(e).__name__}: {e}. Inspect session state before retrying."
+        ) from e
     return _format(result)
 
 
@@ -155,6 +206,8 @@ async def mne_check_status(ctx: Context = None) -> str:
     cfg = get_runtime_config()
     lines = [
         "## MNE MCP Status",
+        f"- Session execution: {'busy' if _EXEC_LOCK.locked() else 'idle'}",
+        f"- Python: `{sys.executable}`",
         "",
         f"- MNE-Python: {'OK v' + caps['mne_version'] if caps['mne'] else 'NOT INSTALLED'}",
         f"- scikit-learn (ICA): {'OK v' + caps['sklearn_version'] if caps['sklearn'] else 'not installed'}",
@@ -169,70 +222,9 @@ async def mne_check_status(ctx: Context = None) -> str:
     if not caps["mne"]:
         lines += [
             "",
-            "> **Analysis backend not installed.** The server is running in its "
-            "lightweight shell. Call `mne_install_backend` (or run "
-            "`mne-mcp install-backend`) to provision MNE-Python on demand — no "
-            "restart needed. Use profile `full` for source localization / "
-            "connectivity / decoding.",
+            str(_require_module("mne")),
         ]
     return "\n".join(lines)
-
-
-@mcp.tool(
-    name="mne_install_backend",
-    description=(
-        "Provision the analysis backend (MNE-Python + numpy/scipy/matplotlib/pandas, plus "
-        "scikit-learn for ICA) into this server's own Python environment, on demand. Call this "
-        "once when mne_check_status reports the backend is not installed; afterwards every mne_* "
-        "tool works with NO client restart. profile: 'ica' (default), 'analysis' (no scikit-learn), "
-        "or 'full' (adds source localization, connectivity, decoding, BIDS, extra file readers). "
-        "The first run downloads a large scientific stack and may take a few minutes."
-    ),
-)
-async def mne_install_backend(profile: str = "ica", ctx: Context = None) -> str:
-    from mne_mcp import backend
-
-    profile = (profile or "ica").strip().lower()
-    if profile not in backend.PROFILES:
-        return (
-            f"Error: unknown profile '{profile}'. "
-            f"Choose one of: {', '.join(sorted(backend.PROFILES))}."
-        )
-
-    # Already satisfied? (For 'full' we still run to pull the advanced extras.)
-    if profile != "full" and not backend.missing_core():
-        if profile == "analysis" or detect_capabilities().get("sklearn"):
-            return (
-                "Backend already installed — MNE-Python is importable. "
-                "Run `mne_check_status` to see versions. "
-                "(Use profile='full' to add the advanced tools.)"
-            )
-
-    if ctx:
-        await ctx.info(f"Installing analysis backend (profile '{profile}')…")
-    try:
-        async with _EXEC_LOCK:
-            result = await asyncio.to_thread(backend.install_backend, profile)
-    except Exception as e:  # noqa: BLE001
-        return f"Error installing backend: {type(e).__name__}: {e}"
-
-    if result["ok"]:
-        return (
-            f"✅ Installed the analysis backend (profile '{result['profile']}'). "
-            "MNE-Python is now importable in the running server — no restart needed. "
-            "Run `mne_check_status` to confirm versions, then continue your analysis.\n\n"
-            f"_pip: `{result['command']}`_"
-        )
-    tail = (result["stderr_tail"] or result["stdout_tail"] or "").strip()
-    return (
-        f"⚠️ Backend install did not complete (returncode {result['returncode']}, "
-        f"mne importable = {result['available']}).\n\n"
-        f"Command: `{result['command']}`\n\n"
-        f"```\n{tail[-1500:]}\n```\n"
-        "Common causes: no network access; or a bleeding-edge Python (3.13+) where some "
-        "scientific wheels must build from source — try running the server on a 3.11/3.12 "
-        "interpreter and reinstall."
-    )
 
 
 @mcp.tool(
@@ -273,10 +265,9 @@ async def mne_get_config(ctx: Context = None) -> str:
     ),
 )
 async def mne_session_info(ctx: Context = None) -> str:
-    err = _require_mne()
-    if err:
-        return f"Error: {err}"
-    return "## Session objects\n\n" + get_session().summary()
+    return await _exec(
+        lambda: {"markdown": "## Session objects\n\n" + get_session().summary()}, ctx
+    )
 
 
 @mcp.tool(
@@ -300,11 +291,11 @@ async def mne_get_info(name: str, ctx: Context = None) -> str:
     description="Clear all loaded objects and figures from the session, starting fresh. Irreversible.",
 )
 async def mne_reset_session(ctx: Context = None) -> str:
-    err = _require_mne()
-    if err:
-        return f"Error: {err}"
-    get_session().reset()
-    return "Session reset — all objects cleared."
+    def reset():
+        get_session().reset()
+        return {"markdown": "Session reset — all objects cleared."}
+
+    return await _exec(reset, ctx)
 
 
 @mcp.tool(
@@ -320,17 +311,15 @@ async def mne_reset_session(ctx: Context = None) -> str:
 async def mne_run_code(code: str, ctx: Context = None) -> str:
     err = _require_mne()
     if err:
-        return f"Error: {err}"
-    session = get_session()
+        raise ToolError(f"[DEPENDENCY_UNAVAILABLE] {err}")
     try:
-        async with _EXEC_LOCK:
-            result = await asyncio.wait_for(
-                asyncio.to_thread(session.run_code, code), timeout=get_timeout()
-            )
-    except asyncio.TimeoutError:
-        return (
-            f"Error: code timed out after {get_timeout()}s. Increase MNE_MCP_TIMEOUT."
-        )
+        result = await _run_serialized(lambda: get_session().run_code(code))
+    except asyncio.TimeoutError as e:
+        raise ToolError(f"[TIMEOUT] {_timeout_message()}") from e
+    except SessionBusyError as e:
+        raise ToolError(f"[SESSION_BUSY] {e}") from e
+    except Exception as e:
+        raise ToolError(f"[OPERATION_FAILED] {type(e).__name__}: {e}") from e
 
     parts = []
     if result.get("stdout"):
@@ -345,6 +334,10 @@ async def mne_run_code(code: str, ctx: Context = None) -> str:
         parts.append(f"**Error:** {result['error']}")
         if result.get("traceback"):
             parts.append(f"```\n{result['traceback'][-1500:]}\n```")
+        raise ToolError(
+            "[CODE_FAILED] Partial changes may exist; inspect before retrying.\n"
+            + "\n\n".join(parts)
+        )
     return "\n\n".join(parts) if parts else "_(code ran, no output)_"
 
 
@@ -395,7 +388,7 @@ async def mne_filter(
     l_freq: float = None,
     h_freq: float = None,
     notch: float = None,
-    picks: str = None,
+    picks: str | list[str] | list[int] | None = None,
     ctx: Context = None,
 ) -> str:
     return await _exec(ops.filter_data, ctx, name, l_freq, h_freq, notch, picks)
@@ -538,7 +531,7 @@ async def mne_fit_ica(
 ) -> str:
     err = _require_sklearn()
     if err:
-        return f"Error: {err}"
+        raise ToolError(f"[DEPENDENCY_UNAVAILABLE] {err}")
     return await _exec(
         ops.fit_ica, ctx, name, n_components, method, ica_name, random_state
     )
@@ -610,19 +603,27 @@ async def mne_events_from_annotations(
         "Segment a Raw object into Epochs around events. tmin/tmax in seconds relative to the "
         "event; baseline 'default' = (None, 0); event_id like 'target:1,standard:2' to name/select "
         "conditions; reject_eeg = peak-to-peak EEG rejection threshold in volts (e.g. 100e-6). "
-        "Stored under epochs_name."
+        "Prefer JSON event_id={label: code} and baseline=[start, end] or null; legacy strings "
+        "remain supported. reject/flat map channel types to SI thresholds; reject={} disables "
+        "configured rejection. Do not combine reject with reject_eeg. Stored under epochs_name."
     ),
 )
 async def mne_make_epochs(
     raw_name: str = "raw",
     events_name: str = "events",
-    event_id: str = None,
+    event_id: str | dict[str, StrictInt] | None = None,
     tmin: float = None,
     tmax: float = None,
-    baseline: str = "default",
+    baseline: str | list[float | None] | None = "default",
     reject_eeg: float = None,
     epochs_name: str = "epochs",
     ctx: Context = None,
+    reject: dict[str, float] | None = None,
+    flat: dict[str, float] | None = None,
+    picks: str | list[str] | list[int] | None = None,
+    detrend: Literal[0, 1] | None = None,
+    reject_by_annotation: bool = True,
+    event_repeated: Literal["error", "drop", "merge"] = "error",
 ) -> str:
     return await _exec(
         ops.make_epochs,
@@ -635,6 +636,12 @@ async def mne_make_epochs(
         baseline,
         reject_eeg,
         epochs_name,
+        reject=reject,
+        flat=flat,
+        picks=picks,
+        detrend=detrend,
+        reject_by_annotation=reject_by_annotation,
+        event_repeated=event_repeated,
     )
 
 
@@ -688,6 +695,26 @@ async def mne_plot_topomap(
 
 
 @mcp.tool(
+    name="mne_compute_tfr",
+    description=(
+        "Compute Morlet or multitaper Epochs power with explicit frequencies, scalar/per-frequency "
+        "n_cycles, channel picks, decimation, trial retention, optional ITC and power baseline "
+        "normalization. Pass a params JSON object. Averaged trial power is total power, not "
+        "strictly induced power. ITC requires average=true. Returns output names, shape, "
+        "optional figure paths and reproducible code. Input epochs are unchanged."
+    ),
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": True,
+        "idempotentHint": False,
+        "openWorldHint": False,
+    },
+)
+async def mne_compute_tfr(params: TFRParameters, ctx: Context = None) -> str:
+    return await _exec(ops.compute_tfr, ctx, params)
+
+
+@mcp.tool(
     name="mne_tfr_morlet",
     description=(
         "Compute Morlet-wavelet time-frequency power on Epochs and plot it. fmin/fmax = frequency "
@@ -729,7 +756,13 @@ async def mne_save(
     description=(
         "Time-resolved decoding (MVPA): train a classifier at each time point to discriminate two "
         "conditions, with cross-validation. cond_a/cond_b are event_id names (e.g. 'target','standard'). "
-        "Returns mean/peak score over time + a scores-vs-time plot. Requires scikit-learn."
+        "Supports stratified, stratified_group or leave_one_group_out CV. groups must align "
+        "with ALL retained input epochs before condition filtering. Saves mean scores under name, "
+        "per-fold scores under name_folds and split diagnostics under name_details. "
+        "method='sliding' returns (time,), 'generalizing' returns (train_time, test_time). "
+        "Optional tmin/tmax crop a copy in seconds. C>0, class_weight=null|'balanced' and "
+        "max_iter configure fold-local logistic regression. Choose them before CV or use nested CV "
+        "via mne_run_code for tuning. Reference lines are not significance. Requires scikit-learn."
     ),
 )
 async def mne_decode(
@@ -737,23 +770,75 @@ async def mne_decode(
     cond_a: str = None,
     cond_b: str = None,
     scoring: str = "roc_auc",
-    cv: int = 5,
+    cv: StrictInt = 5,
     name: str = "decoding",
     ctx: Context = None,
+    cv_strategy: Literal[
+        "stratified", "stratified_group", "leave_one_group_out"
+    ] = "stratified",
+    groups: list[str] | list[StrictInt] | None = None,
+    picks: str | list[str] | list[StrictInt] | None = None,
+    shuffle: bool = False,
+    random_state: StrictInt = 97,
+    plot: bool = True,
+    method: Literal["sliding", "generalizing"] = "sliding",
+    tmin: float | None = None,
+    tmax: float | None = None,
+    C: PositiveFloat = 1.0,
+    class_weight: Literal["balanced"] | None = None,
+    max_iter: StrictInt = 1000,
 ) -> str:
     err = _require_sklearn()
     if err:
-        return f"Error: {err}"
+        raise ToolError(f"[DEPENDENCY_UNAVAILABLE] {err}")
     return await _exec(
-        ops.decode_time, ctx, epochs_name, cond_a, cond_b, scoring, cv, name
+        ops.decode_time,
+        ctx,
+        epochs_name,
+        cond_a,
+        cond_b,
+        scoring,
+        cv,
+        name,
+        cv_strategy=cv_strategy,
+        groups=groups,
+        picks=picks,
+        shuffle=shuffle,
+        random_state=random_state,
+        plot=plot,
+        method=method,
+        tmin=tmin,
+        tmax=tmax,
+        C=C,
+        class_weight=class_weight,
+        max_iter=max_iter,
     )
+
+
+@mcp.tool(
+    name="mne_decoding_group_test",
+    description=(
+        "Group-level sign-flip inference on mne_decode mean scores, one per independent subject. "
+        "Requires score_names, unique subject_ids, independent_subjects=true and explicit null_value. "
+        "Never pass CV folds or repeated runs as subjects. Supports ROC AUC/balanced accuracy, "
+        "matching time grids and methods. max_t: two-sided pointwise FWER across the whole curve/matrix; "
+        "cluster: cluster-mass FWER with time or train-time/test-time lattice adjacency. "
+        "Requires symmetric subject effects under the null. Not single-subject label shuffling or "
+        "population prevalence. Stores statistic, corrected p values or cluster p values, mask, H0 and diagnostics."
+    ),
+)
+async def mne_decoding_group_test(
+    params: DecodingGroupTestParameters, ctx: Context = None
+) -> str:
+    return await _exec(ops.decoding_group_test, ctx, params)
 
 
 @mcp.tool(
     name="mne_connectivity",
     description=(
         "Spectral connectivity between channels over Epochs in a frequency band. method: 'coh', 'plv', "
-        "'wpli', 'pli', 'imcoh', etc. Returns a channel×channel connectivity heatmap + strongest pairs. "
+        "'wpli', 'pli', 'imcoh', etc. Returns an ordered-edge heatmap without forcing symmetry. "
+        "Use mne_compute_connectivity for multi-band, channel-pair and estimator parameters. "
         "Requires mne-connectivity."
     ),
 )
@@ -767,8 +852,33 @@ async def mne_connectivity(
 ) -> str:
     err = _require_module("mne_connectivity", "mne-connectivity")
     if err:
-        return f"Error: {err}"
+        raise ToolError(f"[DEPENDENCY_UNAVAILABLE] {err}")
     return await _exec(ops.connectivity, ctx, epochs_name, method, fmin, fmax, con_name)
+
+
+@mcp.tool(
+    name="mne_compute_connectivity",
+    description=(
+        "Bivariate across-trial connectivity with a params JSON object: multiple bands, "
+        "ordered channel-name pairs, picks, epoch-relative time window, multitaper/fourier/"
+        "cwt_morlet estimation and smoothing/cycles. Preserves signed, directed and complex "
+        "values. Stores an MNE Connectivity object; optional first-30-edge heatmap (CWT time "
+        "mean, complex magnitude only for display). Requires mne-connectivity. Not Granger/PAC."
+    ),
+    annotations={
+        "readOnlyHint": False,
+        "destructiveHint": True,
+        "idempotentHint": False,
+        "openWorldHint": False,
+    },
+)
+async def mne_compute_connectivity(
+    params: ConnectivityParameters, ctx: Context = None
+) -> str:
+    err = _require_module("mne_connectivity", "mne-connectivity")
+    if err:
+        raise ToolError(f"[DEPENDENCY_UNAVAILABLE] {err}")
+    return await _exec(ops.compute_connectivity, ctx, params)
 
 
 @mcp.tool(
@@ -800,7 +910,7 @@ async def mne_make_forward(
 ) -> str:
     err = _require_module("nibabel")
     if err:
-        return f"Error: {err}"
+        raise ToolError(f"[DEPENDENCY_UNAVAILABLE] {err}")
     return await _exec(ops.fsaverage_forward, ctx, name, fwd_name)
 
 
@@ -846,5 +956,5 @@ async def mne_plot_source_estimate(
 ) -> str:
     err = _require_module("pyvista")
     if err:
-        return f"Error: {err}"
+        raise ToolError(f"[DEPENDENCY_UNAVAILABLE] {err}")
     return await _exec(ops.plot_source_estimate, ctx, stc_name, hemi, time)

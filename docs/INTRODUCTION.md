@@ -79,7 +79,7 @@ MNE 的分析是**有状态、强可视化**的，这决定了 MNE-MCP 与“无
 | 高级分析 (6) | `mne_decode` `mne_connectivity` `mne_compute_noise_cov` `mne_make_forward` `mne_apply_inverse` `mne_plot_source_estimate` |
 | 导出 (1) | `mne_save` |
 
-> 高级分析（解码/连接性/源定位）需安装 `[full]` 额外依赖：`pip install -e ".[full]"`。
+> 科学计算依赖由用户按需准备，本包不安装或升级这些库。
 
 支持读取的格式：FIF、EDF、BDF、BrainVision(.vhdr)、EEGLAB(.set)、CNT、EGI/.mff、CTF(.ds)、SNIRF 等。
 
@@ -121,7 +121,7 @@ MNE 的分析是**有状态、强可视化**的，这决定了 MNE-MCP 与“无
 
 ## 10. 技术栈与兼容性
 
-- Python 3.10+；MNE-Python ≥ 1.6；NumPy / SciPy / Matplotlib / pandas；scikit-learn（ICA）。
+- Python 3.12；MNE-Python 及科学计算库由用户准备，MNE-MCP 仅安装通信依赖和配套技能。
 - 服务器基于 FastMCP（stdio 传输）；matplotlib 用无界面 Agg 后端。
 - Windows / macOS / Linux 通用；Claude Code 与 opencode 等 MCP 客户端均可接入。
 

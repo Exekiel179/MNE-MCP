@@ -1,11 +1,7 @@
 """Tests for multi-client MCP registration (Claude Code / Codex / opencode)."""
 
 import json
-
-try:
-    import tomllib  # Python 3.11+
-except ModuleNotFoundError:  # pragma: no cover - Python 3.10
-    import tomli as tomllib
+import tomllib
 
 import pytest
 
@@ -81,3 +77,30 @@ def test_configure_clients_orchestrator(tmp_path, monkeypatch):
 def test_configure_clients_rejects_unknown():
     with pytest.raises(ValueError):
         cc.configure_clients(["notaclient"], with_skills=False)
+
+
+def test_configure_clients_rejects_empty_list():
+    with pytest.raises(ValueError, match="At least one client"):
+        cc.configure_clients([], with_skills=False)
+
+
+def test_codex_skills_complete_and_backed_up(tmp_path, monkeypatch):
+    monkeypatch.setenv("CODEX_HOME", str(tmp_path))
+    monkeypatch.setenv("MNE_MCP_CODEX_CONFIG", str(tmp_path / "config.toml"))
+    result = cc.configure_clients(["codex"])
+    assert result["agents"] is None
+    assert set(result["skills"]["installed"]) == set(cc.SKILL_NAMES)
+    target = tmp_path / "skills" / "mne-analyst" / "SKILL.md"
+    target.write_text("user customization", encoding="utf-8")
+    cc.configure_clients(["codex"])
+    backups = list((tmp_path / "mne-mcp-backups").rglob("SKILL.md"))
+    assert any(p.read_text(encoding="utf-8") == "user customization" for p in backups)
+    assert (target.parent / "references" / "environment.md").is_file()
+
+
+def test_invalid_later_client_does_not_write(tmp_path, monkeypatch):
+    path = tmp_path / "claude.json"
+    monkeypatch.setenv("MNE_MCP_CLAUDE_CONFIG", str(path))
+    with pytest.raises(ValueError):
+        cc.configure_clients(["claude", "invalid"])
+    assert not path.exists()

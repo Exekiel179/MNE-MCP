@@ -94,7 +94,7 @@ def test_advanced_decode_connectivity_cov(fresh_session):
     r = ops.compute_noise_cov("epochs")
     assert s.has("noise_cov")
 
-    # connectivity needs the optional mne-connectivity package (the [full] extra)
+    # Connectivity is included by the supported installer.
     pytest.importorskip("mne_connectivity")
     r = ops.connectivity("epochs", method="coh", fmin=8, fmax=20)
     assert len(r["figures"]) == 1 and s.has("con")
