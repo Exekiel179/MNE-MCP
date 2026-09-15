@@ -38,11 +38,12 @@ def test_invalid_environment_stops_before_install(monkeypatch):
     assert len(commands) == 0
 
 
-def test_missing_core_installed_then_verified(monkeypatch):
+@pytest.mark.parametrize("version", [[3, 12, 9], [3, 13, 0], [3, 14, 0]])
+def test_missing_core_installed_then_verified(monkeypatch, version):
     commands = []
     report = {
         "ready": False,
-        "version": [3, 12, 9],
+        "version": version,
         "dependencies": {
             "pip": {"ok": True},
             "mne": {"ok": False, "missing": True},
@@ -57,13 +58,14 @@ def test_missing_core_installed_then_verified(monkeypatch):
     assert commands == [["target-python", "-m", "pip", "install", "mne>=1.6", "pandas"]]
 
 
-def test_broken_import_does_not_trigger_pip(monkeypatch):
+@pytest.mark.parametrize("version", [[3, 12, 9], [3, 14, 0]])
+def test_broken_import_does_not_trigger_pip(monkeypatch, version):
     monkeypatch.setattr(
         installer.subprocess, "run", lambda *a, **kw: pytest.fail("unexpected install")
     )
     report = {
         "ready": False,
-        "version": [3, 12, 9],
+        "version": version,
         "dependencies": {
             "pip": {"ok": True},
             "mne": {"ok": False, "missing": False, "error": "PermissionError"},
@@ -125,13 +127,23 @@ def test_json_check_does_not_install(monkeypatch, capsys):
     assert json.loads(capsys.readouterr().out)["python"] == "existing-python"
 
 
-def test_preflight_parses_probe_and_rejects_wrong_version(monkeypatch):
+@pytest.mark.parametrize(
+    "version, ready",
+    [
+        ([3, 11, 9], False),
+        ([3, 12, 9], True),
+        ([3, 13, 0], True),
+        ([3, 14, 0], True),
+        ([3, 15, 0], True),
+    ],
+)
+def test_preflight_has_no_upper_python_gate(monkeypatch, version, ready):
     import json
     from types import SimpleNamespace
 
     payload = {
         "python": "test-python",
-        "version": [3, 11, 9],
+        "version": version,
         "dependencies": {"mne": {"ok": True}},
     }
     monkeypatch.setattr(
@@ -142,7 +154,18 @@ def test_preflight_parses_probe_and_rejects_wrong_version(monkeypatch):
         ),
     )
     monkeypatch.setattr(installer, "detect_clients", lambda: [])
-    assert installer.preflight("test-python")["ready"] is False
+    assert installer.preflight("test-python")["ready"] is ready
+
+
+def test_package_metadata_has_no_upper_python_gate():
+    import tomllib
+    from packaging.specifiers import SpecifierSet
+
+    metadata = tomllib.loads((installer.ROOT / "pyproject.toml").read_text())
+    supported = SpecifierSet(metadata["project"]["requires-python"])
+    assert "3.11" not in supported
+    for version in ("3.12", "3.13", "3.14", "3.15"):
+        assert version in supported
 
 
 def test_invalid_client_has_no_side_effects(monkeypatch):
@@ -152,3 +175,16 @@ def test_invalid_client_has_no_side_effects(monkeypatch):
         lambda *a, **k: pytest.fail("unexpected subprocess"),
     )
     assert installer.main(["--clients", "unknown"]) == 1
+
+
+def test_default_install_targets_all_clients(monkeypatch):
+    calls = []
+    monkeypatch.setattr(installer, "install", lambda **kw: calls.append(kw))
+    assert installer.main([]) == 0
+    assert installer.select_clients(calls[0]["clients"]) == [
+        "claude",
+        "codex",
+        "psyclaw",
+        "opencode",
+    ]
+    assert installer.select_clients("psyclaw") == ["psyclaw"]

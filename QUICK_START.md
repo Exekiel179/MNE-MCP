@@ -4,15 +4,17 @@
 
 ## 1. 安装 / Install
 
-先激活已有 Python 3.12 MNE 环境，执行：
+先激活已有 Python 3.12+ MNE 环境，执行：
 
 ```bash
-python -m pip install "mne-mcp==0.4.0"
-python -m mne_mcp.cli setup --clients codex
+python -m pip install mne-mcp
+python -m mne_mcp.cli setup
 ```
 
-选择 `claude`、`codex` 或 `opencode`，完成后重启所选客户端。
+默认注册 Claude Code、Codex、PsyClaw 和 opencode。只安装 PsyClaw 接入时加 `--clients psyclaw`。
+完成后重启客户端，PsyClaw 也可 `/reload`。
 MNE 科学计算栈由用户管理；setup 安装全部 14 个技能及参考文件。
+setup 自动测试 MCP 连接和状态；可用 `python -m mne_mcp.cli verify --client psyclaw` 复检。
 
 ## 2.5 配置默认参数（可选）/ Configure defaults
 

@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml/badge.svg)](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/protocol-MCP-green.svg)](https://modelcontextprotocol.io)
 
 **English** | [简体中文](README.zh-CN.md)
@@ -17,7 +17,7 @@ Describe your analysis in plain language — MNE-MCP loads your recording, runs 
 (filtering, ICA, epoching, ERP/ERF averaging, time-frequency, source-level work via code),
 saves the figures, and explains the results.
 
-> Works in **Claude Code** and **opencode** (any MCP-capable client). Pairs with bundled
+> Works in **Claude Code**, **Codex**, **PsyClaw** and **opencode**. Pairs with bundled
 > Agent **Skills** — `mne-analyst`, `mne-mcp-guard`, plus a skeptical **analysis suite**
 > (`mne-methodology-critic` + per-category skills) for reliable, archived workflows.
 
@@ -42,9 +42,9 @@ MNE analysis is **stateful and visual** — unlike a one-shot statistics batch j
 
 ## Requirements
 
-- Python **3.12**
+- Python **3.12+** (no package upper-version gate; full-test baseline: 3.12)
 - Git
-- Claude Code, Codex, opencode, or another MCP client
+- Claude Code, Codex, PsyClaw, opencode, or another MCP client
 
 > Cross-platform: unlike a closed engine, MNE-Python is pure Python, so analysis tools work on
 > Windows, macOS, and Linux.
@@ -57,25 +57,26 @@ MNE analysis is **stateful and visual** — unlike a one-shot statistics batch j
 
 Send this to a coding agent with terminal access:
 
-> Follow https://github.com/Exekiel179/MNE-MCP/blob/main/INSTALL_AGENT.md to install MNE-MCP and all companion skills in my existing MNE environment, configure my current client, and verify the result.
+> Follow https://github.com/Exekiel179/MNE-MCP/blob/v0.4.1/INSTALL_AGENT.md to install MNE-MCP and all companion skills in my existing MNE environment, configure my current client, and verify the result.
 
 The agent checks the environment, installs missing MNE/core libraries when needed, installs the lightweight interface and all 14 skills, and
-registers the selected client. A client restart is required. Use the versioned
-[v0.4.0 installation guide](https://github.com/Exekiel179/MNE-MCP/blob/v0.4.0/INSTALL_AGENT.md)
-for a reproducible installation.
+registers the selected client. A client restart is required. See the
+[installation guide](INSTALL_AGENT.md) for environment checks and verification.
 
 ### Manual installation
 
-Activate your existing Python 3.12 MNE environment, then install the lightweight interface:
+Activate your existing Python 3.12+ MNE environment, then install the lightweight interface:
 
 ```bash
-python -m pip install "mne-mcp==0.4.0"
-python -m mne_mcp.cli setup --clients codex
+python -m pip install mne-mcp
+python -m mne_mcp.cli setup
 ```
 
-Release downloads: [v0.4.0](https://github.com/Exekiel179/MNE-MCP/releases/tag/v0.4.0).
+Release downloads: [latest release](https://github.com/Exekiel179/MNE-MCP/releases/latest).
 For a downloaded source archive, extract it and use `python -m pip install .` in that directory.
-Use `claude`, `codex`, or `opencode` (comma-separated) to choose clients. Restart them after setup.
+Setup defaults to all four clients, including their skills. To configure only PsyClaw,
+use `python -m mne_mcp.cli setup --clients psyclaw`; `claude`, `codex` and `opencode`
+are also supported (comma-separated). Restart clients after setup; PsyClaw supports `/reload`.
 MNE and scientific libraries are user-managed; installing this package does not install them.
 See [installation instructions](docs/INSTALL.md) for dependencies and troubleshooting.
 
@@ -83,9 +84,26 @@ See [installation instructions](docs/INSTALL.md) for dependencies and troublesho
 
 ### Repair or reconfigure
 
+To update an existing installation, run `python -m pip install --upgrade mne-mcp`.
 Run `python -m mne_mcp.cli setup --clients codex` in the same MNE environment.
 Setup registers that exact interpreter and installs the bundled skills for the selected clients.
 Existing configuration and skill files are backed up before updates.
+
+### PsyClaw verification
+
+PsyClaw registration writes `~/.psyclaw/mcp/mne.json`; all 14 skills and references
+go to `~/.psyclaw/skills`. Setup checks a real MCP handshake, tool discovery and
+`mne_check_status`, including a second check of the saved PsyClaw command.
+
+```bash
+python -m mne_mcp.cli verify --client psyclaw
+```
+
+This checks the saved command without modifying registration. `connected` and
+`mne_available` are separate: the lightweight server can connect without MNE installed.
+After `/reload`, ask PsyClaw to list tools for server `mne` and call `mne_check_status`.
+Project `.psyclaw/mcp/*.json` entries with the same id override user configuration.
+The setup check does not claim your already-running chat has reloaded.
 
 ### Environment variables (optional `.env`)
 

@@ -21,6 +21,11 @@ Distinguish missing packages from import-time binary/configuration errors. Never
 inside mne_run_code or recreate an existing research environment. Missing optional libraries block
 only the relevant feature. After an authorized environment change, restart and check status again.
 
+In PsyClaw, discover the `mne` server via `psyclaw_mcp` action=list before calling
+its tools. A successful setup check is not proof that an already-open session has
+reloaded. For missing tools or an unexpected interpreter, read the PsyClaw connection
+section in `../mne-analyst/references/environment.md`; project configs override user configs.
+
 1. **Check capability first** — `mne_check_status`. If MNE is missing, stop and say so; if
    scikit-learn is missing, ICA is unavailable.
 2. **Inspect before processing** — `mne_get_info` / `mne_describe`. Never guess channel names,

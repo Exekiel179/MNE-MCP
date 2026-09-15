@@ -1,6 +1,6 @@
 """
 Helpers for registering the MNE MCP server with MCP clients (Claude Code,
-OpenAI Codex CLI, opencode) and installing the companion skills.
+OpenAI Codex CLI, PsyClaw, opencode) and installing the companion skills.
 """
 
 from __future__ import annotations
@@ -15,6 +15,20 @@ from pathlib import Path
 from mne_mcp.config import get_results_dir, get_timeout
 
 SERVER_KEY = "mne"
+DEFAULT_CLIENTS = ("claude", "codex", "psyclaw", "opencode")
+
+
+def select_clients(value: str) -> list[str]:
+    clients = list(
+        dict.fromkeys(c.strip().lower() for c in value.split(",") if c.strip())
+    )
+    if clients == ["all"]:
+        return list(DEFAULT_CLIENTS)
+    if not clients:
+        raise ValueError("At least one client is required")
+    if set(clients) - set(DEFAULT_CLIENTS):
+        raise ValueError(f"Select clients from: {', '.join(DEFAULT_CLIENTS)}, all")
+    return clients
 
 
 def get_entrypoint_config() -> tuple[str, list[str]]:
@@ -253,6 +267,88 @@ def configure_opencode(path: Path | None = None) -> dict:
     }
 
 
+def get_psyclaw_config_path() -> Path:
+    override = os.environ.get("MNE_MCP_PSYCLAW_CONFIG")
+    return (
+        Path(override).expanduser()
+        if override
+        else Path.home() / ".psyclaw" / "mcp" / "mne.json"
+    )
+
+
+def build_psyclaw_entry() -> dict:
+    command, args = get_entrypoint_config()
+    # PsyClaw deliberately does not inherit the full parent environment.
+    # Forward only runtime/scientific settings, never provider credentials.
+    env = {
+        key: value
+        for key, value in os.environ.items()
+        if key
+        in {
+            "SYSTEMROOT",
+            "SystemRoot",
+            "WINDIR",
+            "USERPROFILE",
+            "HOME",
+            "TEMP",
+            "TMP",
+            "TMPDIR",
+            "PATH",
+            "LANG",
+            "MPLCONFIGDIR",
+            "MPLBACKEND",
+            "MNE_DONTWRITE_HOME",
+            "_MNE_FAKE_HOME_DIR",
+            "MNE_MCP_TIMEOUT",
+            "MNE_MCP_RESULTS_DIR",
+            "MNE_MCP_DATA_DIR",
+            "MNE_MCP_TEMP_DIR",
+            "MNE_MCP_CONFIG",
+        }
+    }
+    env.update(server_env())
+    return {
+        "id": SERVER_KEY,
+        "name": "MNE-Python",
+        "transport": "stdio",
+        "command": command,
+        "args": args,
+        "env": env,
+        "enabled": True,
+        "trusted": True,
+    }
+
+
+def configure_psyclaw(path: Path | None = None) -> dict:
+    """Write PsyClaw's standalone server record, preserving custom fields."""
+    path = path or get_psyclaw_config_path()
+    previous, existed = _load_settings(path)
+    if previous.get("id", SERVER_KEY) != SERVER_KEY:
+        raise ValueError(f"Refusing to replace a different PsyClaw server in {path}")
+    env = previous.get("env", {})
+    if not isinstance(env, dict) or any(not isinstance(v, str) for v in env.values()):
+        raise ValueError(f"PsyClaw env must be a string mapping in {path}")
+    entry = build_psyclaw_entry()
+    entry["env"] = {**env, **entry["env"]}
+    updated = {**previous, **entry}
+    path.parent.mkdir(parents=True, exist_ok=True)
+    backup = _backup_settings(path) if existed and updated != previous else None
+    if updated != previous:
+        path.write_text(
+            json.dumps(updated, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        )
+    if updated == previous:
+        status = "unchanged"
+    else:
+        status = "updated" if existed else "created"
+    return {
+        "client": "psyclaw",
+        "path": str(path),
+        "status": status,
+        "backup": str(backup) if backup else None,
+    }
+
+
 # ─── Companion skills ────────────────────────────────────────────────────────────
 
 SKILL_NAMES = (
@@ -355,6 +451,7 @@ _CLIENT_FUNCS = {
     "claude": lambda: _claude_summary(),
     "codex": configure_codex,
     "opencode": configure_opencode,
+    "psyclaw": configure_psyclaw,
 }
 
 
@@ -404,6 +501,7 @@ def configure_clients(clients, with_skills: bool = True) -> dict:
             "claude": Path.home() / ".claude" / "skills",
             "codex": Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex")))
             / "skills",
+            "psyclaw": get_psyclaw_config_path().parent.parent / "skills",
             "opencode": Path(
                 os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config"))
             )

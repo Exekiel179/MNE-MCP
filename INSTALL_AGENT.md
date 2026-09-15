@@ -7,13 +7,13 @@ Python environment, reusing MNE when available. Follow the user's chosen client,
 ## 1. Locate the checkout and environment
 
 Use an existing MNE-MCP checkout when the user provides one. Otherwise clone
-https://github.com/Exekiel179/MNE-MCP.git at tag `v0.4.0` into an appropriate user workspace and read this file
+https://github.com/Exekiel179/MNE-MCP.git at the latest published release tag into an appropriate user workspace and read this file
 from that checkout. Do not overwrite an existing directory or discard local changes.
 Do not substitute an older PyPI release for the checkout described here.
 
 Prefer the user's specified Python interpreter. Otherwise inspect the active environment,
 the checkout's existing .venv, and environment-manager listings such as conda env list when
-available. Do not scan the whole disk. If no MNE environment exists, use the user's selected Python 3.12 environment; prefer a dedicated venv over system Python. Creating a project-local venv is a normal installation step when needed.
+available. Do not scan the whole disk. If no MNE environment exists, use the user's selected Python 3.12+ environment; prefer a dedicated venv over system Python. Creating a project-local venv is a normal installation step when needed.
 Use the absolute path of the interpreter that imports MNE. Keep virtual-environment symlink
 paths intact; resolving them to the base interpreter can select the wrong environment.
 
@@ -30,20 +30,24 @@ For PowerShell, use its & invocation operator before a quoted executable path.
 The JSON reports the selected Python, its version, core import results, and detected clients.
 Exit code 0 means the environment is ready; 1 means it needs attention.
 
-Python 3.12 is the currently supported baseline. Core analysis uses mne, numpy, scipy,
+Python 3.12 is the minimum and current full-test baseline, not an upper limit.
+Do not reject Python 3.13+ solely because of its version. Installation eligibility
+does not establish scientific compatibility: verify the intended workflow and
+report actual dependency failures without silently disabling acceleration.
+Core analysis uses mne, numpy, scipy,
 matplotlib and pandas. The interpreter also needs pip. Preserve the actual exception:
 missing packages, incompatible binaries and unreadable configuration require different fixes.
-If Python 3.12 and pip are available but core libraries are missing, continue to installation:
+If Python 3.12+ and pip are available but core libraries are missing, continue to installation:
 the installer automatically installs missing mne/numpy/scipy/matplotlib/pandas with that interpreter's pip.
 If Python itself is absent, explain that prerequisite. Do not install the complete test lock file.
 
 ## 3. Select the intended client
 
 Use the client's identity from the user's request or current host context: codex, claude,
-or opencode. Existing config files are hints, not a request to modify every client.
-The script's auto mode selects only a single detected client; zero or multiple candidates require
-an explicit --clients value. If neither context nor the user identifies a target, ask one question.
-Multiple clients may be comma-separated only when the user wants them.
+psyclaw, or opencode. Pass --clients explicitly for a single-client request.
+Omitting --clients now registers all four clients and installs skills for each, even if
+the clients are not yet installed. Use that default only when the user wants all clients.
+The optional --clients auto mode still requires exactly one detected client.
 
 ## 4. Install and register
 
@@ -61,6 +65,9 @@ Do not run pip from inside mne_run_code or pipe a downloaded script into a shell
 Setup installs all 14 skills and references into the selected client's skills directory.
 Codex uses CODEX_HOME/skills (default ~/.codex/skills); Claude uses ~/.claude/skills;
 opencode uses XDG_CONFIG_HOME/opencode/skills (default ~/.config/opencode/skills).
+PsyClaw uses ~/.psyclaw/skills and a standalone MCP record at ~/.psyclaw/mcp/mne.json.
+Do not write a Claude-style mcpServers object there. Setup explicitly enables/trusts
+the MNE server selected by the user, without adding broad tool-policy bypasses.
 Existing skills and client configurations are backed up before updates.
 Claude additionally receives the methodology-review subagent. Other clients use its skill.
 Do not delete other installed skills or claim a separate reviewer ran when it did not.
@@ -69,10 +76,17 @@ Do not delete other installed skills or claim a separate reviewer ran when it di
 
 Require a successful script exit and inspect the setup output for the configured client and
 complete skill list. Report the absolute interpreter path, client, skill location, and any errors.
-Do not claim a live MCP connection merely because pip or setup succeeded.
-Ask the user to restart the target client. If tools can reload in the current host, call
+Setup tests a real stdio handshake, tool discovery and mne_check_status; for PsyClaw,
+it also tests the saved record. A missing MNE backend is reported separately from
+a successful MCP connection. Retest without registration using
+`python -m mne_mcp.cli verify --client psyclaw`.
+Do not equate the standalone setup test with the user's already-running client session.
+Ask the user to restart the target client (PsyClaw also supports /reload). If tools can reload in the current host, call
 mne_check_status after reload and verify the reported interpreter and MNE version.
 Report "installed; client restart pending" until that live check actually succeeds.
+In PsyClaw, discover the mne server through psyclaw_mcp action=list, then call
+mne_check_status using the exposed bridge schema. A project .psyclaw/mcp entry with
+id=mne overrides the user entry; check it when the live Python path differs.
 
 For updates, repeat installation and setup from the intended checkout/version. Optional analysis
 libraries are checked for the user's requested workflow; do not install them all in advance.

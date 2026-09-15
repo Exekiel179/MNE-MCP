@@ -17,11 +17,12 @@ def detect_clients() -> list[str]:
         "codex": Path(os.environ.get("CODEX_HOME", str(home / ".codex")))
         / "config.toml",
         "claude": home / ".claude.json",
+        "psyclaw": home / ".psyclaw",
         "opencode": Path(os.environ.get("XDG_CONFIG_HOME", str(home / ".config")))
         / "opencode"
         / "opencode.json",
     }
-    return [name for name, path in paths.items() if path.is_file()]
+    return [name for name, path in paths.items() if path.exists()]
 
 
 def preflight(python: str) -> dict:
@@ -53,25 +54,27 @@ print("__MNE_PROBE__" + json.dumps({"python": sys.executable, "version": list(sy
         raise ValueError("Interpreter probe returned no diagnostic JSON")
     report = json.loads(line[len("__MNE_PROBE__") :])
     report["detected_clients"] = detect_clients()
-    report["ready"] = report["version"][:2] == [3, 12] and all(
+    report["ready"] = report["version"][:2] >= [3, 12] and all(
         item["ok"] for item in report["dependencies"].values()
     )
     return report
 
 
 def select_clients(value: str) -> list[str]:
+    if value.strip().lower() == "all":
+        return ["claude", "codex", "psyclaw", "opencode"]
     if value == "auto":
         detected = detect_clients()
         if len(detected) != 1:
             raise ValueError(
-                "Client selection is ambiguous. Use --clients codex, claude, or opencode; --check --json lists detected clients."
+                "Client selection is ambiguous. Use --clients codex, claude, psyclaw, or opencode; --check --json lists detected clients."
             )
         return detected
     selected = list(
         dict.fromkeys(c.strip().lower() for c in value.split(",") if c.strip())
     )
-    if not selected or set(selected) - {"claude", "codex", "opencode"}:
-        raise ValueError("Select clients from: claude, codex, opencode")
+    if not selected or set(selected) - {"claude", "codex", "psyclaw", "opencode"}:
+        raise ValueError("Select clients from: claude, codex, psyclaw, opencode")
     return selected
 
 
@@ -89,7 +92,7 @@ def prepare_environment(python: str, report: dict) -> None:
     }
     failed = {name: item for name, item in dependencies.items() if not item["ok"]}
     if (
-        report.get("version", [])[:2] != [3, 12]
+        report.get("version", [])[:2] < [3, 12]
         or not dependencies.get("pip", {}).get("ok")
         or any(
             name not in core or not item.get("missing") for name, item in failed.items()
@@ -131,7 +134,11 @@ def install(*, clients: str, skip_configure: bool, python: str | None = None) ->
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--clients", default="auto")
+    parser.add_argument(
+        "--clients",
+        default="all",
+        help="Default: all; or select claude,codex,psyclaw,opencode",
+    )
     parser.add_argument(
         "--python",
         default=sys.executable,

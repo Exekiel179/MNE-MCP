@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml/badge.svg)](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![MCP](https://img.shields.io/badge/protocol-MCP-green.svg)](https://modelcontextprotocol.io)
 
 [English](README.md) | **简体中文**
@@ -13,7 +13,7 @@
 用自然语言描述你的分析需求——MNE-MCP 会加载记录、执行 MNE 流程（滤波、ICA、分段、ERP/ERF 叠加、
 时频、以及通过代码完成的源定位等）、保存图像并解读结果。
 
-> 可在 **Claude Code** 与 **opencode**（任意支持 MCP 的客户端）中使用。配套一组 Agent **技能**
+> 可在 **Claude Code**、**Codex**、**PsyClaw** 与 **opencode** 中使用。配套一组 Agent **技能**
 > ——`mne-analyst`、`mne-mcp-guard`，以及一套"先怀疑、后审查"的**分析技能套件**
 > （`mne-methodology-critic` + 各分析大类的专用技能），让流程更可靠、结果自动归档。
 
@@ -36,9 +36,9 @@ MNE 的分析是**有状态、强可视化**的，不同于一次性的统计批
 
 ## 环境要求
 
-- Python **3.12**
+- Python **3.12+**（不设包版本上限；完整测试基线为 3.12）
 - Git
-- Claude Code、Codex、opencode 或其他支持 MCP 的客户端
+- Claude Code、Codex、PsyClaw、opencode 或其他支持 MCP 的客户端
 
 > 跨平台：MNE-Python 是纯 Python，分析功能在 Windows、macOS、Linux 上都可用。
 
@@ -50,30 +50,47 @@ MNE 的分析是**有状态、强可视化**的，不同于一次性的统计批
 
 把下面这句话发给有终端权限的智能体：
 
-> 按 https://github.com/Exekiel179/MNE-MCP/blob/main/INSTALL_AGENT.md 安装 MNE-MCP 和全部配套技能，复用我的 MNE 环境，配置到当前客户端并验证。
+> 按 https://github.com/Exekiel179/MNE-MCP/blob/v0.4.1/INSTALL_AGENT.md 安装 MNE-MCP 和全部配套技能，复用我的 MNE 环境，配置到当前客户端并验证。
 
 智能体会检查已有环境、安装轻量接口、注册当前客户端和全部 14 个技能。
 如果选定环境尚未安装 MNE 或基础分析库，安装器会自动用 pip 补齐并验证。首次安装后需要重启客户端。
-复现安装可使用 [v0.4.0 固定版本指南](https://github.com/Exekiel179/MNE-MCP/blob/v0.4.0/INSTALL_AGENT.md)。
+环境检查与验证步骤见 [安装指南](INSTALL_AGENT.md)。
 
 ### 手动安装
 
-先激活已有的 Python 3.12 MNE 环境，执行：
+先激活已有的 Python 3.12+ MNE 环境，执行：
 
 ```bash
-python -m pip install "mne-mcp==0.4.0"
-python -m mne_mcp.cli setup --clients codex
+python -m pip install mne-mcp
+python -m mne_mcp.cli setup
 ```
 
-下载入口：[v0.4.0 发布页](https://github.com/Exekiel179/MNE-MCP/releases/tag/v0.4.0)。
+下载入口：[最新发布页](https://github.com/Exekiel179/MNE-MCP/releases/latest)。
 下载源码压缩包后，解压并在该目录使用 `python -m pip install .`。
-客户端可以选择 `claude`、`codex`、`opencode`，多个用逗号分隔。完成后重启客户端。
+不加参数默认注册全部四个客户端并安装配套技能。只接入 PsyClaw 时使用
+`python -m mne_mcp.cli setup --clients psyclaw`；也支持 `claude`、`codex`、`opencode`，多个用逗号分隔。
+完成后重启客户端，PsyClaw 也可执行 `/reload`。
 本包只安装通信与配置依赖，不安装或升级 MNE 科学计算栈。详见 [安装说明](docs/INSTALL.md)。
 
 ## 配置
 
-更新包后，在同一 MNE 环境重新执行 setup，更新客户端和技能。配置绑定当前 Python 的绝对路径。
+更新包使用 `python -m pip install --upgrade mne-mcp`，随后在同一 MNE 环境重新执行 setup，更新客户端和技能。配置绑定当前 Python 的绝对路径。
 已有配置和技能更新前会备份。
+
+### PsyClaw 连接验证
+
+自动写入 `~/.psyclaw/mcp/mne.json`，将全部 14 个技能及参考文件安装到
+`~/.psyclaw/skills`。setup 会测试真实 MCP 握手、工具发现及 `mne_check_status`，
+并再次测试保存的 PsyClaw 配置。之后可单独复检，不修改注册：
+
+```bash
+python -m mne_mcp.cli verify --client psyclaw
+```
+
+`connected` 表示通信成功，`mne_available` 表示 MNE 可用，两者分开报告。
+执行 `/reload` 后，让 PsyClaw 列出 `mne` 服务工具并调用 `mne_check_status`。
+项目内 `.psyclaw/mcp/*.json` 中相同 id 的配置优先于用户配置；解释器不符时先检查这里。
+setup 的独立连接测试通过，不代表已打开的聊天已经重新加载。
 
 ### 环境变量（可选 `.env`）
 

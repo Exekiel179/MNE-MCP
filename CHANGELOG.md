@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.4.1 - 2026-09-15
+
+- Add PsyClaw's standalone MCP registration and all 14 bundled skills with references,
+  preserving custom config fields and backing up updates.
+- Default setup and the source installer to all supported clients: Claude Code,
+  Codex, PsyClaw and opencode. Explicit --clients still limits registration.
+- Verify stdio initialization, tool discovery and mne_check_status before setup;
+  retest saved PsyClaw registration and expose `verify --client psyclaw`.
+- Add real PsyClaw runtime/skill-discovery integration coverage using synthetic EEG,
+  plus invalid configuration, timeout, backup and CLI regression tests.
+
+- Remove the Python upper-version installation gate and the installer's exact
+  3.12 restriction. Keep Python >=3.12 and dependency diagnostics.
+  Newer Python versions still need workflow validation;
+  accepting installation is not a full compatibility claim.
+
 ## 0.4.0 - 2026-09-15
 
 - Standardize on Python 3.12 and one existing scientific environment. Remove

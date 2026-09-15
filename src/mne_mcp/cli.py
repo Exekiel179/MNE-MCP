@@ -62,17 +62,23 @@ def main():
     # setup (one-click multi-client registration + skills)
     setup_parser = subparsers.add_parser(
         "setup",
-        help="One-click: register the MCP server in Claude Code / Codex / opencode and install skills",
+        help="Verify MCP, register Claude Code / Codex / PsyClaw / opencode and install skills",
     )
     setup_parser.add_argument(
         "--clients",
-        required=True,
-        help="Comma list of clients to configure: claude,codex,opencode",
+        default="all",
+        help="Comma list: claude,codex,psyclaw,opencode (default: all)",
     )
     setup_parser.add_argument(
         "--no-skills",
         action="store_true",
         help="Do not install the bundled MNE skills (analyst, guard, methodology critic + analysis suite)",
+    )
+    verify_parser = subparsers.add_parser(
+        "verify", help="Test MCP handshake, tools and status without registering"
+    )
+    verify_parser.add_argument(
+        "--client", choices=["psyclaw"], help="Test the saved PsyClaw server entry"
     )
 
     # configure-claude
@@ -164,17 +170,39 @@ def main():
         wizard.run_wizard()
         sys.exit(0)
 
-    elif args.command == "setup":
-        from mne_mcp.claude_config import configure_clients
+    elif args.command == "verify":
+        from mne_mcp.connection import verify_connection
 
-        clients = [c.strip().lower() for c in args.clients.split(",") if c.strip()]
         try:
+            result = verify_connection(registered=args.client == "psyclaw")
+        except (OSError, ValueError) as error:
+            print(f"Verification failed: {error}", file=sys.stderr)
+            sys.exit(2)
+        print(json.dumps(result, indent=2))
+        sys.exit(0)
+
+    elif args.command == "setup":
+        from mne_mcp.claude_config import configure_clients, select_clients
+        from mne_mcp.connection import verify_connection
+
+        try:
+            clients = select_clients(args.clients)
+            connection = verify_connection()
             result = configure_clients(clients, with_skills=not args.no_skills)
+            if "psyclaw" in clients:
+                connection = verify_connection(registered=True)
         except (OSError, ValueError, json.JSONDecodeError) as e:
             print(f"Setup failed: {type(e).__name__}: {e}", file=sys.stderr)
             sys.exit(2)
 
         print("=== MNE-MCP setup ===")
+        print(
+            f"[MCP     ] connected; {connection['tool_count']} tools; mne_check_status OK"
+        )
+        if not connection["mne_available"]:
+            print(
+                "[MNE     ] unavailable: MCP is connected, but analysis needs MNE in this interpreter."
+            )
         for r in result["clients"]:
             line = f"[{r['client']:<8}] {r['status']:<9} -> {r['path']}"
             if r.get("backup"):
@@ -198,6 +226,10 @@ def main():
             + ("" if args.no_skills else " and skills/agents")
             + "."
         )
+        if "psyclaw" in clients:
+            print(
+                "PsyClaw: run /reload (or restart), then list the mne server tools and call mne_check_status."
+            )
         sys.exit(0)
 
     elif args.command == "configure-claude":

@@ -104,3 +104,52 @@ def test_invalid_later_client_does_not_write(tmp_path, monkeypatch):
     with pytest.raises(ValueError):
         cc.configure_clients(["claude", "invalid"])
     assert not path.exists()
+
+
+def test_psyclaw_registration_and_skills(tmp_path, monkeypatch):
+    path = tmp_path / ".psyclaw" / "mcp" / "mne.json"
+    monkeypatch.setenv("MNE_MCP_PSYCLAW_CONFIG", str(path))
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "must-not-copy")
+    result = cc.configure_clients(["psyclaw"])
+    entry = json.loads(path.read_text(encoding="utf-8"))
+    assert entry["id"] == "mne"
+    assert entry["trusted"] is entry["enabled"] is True
+    assert entry["transport"] == "stdio"
+    assert entry["command"] == cc.get_entrypoint_config()[0]
+    assert "ANTHROPIC_API_KEY" not in entry["env"]
+    assert "mcpServers" not in entry
+    assert result["agents"] is None
+    assert set(result["skills"]["installed"]) == set(cc.SKILL_NAMES)
+    assert (
+        path.parent.parent / "skills/mne-analyst/references/environment.md"
+    ).is_file()
+
+
+def test_psyclaw_preserves_custom_settings_and_backups(tmp_path):
+    path = tmp_path / "mne.json"
+    original = {"id": "mne", "enabled": False, "note": "keep", "env": {"CUSTOM": "yes"}}
+    path.write_text(json.dumps(original), encoding="utf-8")
+    result = cc.configure_psyclaw(path)
+    from pathlib import Path
+
+    assert json.loads(Path(result["backup"]).read_text()) == original
+    updated = json.loads(path.read_text())
+    assert updated["note"] == "keep"
+    assert updated["env"]["CUSTOM"] == "yes"
+    repeated = cc.configure_psyclaw(path)
+    assert repeated["status"] == "unchanged"
+    assert repeated["backup"] is None
+
+
+@pytest.mark.parametrize("content", ["[]", "{broken", '{"id":"other"}', '{"env": []}'])
+def test_psyclaw_invalid_config_not_overwritten(tmp_path, content):
+    path = tmp_path / "mne.json"
+    path.write_text(content)
+    with pytest.raises(ValueError):
+        cc.configure_psyclaw(path)
+    assert path.read_text() == content
+
+
+def test_all_clients_selection():
+    assert cc.select_clients("all") == list(cc.DEFAULT_CLIENTS)
+    assert cc.select_clients("PsyClaw,psyclaw") == ["psyclaw"]
