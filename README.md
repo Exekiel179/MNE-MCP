@@ -53,6 +53,11 @@ MNE analysis is **stateful and visual** — unlike a one-shot statistics batch j
 
 ## Installation
 
+Looking for the separate native C++ preview? See
+[MNE-CPP MCP installation and capabilities](packages/mne-cpp-mcp/README.md).
+It now includes explicit native-runtime setup and companion-skill registration;
+it is not a replacement for the MNE-Python analysis backend described here.
+
 ### Install with your agent
 
 Send this to a coding agent with terminal access:

@@ -9,7 +9,7 @@ description = "Local MCP bridge to the official MNE-CPP native command-line tool
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-dependencies = ["mcp>=1.2,<2", "pydantic>=2,<3"]
+dependencies = ["mcp>=1.27,<2", "pydantic>=2,<3", "tomlkit>=0.13,<1"]
 
 [project.scripts]
 mne-cpp-mcp = "mne_cpp_mcp.server:main"

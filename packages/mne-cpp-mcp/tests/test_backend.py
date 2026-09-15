@@ -114,6 +114,74 @@ async def test_metadata_fails_closed(tmp_path, monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_version_probe_cache_refresh_and_invalidation(tmp_path, monkeypatch):
+    backend = Backend(tmp_path, tmp_path)
+    key = ["first"]
+    calls = []
+    monkeypatch.setattr(backend, "fingerprint", lambda tool: (tool, key[0]))
+
+    async def run(tool, args):
+        calls.append(tool)
+        return {"stdout": "MNE-CPP 2.3.0", "stderr": "", "truncated": False}
+
+    monkeypatch.setattr(backend, "run", run)
+    await backend.require_version()
+    await backend.require_version()
+    assert len(calls) == 2
+    result = await backend.status()
+    assert len(calls) == 4
+    result["ready"] = False
+    await backend.require_version()
+    assert len(calls) == 4
+    key[0] = "changed"
+    await backend.require_version()
+    assert len(calls) == 6
+    monkeypatch.setattr("mne_cpp_mcp.backend.time.monotonic", lambda: float("inf"))
+    await backend.require_version()
+    assert len(calls) == 8
+
+
+@pytest.mark.asyncio
+async def test_invalid_path_never_launches_native(tmp_path, monkeypatch):
+    backend = Backend(tmp_path, tmp_path)
+
+    async def unexpected():
+        pytest.fail("invalid paths should fail before native probes")
+
+    monkeypatch.setattr(backend, "require_version", unexpected)
+    for operation in (backend.metadata, backend.evoked_summary, backend.inspect):
+        with pytest.raises(BackendError, match="absolute"):
+            await operation(InspectParameters(file="relative.fif"))
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "operation, output",
+    [
+        ("metadata", "201 = sfreq 200"),
+        ("evoked_summary", "Number of evoked data sets: 1"),
+    ],
+)
+async def test_truncated_output_cannot_support_interpretation(
+    tmp_path, monkeypatch, operation, output
+):
+    backend = Backend(tmp_path, tmp_path)
+    path = tmp_path / "recording.fif"
+    path.write_bytes(bytes.fromhex("000000640000001f00000014"))
+
+    async def version():
+        pass
+
+    async def run(*args):
+        return {"stdout": output, "truncated": True}
+
+    monkeypatch.setattr(backend, "require_version", version)
+    monkeypatch.setattr(backend, "run", run)
+    with pytest.raises(BackendError, match="truncated"):
+        await getattr(backend, operation)(FileParameters(file=str(path)))
+
+
+@pytest.mark.asyncio
 async def test_mcp_schema_and_validation(monkeypatch):
     from mcp.server.fastmcp.exceptions import ToolError
     from mne_cpp_mcp import server
@@ -153,6 +221,7 @@ async def test_native_fiff_workflow(tmp_path, monkeypatch):
     ave = tmp_path / "synthetic-ave.fif"
     evoked.save(ave)
     summary = await backend.evoked_summary(FileParameters(file=str(ave)))
+    assert summary["dataset_count"] == 1
     assert "synthetic-condition" in summary["stdout"]
     assert "Nave       : 12" in summary["stdout"]
     assert "Channels   : 2" in summary["stdout"]

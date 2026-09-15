@@ -1,5 +1,8 @@
 # MNE-MCP
 
+独立的 C++ 预览版见 [MNE-CPP MCP 安装与能力说明](packages/mne-cpp-mcp/README.md)。
+现已提供原生运行库安装、客户端注册和配套 skill 安装入口；目前只支持 FIFF 检查，不能替代本文的 MNE-Python 分析后端。
+
 [![CI](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml/badge.svg)](https://github.com/Exekiel179/MNE-MCP/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)

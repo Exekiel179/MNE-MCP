@@ -64,17 +64,63 @@ def main():
     parser = argparse.ArgumentParser(
         description="MNE-CPP native inspection MCP preview"
     )
-    parser.add_argument(
-        "command", choices=["serve", "status", "skill-path"], nargs="?", default="serve"
+    commands = parser.add_subparsers(dest="command")
+    commands.add_parser("serve")
+    commands.add_parser("status")
+    commands.add_parser("skill-path")
+    installer = commands.add_parser(
+        "setup",
+        help="Verify native tools, register selected clients and install the skill",
+    )
+    installer.add_argument(
+        "--clients",
+        help="Comma-separated: claude,codex,opencode; default: detect a single installed client",
+    )
+    installer.add_argument("--data-dir", required=True, type=Path)
+    native = installer.add_mutually_exclusive_group()
+    native.add_argument("--bin-dir", type=Path)
+    native.add_argument(
+        "--install-native",
+        action="store_true",
+        default=None,
+        help="Explicitly use the managed runtime (already the default without --bin-dir or MNE_CPP_BIN_DIR)",
+    )
+    installer.add_argument("--native-dir", type=Path)
+    installer.add_argument(
+        "--archive", type=Path, help="Offline official ZIP; same SHA-256 verification"
+    )
+    installer.add_argument(
+        "--check",
+        action="store_true",
+        help="Read-only preflight; never download or write",
     )
     args = parser.parse_args()
+    if args.command == "setup":
+        from .setup import setup
+
+        try:
+            result = setup(
+                (
+                    [c.strip() for c in args.clients.split(",") if c.strip()]
+                    if args.clients is not None
+                    else None
+                ),
+                args.data_dir,
+                args.bin_dir,
+                args.install_native,
+                args.native_dir,
+                args.archive,
+                args.check,
+            )
+        except (ValueError, OSError, BackendError) as exc:
+            print(json.dumps({"ready": False, "error": str(exc)}, indent=2))
+            raise SystemExit(1)
+        print(json.dumps(result, indent=2))
+        raise SystemExit(0 if result["ready"] else 1)
     if args.command == "skill-path":
-        bundled = Path(__file__).parent / "_bundled" / "skills" / "mne-cpp-analyst"
-        source = Path(__file__).parents[2] / "skills" / "mne-cpp-analyst"
-        path = bundled if bundled.is_dir() else source
-        if not (path / "SKILL.md").is_file():
-            parser.error("Companion skill missing; reinstall this package")
-        print(path)
+        from .setup import skill_path
+
+        print(skill_path())
         return
     if args.command == "status":
         result = asyncio.run(mne_cpp_check_status())

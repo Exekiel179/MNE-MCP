@@ -1,5 +1,28 @@
 # MNE-MCP 安装说明
 
+## 独立 C++ 预览版
+
+MNE-CPP MCP 不依赖 MNE-Python。在源码仓库的 Python 3.12+ 环境执行：
+
+```bash
+python -m pip install ./packages/mne-cpp-mcp
+mne-cpp-mcp setup --data-dir "D:/research/data"
+```
+
+将数据路径替换为已存在且授权读取的绝对目录，这是唯一必需参数。
+仅检测到一个客户端时自动选择；检测到多个或没有时，再加 `--clients codex`、
+`--clients claude` 或 `--clients opencode`。只配置选定客户端并安装配套 skill。
+命令不在 PATH 时可用 `python -m mne_cpp_mcp setup --data-dir "D:/research/data"`。
+完成后重启客户端。
+Windows x86_64 可自动下载并校验官方原生 ZIP（含 Qt），不改系统 PATH。
+默认复用或安装原生库，不必加 `--install-native`；已有原生程序可用 `--bin-dir`
+或 `MNE_CPP_BIN_DIR` 指定。加 `--check` 只预检不写入。
+C++ 包尚未发布到 PyPI，目前仅支持 FIFF 只读检查，不支持完整分析。
+详见 [C++ 安装指南](../packages/mne-cpp-mcp/README.md)和
+[智能体安装约定](../packages/mne-cpp-mcp/INSTALL_AGENT.md)。
+
+## Python 版
+
 MNE-MCP 是轻量接口层，随包提供 14 个分析技能及参考文件，不将科学计算栈声明为包依赖。
 智能体安装器会自动用选定解释器的 pip 补齐缺失的 MNE 和基础分析库，再验证；已有库不主动升级。
 可选高级分析库仍按需准备。--check 保持只读，权限或二进制错误不会触发自动重装。

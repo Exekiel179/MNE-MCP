@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Provide the absolute directory containing synthetic_raw.fif and
+     synthetic-ave.fif from test_native_fiff_workflow to the evaluating agent.
+     Configure that directory as MNE_CPP_DATA_DIR. All MCP calls are read-only. -->
+<evaluation>
+  <qa_pair>
+    <question>Verify the native backend, inspect synthetic_raw.fif, then read its sampling metadata. What is the theoretical Nyquist frequency in Hz? Return an integer.</question>
+    <answer>100</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>After verifying status and the sampling metadata of synthetic_raw.fif, compute the sample interval in milliseconds. Return an integer.</question>
+    <answer>5</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Inspect both synthetic FIFF fixtures using native tools. What is the ratio of their sampling frequencies? Return an integer.</question>
+    <answer>1</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Verify the backend and inspect synthetic-ave.fif. How many evoked datasets are verified? Return the structured dataset count as an integer.</question>
+    <answer>1</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Read sampling metadata and the native summary of synthetic-ave.fif. How many sample intervals span its reported time range? Return an integer.</question>
+    <answer>100</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Verify the native backend and summarize synthetic-ave.fif. What is the difference between the last and first reported time points in milliseconds? Return an integer.</question>
+    <answer>500</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Verify backend status and inspect the evoked fixture. What is its averaging count, without treating it as participant count? Return an integer.</question>
+    <answer>12</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Inspect the block structure and evoked summary of synthetic-ave.fif. How many channels does its native summary report? Return an integer.</question>
+    <answer>2</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Verify backend status and read synthetic_raw.fif metadata. Does successful readiness authorize this bridge to perform its blocked native filter workflow? Return True or False.</question>
+    <answer>False</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Read synthetic-ave.fif metadata and evoked summary after checking backend status. Can these outputs alone establish the number of independent participants? Return True or False.</question>
+    <answer>False</answer>
+  </qa_pair>
+</evaluation>
