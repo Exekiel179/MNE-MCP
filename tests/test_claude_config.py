@@ -8,8 +8,7 @@ from mne_mcp import claude_config
 def test_build_server_config_shape():
     entry = claude_config.build_mcp_server_config()
     assert entry["type"] == "stdio"
-    assert isinstance(entry["args"], list)
-    assert "serve" in entry["args"]
+    assert entry["args"] == ["-m", "mne_mcp", "serve", "--transport", "stdio"]
     assert "MNE_MCP_TIMEOUT" in entry["env"]
     assert "_MNE_FAKE_HOME_DIR" not in entry["env"]
 

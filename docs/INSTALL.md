@@ -42,7 +42,7 @@ Python 版未指定客户端时，默认注册 Claude Code、Codex、PsyClaw 和
 ```bash
 python -c "import sys, mne; print(sys.executable, mne.__version__)"
 python -m pip install mne-mcp
-python -m mne_mcp.cli setup
+python -m mne_mcp setup
 ```
 
 下载入口：[最新发布页](https://github.com/Exekiel179/MNE-MCP/releases/latest)。
@@ -87,9 +87,9 @@ ICA/解码需要 scikit-learn；连接性需要 mne-connectivity；
 ## 更新与验证
 
 更新执行 `python -m pip install --upgrade mne-mcp`，再运行 setup 更新客户端和技能。
-用 python -m mne_mcp.cli status 或客户端的 mne_check_status 检查环境。
+用 python -m mne_mcp status 或客户端的 mne_check_status 检查环境。
 setup 自动执行真实 MCP 握手、工具发现及状态调用，再验证写入的 PsyClaw 配置。
-使用 `python -m mne_mcp.cli verify --client psyclaw` 可复检已保存的命令而不修改配置。
+使用 `python -m mne_mcp verify --client psyclaw` 可复检已保存的命令而不修改配置。
 connected 为真不等于科学依赖齐备，另检查 mne_available。
 在 PsyClaw 内通过 psyclaw_mcp 列出 mne 工具，再调用 mne_check_status，才代表当前会话接入成功。
 出现错误时核对服务实际解释器；环境修改后重启客户端。

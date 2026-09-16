@@ -217,7 +217,7 @@ async def mne_check_status(ctx: Context = None) -> str:
         f"- Results/figures dir: `{cfg['results_dir']}`",
         f"- Data scan dir: `{cfg['data_dir']}`",
         f"- Operation timeout: {cfg['timeout']}s",
-        f"- Config file: `{cfg['config_path']}`  (edit with `mne-mcp configure`)",
+        f"- Config file: `{cfg['config_path']}`  (edit with `python -m mne_mcp configure`)",
     ]
     if not caps["mne"]:
         lines += [
@@ -233,7 +233,7 @@ async def mne_check_status(ctx: Context = None) -> str:
         "Show the configured default analysis parameters (line frequency, default montage, "
         "filter band, rejection threshold, ICA method/components, epoch window, dirs, timeout) "
         "that the structured tools fall back to when a parameter is omitted. Users change these "
-        "by running `mne-mcp configure` in a terminal."
+        "by running `python -m mne_mcp configure` in a terminal."
     ),
 )
 async def mne_get_config(ctx: Context = None) -> str:
@@ -250,8 +250,8 @@ async def mne_get_config(ctx: Context = None) -> str:
         mark = "" if cfg[key] == DEFAULT_CONFIG[key] else " *(custom)*"
         lines.append(f"| `{key}` | `{cfg[key]}`{mark} | `{DEFAULT_CONFIG[key]}` |")
     lines.append(
-        "\nChange these with `mne-mcp configure` (interactive) or "
-        "`mne-mcp configure --set key=value`."
+        "\nChange these with `python -m mne_mcp configure` (interactive) or "
+        "`python -m mne_mcp configure --set key=value`."
     )
     return "\n".join(lines)
 
@@ -420,7 +420,7 @@ async def mne_crop(
         "Apply a standard electrode montage (e.g. 'standard_1020', 'standard_1005', "
         "'biosemi64', 'GSN-HydroCel-128') to set channel positions. Needed before "
         "topographic plots and interpolation. If montage is omitted, uses the configured "
-        "default (set via `mne-mcp configure`)."
+        "default (set via `python -m mne_mcp configure`)."
     ),
 )
 async def mne_set_montage(

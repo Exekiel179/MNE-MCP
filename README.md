@@ -36,7 +36,7 @@ MNE analysis is **stateful and visual** — unlike a one-shot statistics batch j
   pipeline *and* advanced analysis (source localization, connectivity, decoding), plus an
   **`mne_run_code`** escape hatch that reaches the entire MNE API in the same live session.
 - Defaults (line frequency, montage, filter band, rejection threshold, ICA settings, epoch window,
-  dirs, timeout) are **user-configurable** via an interactive `mne-mcp configure` wizard.
+  dirs, timeout) are **user-configurable** via an interactive `python -m mne_mcp configure` wizard.
 
 ---
 
@@ -74,13 +74,13 @@ Activate your existing Python 3.12+ MNE environment, then install the lightweigh
 
 ```bash
 python -m pip install mne-mcp
-python -m mne_mcp.cli setup
+python -m mne_mcp setup
 ```
 
 Release downloads: [latest release](https://github.com/Exekiel179/MNE-MCP/releases/latest).
 For a downloaded source archive, extract it and use `python -m pip install .` in that directory.
 Setup defaults to all four clients, including their skills. To configure only PsyClaw,
-use `python -m mne_mcp.cli setup --clients psyclaw`; `claude`, `codex` and `opencode`
+use `python -m mne_mcp setup --clients psyclaw`; `claude`, `codex` and `opencode`
 are also supported (comma-separated). Restart clients after setup; PsyClaw supports `/reload`.
 MNE and scientific libraries are user-managed; installing this package does not install them.
 See [installation instructions](docs/INSTALL.md) for dependencies and troubleshooting.
@@ -90,7 +90,7 @@ See [installation instructions](docs/INSTALL.md) for dependencies and troublesho
 ### Repair or reconfigure
 
 To update an existing installation, run `python -m pip install --upgrade mne-mcp`.
-Run `python -m mne_mcp.cli setup --clients codex` in the same MNE environment.
+Run `python -m mne_mcp setup --clients codex` in the same MNE environment.
 Setup registers that exact interpreter and installs the bundled skills for the selected clients.
 Existing configuration and skill files are backed up before updates.
 
@@ -101,7 +101,7 @@ go to `~/.psyclaw/skills`. Setup checks a real MCP handshake, tool discovery and
 `mne_check_status`, including a second check of the saved PsyClaw command.
 
 ```bash
-python -m mne_mcp.cli verify --client psyclaw
+python -m mne_mcp verify --client psyclaw
 ```
 
 This checks the saved command without modifying registration. `connected` and
@@ -125,10 +125,10 @@ montage, filter band, EEG rejection threshold, ICA method/components, epoch wind
 and timeout:
 
 ```bash
-mne-mcp configure            # interactive prompts (Enter keeps current value)
-mne-mcp configure --show     # print current defaults
-mne-mcp configure --reset    # back to built-in defaults
-mne-mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120   # non-interactive
+python -m mne_mcp configure            # interactive prompts (Enter keeps current value)
+python -m mne_mcp configure --show     # print current defaults
+python -m mne_mcp configure --reset    # back to built-in defaults
+python -m mne_mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120   # non-interactive
 ```
 
 Defaults are saved to `~/.mne-mcp/config.json` (override path with `MNE_MCP_CONFIG`). Precedence at
@@ -234,9 +234,8 @@ python -m compileall src/mne_mcp
 pytest
 
 # CLI commands
-mne-mcp status            # Check environment
-mne-mcp setup --clients codex # Register in Claude Code / Codex / opencode + install skills
-mne-mcp configure-claude  # Claude Code only
+python -m mne_mcp status            # Check environment
+python -m mne_mcp setup --clients codex # Register in Codex + install skills
 ```
 
 ---

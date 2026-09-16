@@ -28,11 +28,11 @@ was not independent; never invent a reviewer or claim an unperformed validation.
 
 ## PsyClaw connection
 
-For an authorized PsyClaw installation, run `python -m mne_mcp.cli setup --clients psyclaw`
+For an authorized PsyClaw installation, run `python -m mne_mcp setup --clients psyclaw`
 in the chosen MNE environment. Setup writes `~/.psyclaw/mcp/mne.json` (a standalone
 record with id/command/args/env/trusted/enabled, not a Claude mcpServers wrapper),
 installs all 14 skills under `~/.psyclaw/skills`, and tests stdio plus mne_check_status.
-`python -m mne_mcp.cli verify --client psyclaw` retests the saved command without
+`python -m mne_mcp verify --client psyclaw` retests the saved command without
 registering or installing packages. A connected server can still lack MNE: inspect
 the separate mne_available field and capability report.
 

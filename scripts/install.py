@@ -120,10 +120,10 @@ def install(*, clients: str, skip_configure: bool, python: str | None = None) ->
     report = preflight(python)
     prepare_environment(python, report)
     subprocess.run([python, "-m", "pip", "install", str(ROOT)], check=True)
-    subprocess.run([python, "-m", "mne_mcp.cli", "status"], check=True)
+    subprocess.run([python, "-m", "mne_mcp", "status"], check=True)
     if not skip_configure:
         subprocess.run(
-            [python, "-m", "mne_mcp.cli", "setup", "--clients", ",".join(selected)],
+            [python, "-m", "mne_mcp", "setup", "--clients", ",".join(selected)],
             check=True,
         )
     print(

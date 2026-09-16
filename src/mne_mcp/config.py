@@ -20,7 +20,7 @@ load_dotenv(_PROJECT_ROOT / ".env", override=True)
 load_dotenv()
 
 
-# ─── User-configurable defaults (set via `mne-mcp configure`) ───────────────────
+# ─── User-configurable defaults (set via `python -m mne_mcp configure`) ───────────────────
 #
 # These are *preferences*, not MNE facts. They seed the structured tools' defaults
 # so a user can, e.g., make 60 Hz line noise and a biosemi64 montage the norm.

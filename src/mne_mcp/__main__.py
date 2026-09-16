@@ -17,7 +17,7 @@ from mne_mcp.claude_config import (
 
 def main():
     parser = argparse.ArgumentParser(
-        description="MNE-Python Model Context Protocol server"
+        prog="python -m mne_mcp", description="MNE-Python Model Context Protocol server"
     )
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 

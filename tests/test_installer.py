@@ -22,6 +22,8 @@ def test_current_environment_only(monkeypatch):
     installer.install(clients="Codex,codex", skip_configure=False)
     assert all(c[0] == installer.sys.executable for c in commands)
     assert commands[0][1:4] == ["-m", "pip", "install"]
+    assert commands[1][1:] == ["-m", "mne_mcp", "status"]
+    assert commands[-1][1:4] == ["-m", "mne_mcp", "setup"]
     assert commands[-1][-2:] == ["--clients", "codex"]
 
 
@@ -166,6 +168,13 @@ def test_package_metadata_has_no_upper_python_gate():
     assert "3.11" not in supported
     for version in ("3.12", "3.13", "3.14", "3.15"):
         assert version in supported
+
+
+def test_package_has_no_console_script_alias():
+    import tomllib
+
+    metadata = tomllib.loads((installer.ROOT / "pyproject.toml").read_text())
+    assert "mne-mcp" not in metadata["project"].get("scripts", {})
 
 
 def test_invalid_client_has_no_side_effects(monkeypatch):

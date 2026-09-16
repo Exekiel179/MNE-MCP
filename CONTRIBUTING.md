@@ -15,7 +15,7 @@ python -m pip install .
 `status` confirms the environment:
 
 ```bash
-mne-mcp status
+python -m mne_mcp status
 ```
 
 ## Tests
@@ -47,7 +47,7 @@ isort --profile black src tests
 Analysis skills live in `skills/` and follow the suite contract documented in
 `skills/MNE_ANALYSIS_SUITE.md`: a three-phase **GRILL → ANALYZE → CRITIC** workflow, with
 methodology review delegated to `mne-methodology-critic`. Use `mne-spectral` as the template, keep
-each skill self-contained (it is installed per-folder by `mne-mcp setup`), and add the skill name to
+each skill self-contained (it is installed per-folder by `python -m mne_mcp setup`), and add the skill name to
 `SKILL_NAMES` in `src/mne_mcp/claude_config.py`.
 
 ## Continuous integration

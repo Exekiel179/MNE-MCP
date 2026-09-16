@@ -21,7 +21,7 @@ MNE-MCP 针对这一点设计：
 - **常驻内存会话**：数据只加载一次，之后所有操作都在同一份内存对象上进行，不用反复读取几个 GB 的文件。
 - **自动出图**：每个画图工具都会把结果存成 PNG 并返回路径，Claude 会**读取并解读**这张图。
 - **38 个结构化工具**（含源定位 / 连接性 / 解码）+ 一个通用的 **`mne_run_code`** 工具：做不到的（BIDS、统计、beamformer…）用 `mne_run_code` 在同一个会话里写代码完成。
-- **可配置默认值**：工频、默认导联、滤波带、剔除阈值等可以用 `mne-mcp configure` 一次设好。
+- **可配置默认值**：工频、默认导联、滤波带、剔除阈值等可以用 `python -m mne_mcp configure` 一次设好。
 
 ---
 
@@ -35,7 +35,7 @@ cd MNE-MCP
 python -m pip install .
 ```
 
-`mne-mcp status` 会显示 MNE / scikit-learn / numpy 等版本和结果目录。看到 `MNE-Python: OK vX.Y` 就说明装好了。
+`python -m mne_mcp status` 会显示 MNE / scikit-learn / numpy 等版本和结果目录。看到 `MNE-Python: OK vX.Y` 就说明装好了。
 
 ---
 
@@ -44,8 +44,8 @@ python -m pip install .
 ### 3.1 一键注册 + 装技能（推荐）
 
 ```bash
-mne-mcp setup --clients codex           # Claude Code + Codex + opencode + 技能
-mne-mcp setup --clients claude,codex   # 只配置指定客户端
+python -m mne_mcp setup --clients codex           # 仅 Codex + 技能
+python -m mne_mcp setup --clients claude,codex   # 只配置指定客户端
 ```
 
 `setup` 会把 `mne` 写入各客户端配置（Claude Code 的 `~/.claude.json`、Codex 的 `~/.codex/config.toml`、
@@ -66,11 +66,11 @@ opencode 的 `~/.config/opencode/opencode.json`），改动前对已存在文件
 用交互向导设置工具的默认回退值：
 
 ```bash
-mne-mcp configure            # 交互式，回车保留当前值
-mne-mcp configure --show     # 查看当前默认值
-mne-mcp configure --reset    # 恢复内置默认
+python -m mne_mcp configure            # 交互式，回车保留当前值
+python -m mne_mcp configure --show     # 查看当前默认值
+python -m mne_mcp configure --reset    # 恢复内置默认
 # 非交互批量设置：
-mne-mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120
+python -m mne_mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120
 ```
 
 可配置项：
@@ -171,7 +171,7 @@ Claude 会读取这张 PNG 来判断（功率谱里的工频峰、ICA 里的眼�
 | 剔除阈值不起作用/全被剔 | 单位写错 | 信号是伏特，100 µV 要写 `100e-6` |
 | 时频报"wavelet longer than signal" | 分段太短 | 用更宽的分段窗（如 -0.5~1.5s）或提高 fmin |
 | 所有 epoch 被丢弃 | 剔除阈值太严/事件码不对 | 放宽阈值；先确认真实事件码 |
-| 步骤超时 | ICA/时频/大文件慢 | 调大 `MNE_MCP_TIMEOUT` 或 `mne-mcp configure` 设 timeout |
+| 步骤超时 | ICA/时频/大文件慢 | 调大 `MNE_MCP_TIMEOUT` 或 `python -m mne_mcp configure` 设 timeout |
 
 更多见仓库内 `skills/mne-analyst/references/failure-patterns.md`。
 

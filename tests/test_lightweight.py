@@ -22,7 +22,7 @@ def test_server_imports_without_scientific_stack():
 
         import mne_mcp            # runs __init__ (numpy compat must be a no-op)
         import mne_mcp.server     # registers all tools; must stay light
-        import mne_mcp.cli
+        import mne_mcp.__main__
         print("LIGHT-OK")
         """)
     proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)

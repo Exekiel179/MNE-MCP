@@ -14,7 +14,7 @@ reject invalid bounds/rates. REST reference requires `mne_run_code` with an expl
 
 Many tools fall back to **user-configurable defaults** (line frequency, montage, filter band,
 rejection threshold, ICA settings, epoch window) when a parameter is omitted — set them with
-`mne-mcp configure` and inspect them with `mne_get_config`.
+`python -m mne_mcp configure` and inspect them with `mne_get_config`.
 
 ---
 
@@ -43,7 +43,7 @@ Notebook-like: a final expression's value is returned; stdout captured; matplotl
 PNG. The universal escape hatch for anything below + everything not listed.
 
 ### `mne_get_config`
-Show the configured default parameters the tools fall back to. Change them with `mne-mcp configure`.
+Show the configured default parameters the tools fall back to. Change them with `python -m mne_mcp configure`.
 
 ---
 

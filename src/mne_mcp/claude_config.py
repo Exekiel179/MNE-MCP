@@ -39,7 +39,7 @@ def get_entrypoint_config() -> tuple[str, list[str]]:
     server tied to the verified installation.
     """
     executable = str(Path(sys.executable).absolute())
-    return executable, ["-m", "mne_mcp.cli", "serve", "--transport", "stdio"]
+    return executable, ["-m", "mne_mcp", "serve", "--transport", "stdio"]
 
 
 def server_env() -> dict:

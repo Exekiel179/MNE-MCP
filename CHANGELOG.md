@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Use `python -m mne_mcp setup` as the single installation/registration entrypoint.
+  Move the CLI to the package entrypoint, remove the console-script alias, and
+  update installer commands, client launch configurations, documentation and skills.
+- After upgrading, rerun `python -m mne_mcp setup` (with the same `--clients`
+  selection if applicable) before restarting clients to refresh saved commands.
+
 ## 0.4.1 - 2026-09-15
 
 - Add PsyClaw's standalone MCP registration and all 14 bundled skills with references,

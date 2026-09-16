@@ -39,7 +39,7 @@ MNE 的分析是**有状态、强可视化**的，这决定了 MNE-MCP 与“无
 1. **常驻内存会话** — 数据只加载一次，之后滤波 → 标坏导 → ICA → 分段 → 叠加…… 全部在同一份内存对象上连续操作，不必反复读取数 GB 的文件。
 2. **自动出图 + AI 读图** — 每个画图工具都把结果存成 PNG 并返回路径，AI 会**读取并解读**（识别工频峰、眼电成分、N1/P2/P300 等）。
 3. **结构化工具 + 通用补充工具** — 38 个专用工具覆盖常见流程**与高级分析**（源定位、连接性、解码）；其余（BIDS、统计、beamformer……）可用 `mne_run_code` 在同一个会话中直接写代码完成。
-4. **可配置默认值** — 工频、默认导联、滤波带、剔除阈值等可用 `mne-mcp configure` 一次设好，省略参数时自动套用。
+4. **可配置默认值** — 工频、默认导联、滤波带、剔除阈值等可用 `python -m mne_mcp configure` 一次设好，省略参数时自动套用。
 
 ---
 
@@ -138,9 +138,9 @@ MNE-MCP/
 │  ├─ figures.py       # matplotlib 无界面捕获为 PNG
 │  ├─ summaries.py     # MNE 对象的可读摘要
 │  ├─ config.py        # 配置/能力检测/可配置默认值
-│  ├─ wizard.py        # mne-mcp configure 交互向导
+│  ├─ wizard.py        # python -m mne_mcp configure 交互向导
 │  ├─ claude_config.py # 自动写入 Claude Code 配置
-│  └─ cli.py           # 命令行入口
+│  └─ __main__.py      # python -m mne_mcp 命令行入口
 ├─ skills/             # mne-analyst / mne-mcp-guard
 ├─ tests/              # 单元测试 + 端到端冒烟流程
 └─ docs/               # 使用介绍 / 安装说明 / 项目介绍
