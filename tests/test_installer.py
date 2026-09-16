@@ -161,6 +161,7 @@ def test_preflight_has_no_upper_python_gate(monkeypatch, version, ready):
 
 def test_package_metadata_has_no_upper_python_gate():
     import tomllib
+
     from packaging.specifiers import SpecifierSet
 
     metadata = tomllib.loads((installer.ROOT / "pyproject.toml").read_text())

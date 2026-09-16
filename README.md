@@ -62,7 +62,7 @@ it is not a replacement for the MNE-Python analysis backend described here.
 
 Send this to a coding agent with terminal access:
 
-> Follow https://github.com/Exekiel179/MNE-MCP/blob/v0.4.1/INSTALL_AGENT.md to install MNE-MCP and all companion skills in my existing MNE environment, configure my current client, and verify the result.
+> Follow https://github.com/Exekiel179/MNE-MCP/blob/v0.4.2/INSTALL_AGENT.md to install MNE-MCP and all companion skills in my existing MNE environment, configure my current client, and verify the result.
 
 The agent checks the environment, installs missing MNE/core libraries when needed, installs the lightweight interface and all 14 skills, and
 registers the selected client. A client restart is required. See the

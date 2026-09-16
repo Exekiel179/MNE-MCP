@@ -53,7 +53,7 @@ MNE 的分析是**有状态、强可视化**的，不同于一次性的统计批
 
 把下面这句话发给有终端权限的智能体：
 
-> 按 https://github.com/Exekiel179/MNE-MCP/blob/v0.4.1/INSTALL_AGENT.md 安装 MNE-MCP 和全部配套技能，复用我的 MNE 环境，配置到当前客户端并验证。
+> 按 https://github.com/Exekiel179/MNE-MCP/blob/v0.4.2/INSTALL_AGENT.md 安装 MNE-MCP 和全部配套技能，复用我的 MNE 环境，配置到当前客户端并验证。
 
 智能体会检查已有环境、安装轻量接口、注册当前客户端和全部 14 个技能。
 如果选定环境尚未安装 MNE 或基础分析库，安装器会自动用 pip 补齐并验证。首次安装后需要重启客户端。

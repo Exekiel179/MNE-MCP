@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.2 - 2026-09-16
 
 - Use `python -m mne_mcp setup` as the single installation/registration entrypoint.
   Move the CLI to the package entrypoint, remove the console-script alias, and

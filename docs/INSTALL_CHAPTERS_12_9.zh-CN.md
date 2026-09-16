@@ -2,7 +2,7 @@
 
 更新日期：2026-09-16。本文适用于 MNE-Python 及其 Python 版 MNE-MCP，不是 MNE-CPP 的安装指南。命令默认不指定软件包版本。
 
-发布提示：本文使用统一的新入口 `python -m mne_mcp`，当前已在源码实现，尚未发布。之前核验的 PyPI / GitHub 发布版 0.4.1 不含此入口。新版本发布前，请使用更新后的源码安装；以下在线及发布包安装流程需在包含新入口的版本发布后使用。升级后需重新执行 setup 更新客户端启动命令。
+版本说明：本文适用于 MNE-MCP 0.4.2，使用统一入口 `python -m mne_mcp`。从旧版本升级后需重新执行 `python -m mne_mcp setup` 更新客户端启动命令；原来只配置单个客户端的，保留相同的 `--clients` 参数。旧的 `.cli` 入口和 `mne-mcp` 快捷命令已移除。
 
 ## 12.9.1 MNE 的安装
 
@@ -173,7 +173,7 @@ python -m pip install mne-mcp -i https://pypi.tuna.tsinghua.edu.cn/simple
 从 [GitHub 最新发布页](https://github.com/Exekiel179/MNE-MCP/releases/latest) 或 [PyPI 文件页面](https://pypi.org/project/mne-mcp/#files) 下载 wheel。以下为当前发布文件名示例，后续按实际下载文件名替换：
 
 ```powershell
-python -m pip install "D:\installers\mne_mcp-0.4.1-py3-none-any.whl"
+python -m pip install "D:\installers\mne_mcp-0.4.2-py3-none-any.whl"
 ```
 
 本地 wheel 包含配套技能，但不包含全部 Python 依赖。完全离线安装需准备完整 wheelhouse，见后文。
@@ -358,7 +358,7 @@ python -m pip check
 - [MNE PyPI 下载文件](https://pypi.org/project/mne/#files)
 - [MNE-MCP PyPI 下载文件](https://pypi.org/project/mne-mcp/#files)
 - [MNE-MCP 最新正式发布版及本地安装包](https://github.com/Exekiel179/MNE-MCP/releases/latest)
-- [本次核验发布版的智能体安装说明](https://github.com/Exekiel179/MNE-MCP/blob/v0.4.1/INSTALL_AGENT.md)
+- [本版智能体安装说明](https://github.com/Exekiel179/MNE-MCP/blob/v0.4.2/INSTALL_AGENT.md)
 - [清华 PyPI 镜像使用说明](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)
 - [ICLabel 安装及推理后端说明](https://mne.tools/mne-icalabel/stable/install.html)
 - [pip 离线包下载说明](https://pip.pypa.io/en/stable/cli/pip_download/)
