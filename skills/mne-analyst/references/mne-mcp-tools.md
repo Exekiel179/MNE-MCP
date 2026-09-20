@@ -12,7 +12,7 @@ All tools operate on the **persistent session**. Names default sensibly (`raw`, 
 | `mne_get_info` | Full channel list + measurement info. | `name` |
 | `mne_reset_session` | Clear everything (irreversible). | — |
 | `mne_run_code` | Run arbitrary MNE/Python in the session. Returns stdout, last-expression value, and any figures. | `code` |
-| `mne_get_config` | Show user-configured defaults (line freq, montage, filter band, reject, ICA, epoch window). Set via `python -m mne_mcp configure`. | — |
+| `mne_get_config` | Show user-configured defaults (line freq, montage, filter band, reject, ICA, epoch window). Set via `mne-mcp configure`. | — |
 
 ## Data IO
 | Tool | Purpose | Key args |

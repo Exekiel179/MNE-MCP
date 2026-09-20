@@ -1,14 +1,14 @@
 """
-Interactive configuration wizard for MNE MCP (`python -m mne_mcp configure`).
+Interactive configuration wizard for MNE MCP (`mne-mcp configure`).
 
 Lets a user set the default parameters the structured tools fall back to — line
 frequency, default montage, filter band, rejection threshold, ICA method/components,
 epoch window, directories, and timeout — and persists them to the config file.
 
 Also supports non-interactive use:
-    python -m mne_mcp configure --show
-    python -m mne_mcp configure --reset
-    python -m mne_mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120
+    mne-mcp configure --show
+    mne-mcp configure --reset
+    mne-mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120
 """
 
 from __future__ import annotations

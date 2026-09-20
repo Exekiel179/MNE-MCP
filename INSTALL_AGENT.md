@@ -79,7 +79,7 @@ complete skill list. Report the absolute interpreter path, client, skill locatio
 Setup tests a real stdio handshake, tool discovery and mne_check_status; for PsyClaw,
 it also tests the saved record. A missing MNE backend is reported separately from
 a successful MCP connection. Retest without registration using
-`python -m mne_mcp verify --client psyclaw`.
+`mne-mcp verify --client psyclaw`.
 Do not equate the standalone setup test with the user's already-running client session.
 Ask the user to restart the target client (PsyClaw also supports /reload). If tools can reload in the current host, call
 mne_check_status after reload and verify the reported interpreter and MNE version.

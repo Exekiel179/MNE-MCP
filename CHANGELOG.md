@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.3 - 2026-09-20
+
+- Restore the `mne-mcp` console command in package metadata. A standard
+  installation now creates `mne-mcp` on POSIX and `mne-mcp.exe` on Windows.
+- Use `mne-mcp setup` as the documented setup command. The equivalent
+  `python -m mne_mcp setup` module invocation remains supported.
+
 ## 0.4.2 - 2026-09-16
 
 - Use `python -m mne_mcp setup` as the single installation/registration entrypoint.

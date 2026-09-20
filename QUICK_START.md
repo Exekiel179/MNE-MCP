@@ -8,22 +8,22 @@
 
 ```bash
 python -m pip install mne-mcp
-python -m mne_mcp setup
+mne-mcp setup
 ```
 
 默认注册 Claude Code、Codex、PsyClaw 和 opencode。只安装 PsyClaw 接入时加 `--clients psyclaw`。
 完成后重启客户端，PsyClaw 也可 `/reload`。
 MNE 科学计算栈由用户管理；setup 安装全部 14 个技能及参考文件。
-setup 自动测试 MCP 连接和状态；可用 `python -m mne_mcp verify --client psyclaw` 复检。
+setup 自动测试 MCP 连接和状态；可用 `mne-mcp verify --client psyclaw` 复检。
 
 ## 2.5 配置默认参数（可选）/ Configure defaults
 
 用交互向导设置默认值（工频、默认导联、滤波带、剔除阈值、ICA 方法/成分数、分段窗、目录、超时）：
 
 ```bash
-python -m mne_mcp configure            # 交互式，回车保留当前值
-python -m mne_mcp configure --show     # 查看当前默认值
-python -m mne_mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120   # 非交互
+mne-mcp configure            # 交互式，回车保留当前值
+mne-mcp configure --show     # 查看当前默认值
+mne-mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120   # 非交互
 ```
 
 保存在 `~/.mne-mcp/config.json`。优先级：环境变量 > 配置文件 > 内置默认。设置后重启 MCP 服务生效；

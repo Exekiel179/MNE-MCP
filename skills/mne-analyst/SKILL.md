@@ -73,7 +73,7 @@ mne_plot_psd name=raw            # 4. LOOK (read the PNG) → pick filter cutoff
 
 Many tools fall back to **user-configured defaults** (montage, line freq, filter band, ICA method,
 epoch window, rejection) when a parameter is omitted. Check them with `mne_get_config`; the user sets
-them via `python -m mne_mcp configure`. Respect their configured line frequency (50 vs 60 Hz).
+them via `mne-mcp configure`. Respect their configured line frequency (50 vs 60 Hz).
 
 ## Output archiving
 

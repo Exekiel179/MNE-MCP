@@ -37,7 +37,7 @@ def run_module(*args):
     "args, expected, code",
     [
         (("version",), "MNE MCP v", 0),
-        (("setup", "--help"), "python -m mne_mcp setup", 0),
+        (("setup", "--help"), "mne-mcp setup", 0),
         (("setup", "--clients", "unknown"), "Setup failed", 2),
     ],
 )
@@ -59,7 +59,7 @@ def test_package_setup_registers_and_verifies(tmp_path):
 
 
 def run_cli(argv, monkeypatch):
-    monkeypatch.setattr(sys, "argv", ["python -m mne_mcp", *argv])
+    monkeypatch.setattr(sys, "argv", ["mne-mcp", *argv])
     with pytest.raises(SystemExit) as exc:
         cli.main()
     return exc.value.code

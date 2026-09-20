@@ -171,11 +171,11 @@ def test_package_metadata_has_no_upper_python_gate():
         assert version in supported
 
 
-def test_package_has_no_console_script_alias():
+def test_package_has_console_script():
     import tomllib
 
     metadata = tomllib.loads((installer.ROOT / "pyproject.toml").read_text())
-    assert "mne-mcp" not in metadata["project"].get("scripts", {})
+    assert metadata["project"]["scripts"]["mne-mcp"] == "mne_mcp.__main__:main"
 
 
 def test_invalid_client_has_no_side_effects(monkeypatch):

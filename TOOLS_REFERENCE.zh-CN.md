@@ -12,7 +12,7 @@ REST 重参考须通过 `mne_run_code` 显式提供前向模型。
 画图工具会保存 PNG 并返回路径，读取该 PNG 即可查看；工具结果还会附带等效 MNE 代码（```python``` 代码块）。
 
 许多工具在你**省略参数**时会回退到**用户可配置的默认值**（工频、导联、滤波带、剔除阈值、ICA 设置、分段窗）——
-用 `python -m mne_mcp configure` 设置，用 `mne_get_config` 查看。
+用 `mne-mcp configure` 设置，用 `mne_get_config` 查看。
 
 ---
 
@@ -41,7 +41,7 @@ REST 重参考须通过 `mne_run_code` 显式提供前向模型。
 下面没列到的、以及一切未覆盖的功能都靠它。
 
 ### `mne_get_config`
-显示工具回退使用的默认参数。用 `python -m mne_mcp configure` 修改。
+显示工具回退使用的默认参数。用 `mne-mcp configure` 修改。
 
 ---
 

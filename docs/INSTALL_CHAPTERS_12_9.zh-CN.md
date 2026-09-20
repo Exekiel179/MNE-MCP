@@ -2,7 +2,7 @@
 
 更新日期：2026-09-16。本文适用于 MNE-Python 及其 Python 版 MNE-MCP，不是 MNE-CPP 的安装指南。命令默认不指定软件包版本。
 
-版本说明：本文适用于 MNE-MCP 0.4.2，使用统一入口 `python -m mne_mcp`。从旧版本升级后需重新执行 `python -m mne_mcp setup` 更新客户端启动命令；原来只配置单个客户端的，保留相同的 `--clients` 参数。旧的 `.cli` 入口和 `mne-mcp` 快捷命令已移除。
+版本说明：本文适用于 MNE-MCP 0.4.3，使用统一入口 `mne-mcp`。从旧版本升级后需重新执行 `mne-mcp setup` 更新客户端启动命令；原来只配置单个客户端的，保留相同的 `--clients` 参数。`python -m mne_mcp` 继续作为等价的模块入口。
 
 ## 12.9.1 MNE 的安装
 
@@ -173,7 +173,7 @@ python -m pip install mne-mcp -i https://pypi.tuna.tsinghua.edu.cn/simple
 从 [GitHub 最新发布页](https://github.com/Exekiel179/MNE-MCP/releases/latest) 或 [PyPI 文件页面](https://pypi.org/project/mne-mcp/#files) 下载 wheel。以下为当前发布文件名示例，后续按实际下载文件名替换：
 
 ```powershell
-python -m pip install "D:\installers\mne_mcp-0.4.2-py3-none-any.whl"
+python -m pip install "D:\installers\mne_mcp-0.4.3-py3-none-any.whl"
 ```
 
 本地 wheel 包含配套技能，但不包含全部 Python 依赖。完全离线安装需准备完整 wheelhouse，见后文。
@@ -185,7 +185,7 @@ python -m pip install "D:\installers\mne_mcp-0.4.2-py3-none-any.whl"
 安装软件包后，还需要执行一次注册：
 
 ```powershell
-python -m mne_mcp setup
+mne-mcp setup
 ```
 
 当前发布版不指定 `--clients` 时，会为 Claude Code、Codex、PsyClaw 和 opencode 全部写入配置并安装技能，即使相应客户端尚未安装。这不会安装这些客户端软件本身。
@@ -194,13 +194,13 @@ python -m mne_mcp setup
 
 ```powershell
 # 以下任选一条
-python -m mne_mcp setup --clients claude
-python -m mne_mcp setup --clients codex
-python -m mne_mcp setup --clients psyclaw
-python -m mne_mcp setup --clients opencode
+mne-mcp setup --clients claude
+mne-mcp setup --clients codex
+mne-mcp setup --clients psyclaw
+mne-mcp setup --clients opencode
 
 # 或一次指定多个客户端
-python -m mne_mcp setup --clients claude,codex,psyclaw
+mne-mcp setup --clients claude,codex,psyclaw
 ```
 
 `claude` 指 Claude Code，不代表自动配置 Claude Desktop 或所有 Claude 产品。其他客户端需要按各自规范配置。
@@ -223,15 +223,15 @@ setup 会绑定本次 Python 解释器的绝对路径、更新所选客户端配
 重启所选客户端；PsyClaw 也可执行 `/reload`。在终端检查：
 
 ```powershell
-python -m mne_mcp version
-python -m mne_mcp status
-python -m mne_mcp verify
+mne-mcp version
+mne-mcp status
+mne-mcp verify
 ```
 
 PsyClaw 可额外检查已保存的注册记录：
 
 ```powershell
-python -m mne_mcp verify --client psyclaw
+mne-mcp verify --client psyclaw
 ```
 
 然后在客户端向智能体发送：
@@ -321,8 +321,8 @@ python -m pip install --no-index --find-links "D:\installers\wheelhouse" mne pan
 python -m pip install --no-index --find-links "D:\installers\wheelhouse" mne-mcp
 
 # 注册全部默认客户端；只配置一个时添加 --clients
-python -m mne_mcp setup
-python -m mne_mcp verify
+mne-mcp setup
+mne-mcp verify
 ```
 
 `--no-index` 禁止查询在线包索引；缺包时会报错，不会自动转在线下载。Python 本身、客户端软件、研究数据、模型权重和外部软件不包含在这套 wheelhouse 中，需要分别准备。严格离线部署还应确认具体分析流程不会首次联网下载模板或模型。
@@ -337,7 +337,7 @@ python -m mne_mcp verify
 
 ```powershell
 python -m pip install --upgrade mne-mcp
-python -m mne_mcp setup
+mne-mcp setup
 ```
 
 原来只配置单一客户端的，更新时也应使用相同 `--clients` 参数。此流程不主动要求升级 MNE，但 pip 可能根据新包的依赖要求调整相关依赖。重要分析环境应先记录版本并验证结果复现。
@@ -358,7 +358,7 @@ python -m pip check
 - [MNE PyPI 下载文件](https://pypi.org/project/mne/#files)
 - [MNE-MCP PyPI 下载文件](https://pypi.org/project/mne-mcp/#files)
 - [MNE-MCP 最新正式发布版及本地安装包](https://github.com/Exekiel179/MNE-MCP/releases/latest)
-- [本版智能体安装说明](https://github.com/Exekiel179/MNE-MCP/blob/v0.4.2/INSTALL_AGENT.md)
+- [本版智能体安装说明](https://github.com/Exekiel179/MNE-MCP/blob/v0.4.3/INSTALL_AGENT.md)
 - [清华 PyPI 镜像使用说明](https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)
 - [ICLabel 安装及推理后端说明](https://mne.tools/mne-icalabel/stable/install.html)
 - [pip 离线包下载说明](https://pip.pypa.io/en/stable/cli/pip_download/)

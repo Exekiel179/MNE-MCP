@@ -75,5 +75,5 @@ Full tree + rules: `mne-writeup/references/writeup-guide.md`.
 | 10 | `mne-advanced` | Rare/advanced: microstates, entropy, graph, real-time | ✅ built |
 | 11 | `mne-writeup` | Write-up: verified results → APA 7 Methods + Results | ✅ built |
 
-> Each skill is self-contained (survives per-folder install via `python -m mne_mcp setup`). The GRILL
+> Each skill is self-contained (survives per-folder install via `mne-mcp setup`). The GRILL
 > skeleton is repeated inline; the CRITIC is shared by name (`mne-methodology-critic`).

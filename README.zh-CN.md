@@ -33,7 +33,7 @@ MNE 的分析是**有状态、强可视化**的，不同于一次性的统计批
   解码），并额外提供一个通用的 **`mne_run_code`** 工具：可在同一个会话中直接执行任意 MNE/Python 代码，
   覆盖 MNE 的全部功能。
 - 默认参数（工频、导联、滤波带、剔除阈值、ICA 设置、分段窗、目录、超时）可通过交互式
-  `python -m mne_mcp configure` 向导**由用户配置**。
+  `mne-mcp configure` 向导**由用户配置**。
 
 ---
 
@@ -53,7 +53,7 @@ MNE 的分析是**有状态、强可视化**的，不同于一次性的统计批
 
 把下面这句话发给有终端权限的智能体：
 
-> 按 https://github.com/Exekiel179/MNE-MCP/blob/v0.4.2/INSTALL_AGENT.md 安装 MNE-MCP 和全部配套技能，复用我的 MNE 环境，配置到当前客户端并验证。
+> 按 https://github.com/Exekiel179/MNE-MCP/blob/v0.4.3/INSTALL_AGENT.md 安装 MNE-MCP 和全部配套技能，复用我的 MNE 环境，配置到当前客户端并验证。
 
 智能体会检查已有环境、安装轻量接口、注册当前客户端和全部 14 个技能。
 如果选定环境尚未安装 MNE 或基础分析库，安装器会自动用 pip 补齐并验证。首次安装后需要重启客户端。
@@ -65,13 +65,16 @@ MNE 的分析是**有状态、强可视化**的，不同于一次性的统计批
 
 ```bash
 python -m pip install mne-mcp
-python -m mne_mcp setup
+mne-mcp setup
 ```
+
+安装后会生成 `mne-mcp` 命令（Windows 上为 `mne-mcp.exe`）。
+`python -m mne_mcp setup` 继续作为等价的诊断调用方式。
 
 下载入口：[最新发布页](https://github.com/Exekiel179/MNE-MCP/releases/latest)。
 下载源码压缩包后，解压并在该目录使用 `python -m pip install .`。
 不加参数默认注册全部四个客户端并安装配套技能。只接入 PsyClaw 时使用
-`python -m mne_mcp setup --clients psyclaw`；也支持 `claude`、`codex`、`opencode`，多个用逗号分隔。
+`mne-mcp setup --clients psyclaw`；也支持 `claude`、`codex`、`opencode`，多个用逗号分隔。
 完成后重启客户端，PsyClaw 也可执行 `/reload`。
 本包只安装通信与配置依赖，不安装或升级 MNE 科学计算栈。详见 [安装说明](docs/INSTALL.md)。
 
@@ -87,7 +90,7 @@ python -m mne_mcp setup
 并再次测试保存的 PsyClaw 配置。之后可单独复检，不修改注册：
 
 ```bash
-python -m mne_mcp verify --client psyclaw
+mne-mcp verify --client psyclaw
 ```
 
 `connected` 表示通信成功，`mne_available` 表示 MNE 可用，两者分开报告。
@@ -109,10 +112,10 @@ MNE_MCP_DATA_DIR=...         # mne_list_files 默认扫描的目录
 ICA 方法/成分数、分段窗、目录与超时：
 
 ```bash
-python -m mne_mcp configure            # 交互式（回车保留当前值）
-python -m mne_mcp configure --show     # 查看当前默认值
-python -m mne_mcp configure --reset    # 恢复内置默认
-python -m mne_mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120   # 非交互
+mne-mcp configure            # 交互式（回车保留当前值）
+mne-mcp configure --show     # 查看当前默认值
+mne-mcp configure --reset    # 恢复内置默认
+mne-mcp configure --set line_freq=60 default_montage=biosemi64 reject_eeg_uv=120   # 非交互
 ```
 
 默认值保存在 `~/.mne-mcp/config.json`（可用 `MNE_MCP_CONFIG` 改路径）。优先级：**环境变量 > 配置文件 > 内置默认**。
@@ -210,10 +213,10 @@ python -m compileall src/mne_mcp
 pytest
 
 # CLI 命令
-python -m mne_mcp status            # 检查环境
-python -m mne_mcp setup-info        # 打印配置片段
-python -m mne_mcp configure         # 设置分析默认值
-python -m mne_mcp setup --clients codex # 注册到 Codex + 装技能
+mne-mcp status            # 检查环境
+mne-mcp setup-info        # 打印配置片段
+mne-mcp configure         # 设置分析默认值
+mne-mcp setup --clients codex # 注册到 Codex + 装技能
 ```
 
 ---
