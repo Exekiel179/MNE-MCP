@@ -37,11 +37,13 @@ def test_saved_psyclaw_stdio_status(isolated_psyclaw):
 
 
 @pytest.mark.parametrize("field", ["enabled", "trusted"])
+@pytest.mark.asyncio
 async def test_disabled_connection_rejected(field):
     with pytest.raises(ValueError, match="disabled or untrusted"):
         await check_connection({field: False})
 
 
+@pytest.mark.asyncio
 async def test_missing_executable_fails():
     with pytest.raises(Exception):
         await check_connection(
@@ -49,6 +51,7 @@ async def test_missing_executable_fails():
         )
 
 
+@pytest.mark.asyncio
 async def test_hung_server_times_out():
     import sys
 
