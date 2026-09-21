@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.4 - 2026-09-21
+
+- Mark the asynchronous connection checks explicitly so the full test suite
+  executes them under `pytest-asyncio` on every supported platform.
+
 ## 0.4.3 - 2026-09-20
 
 - Restore the `mne-mcp` console command in package metadata. A standard
