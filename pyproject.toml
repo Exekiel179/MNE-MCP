@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "A Model Context Protocol server for MNE-Python neurophysiology analysis (EEG / MEG / sEEG / ECoG / fNIRS)"
 readme = "README.md"
 authors = [
-    { name = "MNE MCP Contributors" }
+    { name = "Jingshen Xue" }
 ]
 license = {text = "MIT"}
 requires-python = ">=3.12"

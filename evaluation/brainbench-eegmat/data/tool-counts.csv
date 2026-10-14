@@ -1,0 +1,14 @@
+,mne,mne-skills
+mne_run_code,345,583
+mne_check_status,181,181
+mne_load_raw,181,178
+mne_get_info,140,147
+mne_resample,9,0
+mne_set_reference,8,0
+mne_filter,5,0
+mne_compute_connectivity,4,0
+mne_list_files,1,0
+mne_save,1,0
+mne_get_config,0,8
+mne_plot_psd,0,1
+mne_plot_raw,0,1

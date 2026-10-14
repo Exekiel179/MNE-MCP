@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "MNE-MCP"
+abstract: >-
+  An open Model Context Protocol (MCP) interface that exposes the analysis
+  objects and methods of MNE-Python to large language model agents through
+  typed tools operating on a persistent session, accompanied by domain skills.
+type: software
+authors:
+  - family-names: Xue
+    given-names: Jingshen
+    affiliation: "Institute of Psychology, Chinese Academy of Sciences"
+version: 0.4.4
+license: MIT
+repository-code: "https://github.com/Exekiel179/MNE-MCP"
+url: "https://github.com/Exekiel179/MNE-MCP"
+keywords:
+  - MNE-Python
+  - Model Context Protocol
+  - electroencephalography
+  - magnetoencephalography
+  - neurophysiology
+  - large language model agents

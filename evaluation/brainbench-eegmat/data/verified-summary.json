@@ -1,0 +1,90 @@
+{
+  "main": [
+    {
+      "condition": "mne-skills",
+      "n": 181,
+      "mean_score": 89.98143251759275,
+      "full_score_n": 147,
+      "analysis_seconds_median": 256.75553,
+      "target_tokens_reported": 48450792,
+      "all_tokens_reported": 50844818,
+      "calls": 1976,
+      "code_characters_median": 4507.0
+    },
+    {
+      "condition": "python",
+      "n": 181,
+      "mean_score": 89.55620231501447,
+      "full_score_n": 149,
+      "analysis_seconds_median": 129.605505,
+      "target_tokens_reported": 9920769,
+      "all_tokens_reported": 12316736,
+      "calls": 859,
+      "code_characters_median": 3366.0
+    },
+    {
+      "condition": "mne",
+      "n": 181,
+      "mean_score": 91.69248224134964,
+      "full_score_n": 154,
+      "analysis_seconds_median": 145.143894,
+      "target_tokens_reported": 19672771,
+      "all_tokens_reported": 22069038,
+      "calls": 1214,
+      "code_characters_median": 3029.0
+    }
+  ],
+  "skill_pairing": {
+    "paired_cases": 181,
+    "outcomes": {
+      "equal": 170,
+      "worsened": 10,
+      "improved": 1
+    },
+    "mean_score_delta": -1.711049723756906
+  },
+  "registered_tool_count": 41,
+  "tools": [
+    "mne_check_status",
+    "mne_get_config",
+    "mne_session_info",
+    "mne_describe",
+    "mne_get_info",
+    "mne_reset_session",
+    "mne_run_code",
+    "mne_list_files",
+    "mne_load_raw",
+    "mne_filter",
+    "mne_resample",
+    "mne_crop",
+    "mne_set_montage",
+    "mne_set_reference",
+    "mne_mark_bad_channels",
+    "mne_interpolate_bads",
+    "mne_plot_psd",
+    "mne_plot_raw",
+    "mne_plot_sensors",
+    "mne_fit_ica",
+    "mne_plot_ica_components",
+    "mne_plot_ica_sources",
+    "mne_apply_ica",
+    "mne_find_events",
+    "mne_events_from_annotations",
+    "mne_make_epochs",
+    "mne_plot_epochs_image",
+    "mne_average_evoked",
+    "mne_plot_evoked",
+    "mne_plot_topomap",
+    "mne_compute_tfr",
+    "mne_tfr_morlet",
+    "mne_save",
+    "mne_decode",
+    "mne_decoding_group_test",
+    "mne_connectivity",
+    "mne_compute_connectivity",
+    "mne_compute_noise_cov",
+    "mne_make_forward",
+    "mne_apply_inverse",
+    "mne_plot_source_estimate"
+  ]
+}

@@ -1,0 +1,1934 @@
+{
+  "run": "F:\\MCP\\MNE-MCP\\tmp\\brainbench-runs\\full-eegmat-isolated-20260930",
+  "paired_cases": 181,
+  "outcomes": {
+    "equal": 170,
+    "worsened": 10,
+    "improved": 1
+  },
+  "mean_score_delta": -1.711049723756906,
+  "metric_types": [
+    {
+      "condition": "mne",
+      "metric_type": "categorical_check",
+      "count": 62,
+      "passed": 60,
+      "score": 2540.0,
+      "weight": 2600,
+      "weighted_fraction": 0.9769230769230769
+    },
+    {
+      "condition": "mne",
+      "metric_type": "file_status_check",
+      "count": 30,
+      "passed": 30,
+      "score": 3000.0,
+      "weight": 3000,
+      "weighted_fraction": 1.0
+    },
+    {
+      "condition": "mne",
+      "metric_type": "numeric_check",
+      "count": 130,
+      "passed": 109,
+      "score": 4750.0,
+      "weight": 5550,
+      "weighted_fraction": 0.8558558558558559
+    },
+    {
+      "condition": "mne",
+      "metric_type": "semantic_consistency",
+      "count": 49,
+      "passed": 38,
+      "score": 2410.0,
+      "weight": 2900,
+      "weighted_fraction": 0.8310344827586207
+    },
+    {
+      "condition": "mne",
+      "metric_type": "sequence_match_check",
+      "count": 35,
+      "passed": 30,
+      "score": 2346.3392857142853,
+      "weight": 2500,
+      "weighted_fraction": 0.9385357142857141
+    },
+    {
+      "condition": "mne",
+      "metric_type": "set_match_check",
+      "count": 21,
+      "passed": 21,
+      "score": 1549.9999999699999,
+      "weight": 1550,
+      "weighted_fraction": 0.999999999980645
+    },
+    {
+      "condition": "mne-skills",
+      "metric_type": "categorical_check",
+      "count": 62,
+      "passed": 58,
+      "score": 2460.0,
+      "weight": 2600,
+      "weighted_fraction": 0.9461538461538461
+    },
+    {
+      "condition": "mne-skills",
+      "metric_type": "file_status_check",
+      "count": 30,
+      "passed": 30,
+      "score": 3000.0,
+      "weight": 3000,
+      "weighted_fraction": 1.0
+    },
+    {
+      "condition": "mne-skills",
+      "metric_type": "numeric_check",
+      "count": 130,
+      "passed": 106,
+      "score": 4660.0,
+      "weight": 5550,
+      "weighted_fraction": 0.8396396396396396
+    },
+    {
+      "condition": "mne-skills",
+      "metric_type": "semantic_consistency",
+      "count": 49,
+      "passed": 37,
+      "score": 2370.0,
+      "weight": 2900,
+      "weighted_fraction": 0.8172413793103448
+    },
+    {
+      "condition": "mne-skills",
+      "metric_type": "sequence_match_check",
+      "count": 35,
+      "passed": 27,
+      "score": 2299.1392857142855,
+      "weight": 2500,
+      "weighted_fraction": 0.9196557142857142
+    },
+    {
+      "condition": "mne-skills",
+      "metric_type": "set_match_check",
+      "count": 21,
+      "passed": 19,
+      "score": 1497.49999997,
+      "weight": 1550,
+      "weighted_fraction": 0.9661290322387097
+    }
+  ],
+  "pairs": [
+    {
+      "instance_id": "case10_21",
+      "task_family": "case10",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 201.86359099999999,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 1490.0,
+      "target_tokens_delta": 295957
+    },
+    {
+      "instance_id": "case10_22",
+      "task_family": "case10",
+      "recording": "MentalArithmetic_02",
+      "score_delta": -50.0,
+      "analysis_seconds_delta": 791.370794,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 1875.0,
+      "target_tokens_delta": null
+    },
+    {
+      "instance_id": "case10_23",
+      "task_family": "case10",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 179.228794,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 3060.0,
+      "target_tokens_delta": 271834
+    },
+    {
+      "instance_id": "case10_24",
+      "task_family": "case10",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 182.854017,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 2445.0,
+      "target_tokens_delta": 281690
+    },
+    {
+      "instance_id": "case10_25",
+      "task_family": "case10",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 150.698033,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 3063.0,
+      "target_tokens_delta": 326037
+    },
+    {
+      "instance_id": "case11_21",
+      "task_family": "case11",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 92.379096,
+      "target_tool_calls_delta": 8.0,
+      "generated_code_characters_delta": 2261.0,
+      "target_tokens_delta": 96959
+    },
+    {
+      "instance_id": "case11_22",
+      "task_family": "case11",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 70.80697700000002,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 2273.0,
+      "target_tokens_delta": 119762
+    },
+    {
+      "instance_id": "case11_23",
+      "task_family": "case11",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 107.134717,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 2403.0,
+      "target_tokens_delta": 158924
+    },
+    {
+      "instance_id": "case11_24",
+      "task_family": "case11",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 79.514783,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 2133.0,
+      "target_tokens_delta": 178324
+    },
+    {
+      "instance_id": "case11_25",
+      "task_family": "case11",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 79.447006,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 2252.0,
+      "target_tokens_delta": 155560
+    },
+    {
+      "instance_id": "case12_21",
+      "task_family": "case12",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 83.697299,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 3045.0,
+      "target_tokens_delta": 152112
+    },
+    {
+      "instance_id": "case12_22",
+      "task_family": "case12",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 62.18533599999999,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 2511.0,
+      "target_tokens_delta": 87231
+    },
+    {
+      "instance_id": "case12_23",
+      "task_family": "case12",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 60.93836,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 2552.0,
+      "target_tokens_delta": 115183
+    },
+    {
+      "instance_id": "case12_24",
+      "task_family": "case12",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 69.21827699999999,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 2309.0,
+      "target_tokens_delta": 152400
+    },
+    {
+      "instance_id": "case12_25",
+      "task_family": "case12",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 50.377088000000015,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 3380.0,
+      "target_tokens_delta": 87557
+    },
+    {
+      "instance_id": "case13_21",
+      "task_family": "case13",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 75.705814,
+      "target_tool_calls_delta": 0.0,
+      "generated_code_characters_delta": 3817.0,
+      "target_tokens_delta": 103056
+    },
+    {
+      "instance_id": "case13_22",
+      "task_family": "case13",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 108.25120799999999,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 4154.0,
+      "target_tokens_delta": 109131
+    },
+    {
+      "instance_id": "case13_23",
+      "task_family": "case13",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 55.54391000000001,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 3096.0,
+      "target_tokens_delta": 133540
+    },
+    {
+      "instance_id": "case13_24",
+      "task_family": "case13",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 134.18769399999996,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 4492.0,
+      "target_tokens_delta": 130771
+    },
+    {
+      "instance_id": "case13_25",
+      "task_family": "case13",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 20.976383,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 1805.0,
+      "target_tokens_delta": 93949
+    },
+    {
+      "instance_id": "case14_21",
+      "task_family": "case14",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 102.51188699999999,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 3962.0,
+      "target_tokens_delta": 134668
+    },
+    {
+      "instance_id": "case14_22",
+      "task_family": "case14",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 80.575024,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 3659.0,
+      "target_tokens_delta": 140260
+    },
+    {
+      "instance_id": "case14_23",
+      "task_family": "case14",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 149.925932,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 2561.0,
+      "target_tokens_delta": 242993
+    },
+    {
+      "instance_id": "case14_24",
+      "task_family": "case14",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 140.819291,
+      "target_tool_calls_delta": 11.0,
+      "generated_code_characters_delta": 3565.0,
+      "target_tokens_delta": 216991
+    },
+    {
+      "instance_id": "case14_25",
+      "task_family": "case14",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 50.27892,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 3171.0,
+      "target_tokens_delta": 190215
+    },
+    {
+      "instance_id": "case15_21",
+      "task_family": "case15",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 69.51433599999999,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 3144.0,
+      "target_tokens_delta": 133363
+    },
+    {
+      "instance_id": "case15_22",
+      "task_family": "case15",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 75.87607499999999,
+      "target_tool_calls_delta": 0.0,
+      "generated_code_characters_delta": 2920.0,
+      "target_tokens_delta": 95417
+    },
+    {
+      "instance_id": "case15_23",
+      "task_family": "case15",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 73.172848,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 3031.0,
+      "target_tokens_delta": 129080
+    },
+    {
+      "instance_id": "case15_24",
+      "task_family": "case15",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 83.35281,
+      "target_tool_calls_delta": 0.0,
+      "generated_code_characters_delta": 4048.0,
+      "target_tokens_delta": 127060
+    },
+    {
+      "instance_id": "case15_25",
+      "task_family": "case15",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 59.967243999999994,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 3348.0,
+      "target_tokens_delta": 78546
+    },
+    {
+      "instance_id": "case16_21",
+      "task_family": "case16",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 138.882792,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 5185.0,
+      "target_tokens_delta": 248509
+    },
+    {
+      "instance_id": "case16_22",
+      "task_family": "case16",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 121.95155199999999,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 4015.0,
+      "target_tokens_delta": 135774
+    },
+    {
+      "instance_id": "case16_23",
+      "task_family": "case16",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 117.798671,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 5116.0,
+      "target_tokens_delta": 269816
+    },
+    {
+      "instance_id": "case16_24",
+      "task_family": "case16",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 121.42753300000001,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 4258.0,
+      "target_tokens_delta": 229427
+    },
+    {
+      "instance_id": "case16_25",
+      "task_family": "case16",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 194.607077,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 4449.0,
+      "target_tokens_delta": 229958
+    },
+    {
+      "instance_id": "case17_21",
+      "task_family": "case17",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 82.11245500000001,
+      "target_tool_calls_delta": 8.0,
+      "generated_code_characters_delta": 3487.0,
+      "target_tokens_delta": 89330
+    },
+    {
+      "instance_id": "case17_22",
+      "task_family": "case17",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 119.51102800000001,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 3635.0,
+      "target_tokens_delta": 201859
+    },
+    {
+      "instance_id": "case17_23",
+      "task_family": "case17",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 122.62359000000001,
+      "target_tool_calls_delta": 10.0,
+      "generated_code_characters_delta": 3229.0,
+      "target_tokens_delta": 144211
+    },
+    {
+      "instance_id": "case17_24",
+      "task_family": "case17",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 76.138119,
+      "target_tool_calls_delta": 9.0,
+      "generated_code_characters_delta": 4266.0,
+      "target_tokens_delta": 112436
+    },
+    {
+      "instance_id": "case17_25",
+      "task_family": "case17",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 136.827986,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 3110.0,
+      "target_tokens_delta": 169396
+    },
+    {
+      "instance_id": "case18_21",
+      "task_family": "case18",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 84.714752,
+      "target_tool_calls_delta": 9.0,
+      "generated_code_characters_delta": 1998.0,
+      "target_tokens_delta": 174191
+    },
+    {
+      "instance_id": "case18_22",
+      "task_family": "case18",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 60.37640400000001,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 3446.0,
+      "target_tokens_delta": 127567
+    },
+    {
+      "instance_id": "case18_23",
+      "task_family": "case18",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 106.25674000000001,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 3494.0,
+      "target_tokens_delta": 196796
+    },
+    {
+      "instance_id": "case18_24",
+      "task_family": "case18",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 93.22703800000002,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 3656.0,
+      "target_tokens_delta": 205918
+    },
+    {
+      "instance_id": "case18_25",
+      "task_family": "case18",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 90.990948,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 3312.0,
+      "target_tokens_delta": 150803
+    },
+    {
+      "instance_id": "case19_21",
+      "task_family": "case19",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 43.41341800000001,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 2851.0,
+      "target_tokens_delta": 56765
+    },
+    {
+      "instance_id": "case19_22",
+      "task_family": "case19",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 48.599481,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 3073.0,
+      "target_tokens_delta": 63144
+    },
+    {
+      "instance_id": "case19_23",
+      "task_family": "case19",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 54.057905000000005,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 3043.0,
+      "target_tokens_delta": 111457
+    },
+    {
+      "instance_id": "case19_24",
+      "task_family": "case19",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 71.015002,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 3024.0,
+      "target_tokens_delta": 45718
+    },
+    {
+      "instance_id": "case19_25",
+      "task_family": "case19",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 50.959028,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 2854.0,
+      "target_tokens_delta": 71828
+    },
+    {
+      "instance_id": "case1_21",
+      "task_family": "case1",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 137.61157200000002,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 949.0,
+      "target_tokens_delta": 255380
+    },
+    {
+      "instance_id": "case1_22",
+      "task_family": "case1",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 121.61509499999997,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 2122.0,
+      "target_tokens_delta": 208098
+    },
+    {
+      "instance_id": "case1_23",
+      "task_family": "case1",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 123.35239899999999,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 1680.0,
+      "target_tokens_delta": 256401
+    },
+    {
+      "instance_id": "case1_24",
+      "task_family": "case1",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 106.06550699999997,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 372.0,
+      "target_tokens_delta": 188062
+    },
+    {
+      "instance_id": "case1_25",
+      "task_family": "case1",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 110.15626,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 1942.0,
+      "target_tokens_delta": 209386
+    },
+    {
+      "instance_id": "case20_05",
+      "task_family": "case20",
+      "recording": "MentalArithmetic_06",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 10.319260999999997,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 0.0,
+      "target_tokens_delta": 47007
+    },
+    {
+      "instance_id": "case21_13",
+      "task_family": "case21",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 89.35074499999999,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 1537.0,
+      "target_tokens_delta": 131998
+    },
+    {
+      "instance_id": "case21_14",
+      "task_family": "case21",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 84.323209,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 999.0,
+      "target_tokens_delta": 93658
+    },
+    {
+      "instance_id": "case21_15",
+      "task_family": "case21",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 114.43709999999999,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 5521.0,
+      "target_tokens_delta": 196396
+    },
+    {
+      "instance_id": "case22_21",
+      "task_family": "case22",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 47.123985000000005,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 3212.0,
+      "target_tokens_delta": 70990
+    },
+    {
+      "instance_id": "case22_22",
+      "task_family": "case22",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 118.03177699999999,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 3916.0,
+      "target_tokens_delta": 53362
+    },
+    {
+      "instance_id": "case22_23",
+      "task_family": "case22",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 73.43683999999999,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 2827.0,
+      "target_tokens_delta": 73427
+    },
+    {
+      "instance_id": "case22_24",
+      "task_family": "case22",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 6.9408909999999935,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 2624.0,
+      "target_tokens_delta": 39243
+    },
+    {
+      "instance_id": "case22_25",
+      "task_family": "case22",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 72.820028,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 1740.0,
+      "target_tokens_delta": 97239
+    },
+    {
+      "instance_id": "case23_11",
+      "task_family": "case23",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 11.088764999999967,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 1037.0,
+      "target_tokens_delta": 62710
+    },
+    {
+      "instance_id": "case23_12",
+      "task_family": "case23",
+      "recording": "MentalArithmetic_02",
+      "score_delta": -30.0,
+      "analysis_seconds_delta": 205.040151,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 6962.0,
+      "target_tokens_delta": 164752
+    },
+    {
+      "instance_id": "case23_13",
+      "task_family": "case23",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 166.534845,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 1807.0,
+      "target_tokens_delta": 167099
+    },
+    {
+      "instance_id": "case23_14",
+      "task_family": "case23",
+      "recording": "MentalArithmetic_04",
+      "score_delta": -30.0,
+      "analysis_seconds_delta": 126.35913099999999,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 944.0,
+      "target_tokens_delta": 165738
+    },
+    {
+      "instance_id": "case23_15",
+      "task_family": "case23",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 30.0,
+      "analysis_seconds_delta": 59.91831499999998,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 401.0,
+      "target_tokens_delta": 111191
+    },
+    {
+      "instance_id": "case24_21",
+      "task_family": "case24",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 104.09342000000004,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": -1241.0,
+      "target_tokens_delta": 199962
+    },
+    {
+      "instance_id": "case24_22",
+      "task_family": "case24",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 173.86879,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 154.0,
+      "target_tokens_delta": 200162
+    },
+    {
+      "instance_id": "case24_23",
+      "task_family": "case24",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 82.913565,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": -648.0,
+      "target_tokens_delta": 152653
+    },
+    {
+      "instance_id": "case24_24",
+      "task_family": "case24",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 145.746311,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 7289.0,
+      "target_tokens_delta": 127822
+    },
+    {
+      "instance_id": "case24_25",
+      "task_family": "case24",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 95.94842600000001,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 1534.0,
+      "target_tokens_delta": 155771
+    },
+    {
+      "instance_id": "case25_21",
+      "task_family": "case25",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 110.68833700000002,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 1162.0,
+      "target_tokens_delta": 235980
+    },
+    {
+      "instance_id": "case25_22",
+      "task_family": "case25",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 118.31629299999997,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 1386.0,
+      "target_tokens_delta": 237822
+    },
+    {
+      "instance_id": "case25_23",
+      "task_family": "case25",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 83.66342499999999,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 1187.0,
+      "target_tokens_delta": 158847
+    },
+    {
+      "instance_id": "case25_24",
+      "task_family": "case25",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 92.57679100000001,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": -884.0,
+      "target_tokens_delta": 156381
+    },
+    {
+      "instance_id": "case25_25",
+      "task_family": "case25",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 33.35733400000001,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 1507.0,
+      "target_tokens_delta": 156777
+    },
+    {
+      "instance_id": "case26_21",
+      "task_family": "case26",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 16.18709100000001,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 491.0,
+      "target_tokens_delta": 119521
+    },
+    {
+      "instance_id": "case26_22",
+      "task_family": "case26",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 175.49792200000002,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": -213.0,
+      "target_tokens_delta": 187875
+    },
+    {
+      "instance_id": "case26_23",
+      "task_family": "case26",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 89.13915800000001,
+      "target_tool_calls_delta": 8.0,
+      "generated_code_characters_delta": 1230.0,
+      "target_tokens_delta": 103307
+    },
+    {
+      "instance_id": "case26_24",
+      "task_family": "case26",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 185.95570800000002,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 438.0,
+      "target_tokens_delta": 195737
+    },
+    {
+      "instance_id": "case26_25",
+      "task_family": "case26",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 143.91098800000003,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 211.0,
+      "target_tokens_delta": 202557
+    },
+    {
+      "instance_id": "case27_21",
+      "task_family": "case27",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 102.28185400000001,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 481.0,
+      "target_tokens_delta": 140662
+    },
+    {
+      "instance_id": "case27_22",
+      "task_family": "case27",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 87.604604,
+      "target_tool_calls_delta": 0.0,
+      "generated_code_characters_delta": 375.0,
+      "target_tokens_delta": 118696
+    },
+    {
+      "instance_id": "case27_23",
+      "task_family": "case27",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 53.31493400000002,
+      "target_tool_calls_delta": 0.0,
+      "generated_code_characters_delta": -485.0,
+      "target_tokens_delta": 173735
+    },
+    {
+      "instance_id": "case27_24",
+      "task_family": "case27",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 123.78072500000002,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 1660.0,
+      "target_tokens_delta": 154901
+    },
+    {
+      "instance_id": "case27_25",
+      "task_family": "case27",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 110.26135599999998,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 584.0,
+      "target_tokens_delta": 102908
+    },
+    {
+      "instance_id": "case28_21",
+      "task_family": "case28",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 220.47002200000003,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 3048.0,
+      "target_tokens_delta": 212738
+    },
+    {
+      "instance_id": "case28_22",
+      "task_family": "case28",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 68.653774,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 2546.0,
+      "target_tokens_delta": 150653
+    },
+    {
+      "instance_id": "case28_23",
+      "task_family": "case28",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 103.85691699999998,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 1760.0,
+      "target_tokens_delta": 169220
+    },
+    {
+      "instance_id": "case28_24",
+      "task_family": "case28",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 20.317306000000002,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 1708.0,
+      "target_tokens_delta": 107420
+    },
+    {
+      "instance_id": "case28_25",
+      "task_family": "case28",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 8.993056000000024,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 1502.0,
+      "target_tokens_delta": 83918
+    },
+    {
+      "instance_id": "case29_21",
+      "task_family": "case29",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 105.13059900000002,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 763.0,
+      "target_tokens_delta": 241331
+    },
+    {
+      "instance_id": "case29_22",
+      "task_family": "case29",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 143.412462,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 2027.0,
+      "target_tokens_delta": 256911
+    },
+    {
+      "instance_id": "case29_23",
+      "task_family": "case29",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 155.93762499999997,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 2060.0,
+      "target_tokens_delta": 215647
+    },
+    {
+      "instance_id": "case29_24",
+      "task_family": "case29",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 142.68383100000003,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 2778.0,
+      "target_tokens_delta": 277696
+    },
+    {
+      "instance_id": "case29_25",
+      "task_family": "case29",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 203.64139799999998,
+      "target_tool_calls_delta": 8.0,
+      "generated_code_characters_delta": 2459.0,
+      "target_tokens_delta": 279817
+    },
+    {
+      "instance_id": "case2_21",
+      "task_family": "case2",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 95.32805600000003,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 543.0,
+      "target_tokens_delta": 148300
+    },
+    {
+      "instance_id": "case2_22",
+      "task_family": "case2",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 130.739249,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 2007.0,
+      "target_tokens_delta": 118249
+    },
+    {
+      "instance_id": "case2_23",
+      "task_family": "case2",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 187.51187700000003,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 982.0,
+      "target_tokens_delta": 253079
+    },
+    {
+      "instance_id": "case2_24",
+      "task_family": "case2",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 118.469324,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 1127.0,
+      "target_tokens_delta": 163215
+    },
+    {
+      "instance_id": "case2_25",
+      "task_family": "case2",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 66.36811599999999,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 917.0,
+      "target_tokens_delta": 96640
+    },
+    {
+      "instance_id": "case30_21",
+      "task_family": "case30",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 92.47036800000004,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": -1169.0,
+      "target_tokens_delta": 128269
+    },
+    {
+      "instance_id": "case30_22",
+      "task_family": "case30",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 473.47533300000003,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": -457.0,
+      "target_tokens_delta": 153099
+    },
+    {
+      "instance_id": "case30_23",
+      "task_family": "case30",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 107.14411899999999,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": -335.0,
+      "target_tokens_delta": 195795
+    },
+    {
+      "instance_id": "case30_24",
+      "task_family": "case30",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 126.17174799999998,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 226.0,
+      "target_tokens_delta": 192390
+    },
+    {
+      "instance_id": "case30_25",
+      "task_family": "case30",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 67.47561999999999,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": -61.0,
+      "target_tokens_delta": 200699
+    },
+    {
+      "instance_id": "case31_21",
+      "task_family": "case31",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 211.51908100000003,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": -483.0,
+      "target_tokens_delta": 253788
+    },
+    {
+      "instance_id": "case31_22",
+      "task_family": "case31",
+      "recording": "MentalArithmetic_02",
+      "score_delta": -60.0,
+      "analysis_seconds_delta": 188.28394,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 772.0,
+      "target_tokens_delta": 237072
+    },
+    {
+      "instance_id": "case31_23",
+      "task_family": "case31",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 116.57337900000002,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 646.0,
+      "target_tokens_delta": 192540
+    },
+    {
+      "instance_id": "case31_24",
+      "task_family": "case31",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 92.11356700000002,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 759.0,
+      "target_tokens_delta": 169463
+    },
+    {
+      "instance_id": "case31_25",
+      "task_family": "case31",
+      "recording": "MentalArithmetic_05",
+      "score_delta": -30.0,
+      "analysis_seconds_delta": 60.531124999999975,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 5910.0,
+      "target_tokens_delta": 175451
+    },
+    {
+      "instance_id": "case32_21",
+      "task_family": "case32",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 76.083922,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 1462.0,
+      "target_tokens_delta": 120574
+    },
+    {
+      "instance_id": "case32_22",
+      "task_family": "case32",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 75.094042,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 1507.0,
+      "target_tokens_delta": 132733
+    },
+    {
+      "instance_id": "case32_23",
+      "task_family": "case32",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 50.90974399999999,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": -1070.0,
+      "target_tokens_delta": 72085
+    },
+    {
+      "instance_id": "case32_24",
+      "task_family": "case32",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 107.23436899999999,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 1964.0,
+      "target_tokens_delta": 120387
+    },
+    {
+      "instance_id": "case32_25",
+      "task_family": "case32",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 95.264412,
+      "target_tool_calls_delta": -1.0,
+      "generated_code_characters_delta": 2462.0,
+      "target_tokens_delta": 106250
+    },
+    {
+      "instance_id": "case33_21",
+      "task_family": "case33",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 117.407352,
+      "target_tool_calls_delta": 9.0,
+      "generated_code_characters_delta": 1294.0,
+      "target_tokens_delta": 202818
+    },
+    {
+      "instance_id": "case33_22",
+      "task_family": "case33",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 71.53351600000002,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 1431.0,
+      "target_tokens_delta": 130823
+    },
+    {
+      "instance_id": "case33_23",
+      "task_family": "case33",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": -3.4878809999999874,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 743.0,
+      "target_tokens_delta": 161258
+    },
+    {
+      "instance_id": "case33_24",
+      "task_family": "case33",
+      "recording": "MentalArithmetic_04",
+      "score_delta": -12.5,
+      "analysis_seconds_delta": 104.67667499999999,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 938.0,
+      "target_tokens_delta": 190391
+    },
+    {
+      "instance_id": "case33_25",
+      "task_family": "case33",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 12.668353999999994,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 521.0,
+      "target_tokens_delta": 146354
+    },
+    {
+      "instance_id": "case34_21",
+      "task_family": "case34",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 128.516519,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 613.0,
+      "target_tokens_delta": 219547
+    },
+    {
+      "instance_id": "case34_22",
+      "task_family": "case34",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 88.63661199999999,
+      "target_tool_calls_delta": 0.0,
+      "generated_code_characters_delta": -1603.0,
+      "target_tokens_delta": 144972
+    },
+    {
+      "instance_id": "case34_23",
+      "task_family": "case34",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 106.05918,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 338.0,
+      "target_tokens_delta": 184622
+    },
+    {
+      "instance_id": "case34_24",
+      "task_family": "case34",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 176.29477999999997,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 534.0,
+      "target_tokens_delta": 298087
+    },
+    {
+      "instance_id": "case34_25",
+      "task_family": "case34",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 82.65060399999999,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": -439.0,
+      "target_tokens_delta": 186734
+    },
+    {
+      "instance_id": "case35_21",
+      "task_family": "case35",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 109.602026,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 1666.0,
+      "target_tokens_delta": 172831
+    },
+    {
+      "instance_id": "case35_22",
+      "task_family": "case35",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 134.341104,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 4975.0,
+      "target_tokens_delta": 158628
+    },
+    {
+      "instance_id": "case35_23",
+      "task_family": "case35",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 167.56756,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 2453.0,
+      "target_tokens_delta": 215563
+    },
+    {
+      "instance_id": "case35_24",
+      "task_family": "case35",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 174.62886100000003,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 1168.0,
+      "target_tokens_delta": 235811
+    },
+    {
+      "instance_id": "case35_25",
+      "task_family": "case35",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 94.747457,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 1465.0,
+      "target_tokens_delta": 204189
+    },
+    {
+      "instance_id": "case36_21",
+      "task_family": "case36",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 103.491725,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 189.0,
+      "target_tokens_delta": 202439
+    },
+    {
+      "instance_id": "case36_22",
+      "task_family": "case36",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 136.05205400000003,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 1141.0,
+      "target_tokens_delta": 163599
+    },
+    {
+      "instance_id": "case36_23",
+      "task_family": "case36",
+      "recording": "MentalArithmetic_03",
+      "score_delta": -40.0,
+      "analysis_seconds_delta": 158.57226399999996,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 236.0,
+      "target_tokens_delta": 259191
+    },
+    {
+      "instance_id": "case36_24",
+      "task_family": "case36",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 48.87377600000002,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": -1784.0,
+      "target_tokens_delta": 197334
+    },
+    {
+      "instance_id": "case36_25",
+      "task_family": "case36",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 193.63379,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": -1348.0,
+      "target_tokens_delta": 206050
+    },
+    {
+      "instance_id": "case37_21",
+      "task_family": "case37",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 45.397497999999985,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 134.0,
+      "target_tokens_delta": 137167
+    },
+    {
+      "instance_id": "case37_22",
+      "task_family": "case37",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": -161.998676,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 1196.0,
+      "target_tokens_delta": 150426
+    },
+    {
+      "instance_id": "case37_23",
+      "task_family": "case37",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 164.06656099999998,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 1016.0,
+      "target_tokens_delta": 167717
+    },
+    {
+      "instance_id": "case37_24",
+      "task_family": "case37",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 85.48087099999998,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 740.0,
+      "target_tokens_delta": 164400
+    },
+    {
+      "instance_id": "case37_25",
+      "task_family": "case37",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 134.343213,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 842.0,
+      "target_tokens_delta": 207584
+    },
+    {
+      "instance_id": "case38_21",
+      "task_family": "case38",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 90.51040900000001,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 456.0,
+      "target_tokens_delta": 180422
+    },
+    {
+      "instance_id": "case38_22",
+      "task_family": "case38",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 49.867185000000006,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 1617.0,
+      "target_tokens_delta": 141873
+    },
+    {
+      "instance_id": "case38_23",
+      "task_family": "case38",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 75.54240300000001,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 2851.0,
+      "target_tokens_delta": 198984
+    },
+    {
+      "instance_id": "case38_24",
+      "task_family": "case38",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 86.92102199999998,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 1131.0,
+      "target_tokens_delta": 152723
+    },
+    {
+      "instance_id": "case38_25",
+      "task_family": "case38",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 50.305690999999996,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 670.0,
+      "target_tokens_delta": 125007
+    },
+    {
+      "instance_id": "case39_21",
+      "task_family": "case39",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 115.176774,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 3744.0,
+      "target_tokens_delta": 102913
+    },
+    {
+      "instance_id": "case39_22",
+      "task_family": "case39",
+      "recording": "MentalArithmetic_02",
+      "score_delta": -55.2,
+      "analysis_seconds_delta": 142.15962100000002,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 1560.0,
+      "target_tokens_delta": 196653
+    },
+    {
+      "instance_id": "case39_23",
+      "task_family": "case39",
+      "recording": "MentalArithmetic_03",
+      "score_delta": -18.0,
+      "analysis_seconds_delta": 170.311641,
+      "target_tool_calls_delta": 7.0,
+      "generated_code_characters_delta": 4735.0,
+      "target_tokens_delta": 166237
+    },
+    {
+      "instance_id": "case39_24",
+      "task_family": "case39",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 34.209025999999994,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 1129.0,
+      "target_tokens_delta": 141311
+    },
+    {
+      "instance_id": "case39_25",
+      "task_family": "case39",
+      "recording": "MentalArithmetic_05",
+      "score_delta": -14.0,
+      "analysis_seconds_delta": 50.14900900000001,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 706.0,
+      "target_tokens_delta": 67467
+    },
+    {
+      "instance_id": "case3_21",
+      "task_family": "case3",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 121.369643,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 1024.0,
+      "target_tokens_delta": 135565
+    },
+    {
+      "instance_id": "case3_22",
+      "task_family": "case3",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 66.40738599999999,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 1152.0,
+      "target_tokens_delta": 115084
+    },
+    {
+      "instance_id": "case3_23",
+      "task_family": "case3",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 70.304405,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 2020.0,
+      "target_tokens_delta": 177048
+    },
+    {
+      "instance_id": "case3_24",
+      "task_family": "case3",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 72.13538499999999,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 725.0,
+      "target_tokens_delta": 124136
+    },
+    {
+      "instance_id": "case3_25",
+      "task_family": "case3",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 92.790837,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 343.0,
+      "target_tokens_delta": 140454
+    },
+    {
+      "instance_id": "case4_21",
+      "task_family": "case4",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 125.08179700000001,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 2016.0,
+      "target_tokens_delta": 201222
+    },
+    {
+      "instance_id": "case4_22",
+      "task_family": "case4",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 131.255851,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 1596.0,
+      "target_tokens_delta": 266565
+    },
+    {
+      "instance_id": "case4_23",
+      "task_family": "case4",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 116.612368,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 1976.0,
+      "target_tokens_delta": 135197
+    },
+    {
+      "instance_id": "case4_24",
+      "task_family": "case4",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 124.58901600000002,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 1320.0,
+      "target_tokens_delta": 242645
+    },
+    {
+      "instance_id": "case4_25",
+      "task_family": "case4",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 132.549546,
+      "target_tool_calls_delta": 10.0,
+      "generated_code_characters_delta": 2884.0,
+      "target_tokens_delta": 208506
+    },
+    {
+      "instance_id": "case5_21",
+      "task_family": "case5",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 113.69941200000002,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 2272.0,
+      "target_tokens_delta": 222268
+    },
+    {
+      "instance_id": "case5_22",
+      "task_family": "case5",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 176.173495,
+      "target_tool_calls_delta": 9.0,
+      "generated_code_characters_delta": 2209.0,
+      "target_tokens_delta": 233398
+    },
+    {
+      "instance_id": "case5_23",
+      "task_family": "case5",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 44.785889000000026,
+      "target_tool_calls_delta": 1.0,
+      "generated_code_characters_delta": 3119.0,
+      "target_tokens_delta": 101010
+    },
+    {
+      "instance_id": "case5_24",
+      "task_family": "case5",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 81.369282,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 1253.0,
+      "target_tokens_delta": 58758
+    },
+    {
+      "instance_id": "case5_25",
+      "task_family": "case5",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 126.37279800000002,
+      "target_tool_calls_delta": 0.0,
+      "generated_code_characters_delta": 1686.0,
+      "target_tokens_delta": 220296
+    },
+    {
+      "instance_id": "case6_16",
+      "task_family": "case6",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 70.34545999999997,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 535.0,
+      "target_tokens_delta": 200703
+    },
+    {
+      "instance_id": "case6_17",
+      "task_family": "case6",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": -343.012709,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 398.0,
+      "target_tokens_delta": 123700
+    },
+    {
+      "instance_id": "case6_18",
+      "task_family": "case6",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 64.374102,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 604.0,
+      "target_tokens_delta": 189100
+    },
+    {
+      "instance_id": "case6_19",
+      "task_family": "case6",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 104.79338800000001,
+      "target_tool_calls_delta": 5.0,
+      "generated_code_characters_delta": 3802.0,
+      "target_tokens_delta": 146644
+    },
+    {
+      "instance_id": "case6_20",
+      "task_family": "case6",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 173.061731,
+      "target_tool_calls_delta": 6.0,
+      "generated_code_characters_delta": 613.0,
+      "target_tokens_delta": 115552
+    },
+    {
+      "instance_id": "case7_05",
+      "task_family": "case7",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 17.996118999999993,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 1833.0,
+      "target_tokens_delta": 10128
+    },
+    {
+      "instance_id": "case8_05",
+      "task_family": "case8",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 90.77572700000002,
+      "target_tool_calls_delta": 4.0,
+      "generated_code_characters_delta": 3554.0,
+      "target_tokens_delta": 177125
+    },
+    {
+      "instance_id": "case9_21",
+      "task_family": "case9",
+      "recording": "MentalArithmetic_01",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 36.623093999999995,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 1607.0,
+      "target_tokens_delta": 80078
+    },
+    {
+      "instance_id": "case9_22",
+      "task_family": "case9",
+      "recording": "MentalArithmetic_02",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 90.16676500000001,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 1585.0,
+      "target_tokens_delta": 133235
+    },
+    {
+      "instance_id": "case9_23",
+      "task_family": "case9",
+      "recording": "MentalArithmetic_03",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 28.559943999999987,
+      "target_tool_calls_delta": 3.0,
+      "generated_code_characters_delta": 1134.0,
+      "target_tokens_delta": 114105
+    },
+    {
+      "instance_id": "case9_24",
+      "task_family": "case9",
+      "recording": "MentalArithmetic_04",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 17.465037999999993,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 1156.0,
+      "target_tokens_delta": 73190
+    },
+    {
+      "instance_id": "case9_25",
+      "task_family": "case9",
+      "recording": "MentalArithmetic_05",
+      "score_delta": 0.0,
+      "analysis_seconds_delta": 30.770607,
+      "target_tool_calls_delta": 2.0,
+      "generated_code_characters_delta": 1129.0,
+      "target_tokens_delta": 72923
+    }
+  ],
+  "quality_status": "pending evidence review; no quality benefit inferred",
+  "interpretation": "Post hoc descriptive audit; correlated tasks and recordings; no causal or equivalence inference."
+}

@@ -1,0 +1,17 @@
+,mne,mne-skills
+tasks,181.0,181.0
+mcp_calls,875.0,1099.0
+structured_calls,530.0,516.0
+run_code_calls,345.0,583.0
+run_code_share_%,39.4,53.0
+tasks_using_run_code,180.0,180.0
+tasks_only_structured,1.0,1.0
+shell_calls,247.0,698.0
+skill_read_calls,0.0,550.0
+tasks_reading_skills,0.0,181.0
+median_skill_read_chars,0.0,36722.0
+tasks_read_critic,0.0,179.0
+tasks_sensitivity,0.0,24.0
+tasks_review_code,0.0,113.0
+tasks_review_file,0.0,108.0
+tasks_review_in_answer,0.0,163.0

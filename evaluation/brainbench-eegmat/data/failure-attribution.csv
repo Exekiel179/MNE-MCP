@@ -1,0 +1,22 @@
+instance_id,task_family,python,mne,mne_skills,comparison,direction,category,evidence
+case25_21,case25,30,100,100,MNE MCP vs Python,up,numeric (other),Python suppression ratio 0.538 vs 0.746 in MNE MCP
+case33_23,case33,83,100,100,MNE MCP vs Python,up,numeric (other),Python included extra channel T8
+case34_23,case34,50,100,100,MNE MCP vs Python,up,numeric (other),personalized alpha ratio 32.12 (Python) vs 31.81
+case31_23,case31,100,70,70,MNE MCP vs Python,down,numeric (other),ABR window 1: 0.853 (MNE MCP) vs 0.926
+case23_12,case23,70,100,70,MNE MCP vs Python,up,interpretation,dominant band alpha (Python) vs delta
+case23_13,case23,0,100,100,MNE MCP vs Python,up,interpretation,Python accepted wrong alpha claim
+case24_25,case24,0,100,100,MNE MCP vs Python,up,interpretation,invalid-pipeline logic judged inconsistent for Python
+case31_21,case31,60,100,100,MNE MCP vs Python,up,interpretation,attention-state conclusion
+case36_23,case36,0,40,0,MNE MCP vs Python,up,interpretation,hemispheric-pattern conclusion
+case23_15,case23,100,70,100,MNE MCP vs Python,down,interpretation,dominant band alpha (MNE MCP) vs delta
+case31_22,case31,100,100,40,Skills vs MNE MCP,down,Welch window,skills n_fft=1000 (2 s) vs 4 s in MNE MCP
+case31_25,case31,100,100,70,Skills vs MNE MCP,down,Welch window,skills nseg=round(2*sfreq) vs n_fft=2000 (4 s)
+case33_24,case33,100,100,88,Skills vs MNE MCP,down,Welch window,skills n_fft=1000 (2 s) vs 4*sfreq
+case39_22,case39,100,100,44.8,Skills vs MNE MCP,down,Welch window,skills 2*sfreq vs 4*sfreq
+case39_23,case39,100,100,82,Skills vs MNE MCP,down,Welch window,skills n_fft=1000 (2 s) vs n_fft=2000
+case39_25,case39,100,100,86,Skills vs MNE MCP,down,Welch window,skills sfreq*2 vs 4*sfreq
+case23_12,case23,70,100,70,Skills vs MNE MCP,down,interpretation,dominant band alpha (skills) vs delta
+case36_23,case36,0,40,0,Skills vs MNE MCP,down,interpretation,hemispheric-pattern conclusion
+case23_14,case23,100,100,70,Skills vs MNE MCP,down,missing answer item,dominant band not stated
+case10_22,case10,50,50,0,Skills vs MNE MCP,down,timeout,session exceeded 900 s
+case23_15,case23,100,70,100,Skills vs MNE MCP,up,interpretation,dominant band delta (skills) vs alpha
